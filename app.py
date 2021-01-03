@@ -1,7 +1,9 @@
 import os
 
 from flask import Flask
-from flask_discord_interactions import DiscordInteractions, InteractionResponse
+from flask_discord_interactions import (DiscordInteractions,
+                                        InteractionResponse,
+                                        CommandOptionType)
 
 
 app = Flask(__name__)
@@ -31,6 +33,48 @@ def fancy_ping(ctx):
             }
         ]
     })
+
+
+@discord.command(options=[{
+    "name": "message",
+    "description": "The message to repeat",
+    "type": CommandOptionType.STRING,
+    "required": True
+}])
+def repeat(ctx, message):
+    "Repeat the message (and escape mentions)"
+    return InteractionResponse(
+        f"{ctx.author.display_name} says {message}!",
+        allowed_mentions={"parse": []},
+        with_source=False
+    )
+
+
+@discord.command()
+def noop(ctx):
+    "Do nothing."
+    return None
+
+
+@discord.command(options=[{
+    "name": "choice",
+    "description": "Your favorite animal",
+    "type": CommandOptionType.STRING,
+    "required": True,
+    "choices": [
+        {
+            "name": "Dog",
+            "value": "dog"
+        },
+        {
+            "name": "Cat",
+            "value": "cat"
+        }
+    ]
+}])
+def favorite(ctx, choice):
+    "What is your favorite animal?"
+    return InteractionResponse(f"{ctx.author.display_name} chooses {choice}!")
 
 
 discord.set_route("/interactions")

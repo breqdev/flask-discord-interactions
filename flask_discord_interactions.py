@@ -21,6 +21,17 @@ class InteractionResponseType:
     ACKNOWLEDGE_WITH_SOURCE = 5
 
 
+class CommandOptionType:
+    SUB_COMMAND = 1
+    SUB_COMMAND_GROUP = 2
+    STRING = 3
+    INTEGER = 4
+    BOOLEAN = 5
+    USER = 6
+    CHANNEL = 7
+    ROLE = 8
+
+
 class InteractionContext:
     class InteractionAuthor:
         def __init__(self, data=None):
@@ -91,9 +102,11 @@ class SlashCommand:
     def create_kwargs(self, data):
         if "options" not in data["data"]:
             return {}
+
         kwargs = {}
         for option in data["data"]["options"]:
             kwargs[option["name"]] = option["value"]
+        return kwargs
 
     def run(self, data):
         context = InteractionContext(data)
@@ -184,11 +197,14 @@ class DiscordInteractions:
                 url = ("https://discord.com/api/v8/applications/"
                        f"{app.config['DISCORD_CLIENT_ID']}/commands")
 
-            response = requests.post(url, json={
+            json = {
                 "name": command.name,
                 "description": command.description,
                 "options": command.options
-                }, headers=self.auth_headers(app))
+            }
+
+            response = requests.post(
+                url, json=json, headers=self.auth_headers(app))
             response.raise_for_status()
             command.id = response.json()["id"]
 
