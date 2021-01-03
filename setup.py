@@ -1,6 +1,5 @@
 """
 Flask-Discord-Interactions
--------------
 
 A Flask extension to enable function-based definitions for Discord slash
 commands.
