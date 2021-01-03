@@ -17,9 +17,6 @@ setup(
     description='A Flask extension for Discord slash commands.',
     long_description=__doc__,
     py_modules=['flask_discord_interactions'],
-    # if you would be using a package instead use packages instead
-    # of py_modules:
-    # packages=['flask_sqlite3'],
     zip_safe=False,
     include_package_data=True,
     platforms='any',
@@ -32,6 +29,8 @@ setup(
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
+        "License :: OSI Approved :: MIT License",
         'Programming Language :: Python',
-    ]
+    ],
+    python_requires='>=3.8',
 )
