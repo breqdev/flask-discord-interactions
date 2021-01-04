@@ -7,7 +7,7 @@ with open("README.md") as file:
 
 setup(
     name='Flask-Discord-Interactions',
-    version='0.1.0',
+    version='0.1.1',
     url='https://github.com/Breq16/flask-discord-interactions',
     author='Wesley Chalmers',
     author_email='breq@breq.dev',
