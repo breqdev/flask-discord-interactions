@@ -149,6 +149,7 @@ class DiscordInteractions:
         app.config.setdefault("DISCORD_PUBLIC_KEY", "")
         app.config.setdefault("DISCORD_CLIENT_SECRET", "")
         app.discord_commands = {}
+        app.discord_token = None
 
     def fetch_token(self, app=None):
         if app is None:
@@ -175,8 +176,8 @@ class DiscordInteractions:
                                            + app.discord_token["expires_in"]/2)
 
     def auth_headers(self, app):
-        if time.time() > app.discord_token["expires_on"]:
-            print("Refreshing token")
+        if (app.discord_token is None
+                or time.time() > app.discord_token["expires_on"]):
             self.fetch_token(app)
         return {"Authorization": f"Bearer {app.discord_token['access_token']}"}
 

@@ -96,7 +96,6 @@ def index():
     return "Normal Flask routes work too!"
 
 
-discord.fetch_token()
 discord.clear_slash_commands(guild_id=os.environ["TESTING_GUILD"])
 discord.register_slash_commands(guild_id=os.environ["TESTING_GUILD"])
 
