@@ -1,10 +1,8 @@
-"""
-Flask-Discord-Interactions
-
-A Flask extension to enable function-based definitions for Discord slash
-commands.
-"""
 from setuptools import setup
+
+
+with open("README.md") as file:
+    readme = file.read()
 
 
 setup(
@@ -14,7 +12,7 @@ setup(
     author='Wesley Chalmers',
     author_email='breq@breq.dev',
     description='A Flask extension for Discord slash commands.',
-    long_description=__doc__,
+    long_description=readme,
     py_modules=['flask_discord_interactions'],
     zip_safe=False,
     include_package_data=True,
