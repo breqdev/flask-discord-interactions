@@ -13,6 +13,7 @@ setup(
     author_email='breq@breq.dev',
     description='A Flask extension for Discord slash commands.',
     long_description=readme,
+    long_description_content_type="text/markdown",
     py_modules=['flask_discord_interactions'],
     zip_safe=False,
     include_package_data=True,
