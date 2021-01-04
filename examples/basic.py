@@ -21,17 +21,27 @@ def ping(ctx):
     return "Pong!"
 
 
-@discord.command(name="fancy-ping", description="Respond with a fancy pong!")
-def fancy_ping(ctx):
+@discord.command(name="avatar", description="Show your user info")
+def _avatar(ctx):
     return InteractionResponse(embed={
-        "title": "PONG! :ping_pong:",
-        "description": "Pingity pongity!",
+        "title": ctx.author.display_name,
+        "description": "Avatar Info",
         "fields": [
             {
-                "name": "Is this epic?",
-                "value": "yes."
+                "name": "Member Since",
+                "value": ctx.author.joined_at
+            },
+            {
+                "name": "Username",
+                "value": (f"**{ctx.author.username}**"
+                          f"#{ctx.author.discriminator}")
+            },
+            {
+                "name": "User ID",
+                "value": ctx.author.id
             }
-        ]
+        ],
+        "image": {"url": ctx.author.avatar_url}
     })
 
 
@@ -53,6 +63,7 @@ def repeat(ctx, message):
 @discord.command()
 def noop(ctx):
     "Do nothing."
+    print(ctx.token)
     return None
 
 
@@ -78,6 +89,11 @@ def favorite(ctx, choice):
 
 
 discord.set_route("/interactions")
+
+
+@app.route("/")
+def index():
+    return "Normal Flask routes work too!"
 
 
 discord.fetch_token()
