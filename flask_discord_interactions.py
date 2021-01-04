@@ -38,18 +38,43 @@ class InteractionContext:
             if data:
                 self.id = data["user"]["id"]
                 self.username = data["user"]["username"]
+                self.discriminator = data["user"]["discriminator"]
+                self.avatar_hash = data["user"]["avatar"]
+                self.bot = data["user"].get("bot", False)
+                self.system = data["user"].get("system", False)
+                self.mfa_enabled = data["user"].get("mfa_enabled", False)
+                self.locale = data["user"].get("locale")
+                self.flags = data["user"].get("flags")
+                self.premium_type = data["user"].get("premium_type")
+                self.public_flags = data["user"].get("public_flags")
+
                 self.nick = data["nick"]
+                self.roles = data["roles"]
+                self.joined_at = data["joined_at"]
+                self.premium_since = data.get("premium_since")
+                self.deaf = data["deaf"]
+                self.mute = data["mute"]
+                self.pending = data.get("pending")
 
         @property
         def display_name(self):
             return self.nick or self.username
 
+        @property
+        def avatar_url(self):
+            return ("https://cdn.discordapp.com/avatars/"
+                    f"{self.id}/{self.avatar_hash}.png")
+
     def __init__(self, data=None):
         if data:
             self.author = self.InteractionAuthor(data["member"])
             self.id = data["id"]
+            self.token = data["token"]
             self.channel_id = data["channel_id"]
             self.guild_id = data["guild_id"]
+            self.options = data["data"].get("options")
+            self.command_name = data["data"]["name"]
+            self.command_id = data["data"]["id"]
 
 
 class InteractionResponse:
