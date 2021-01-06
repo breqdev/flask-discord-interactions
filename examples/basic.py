@@ -166,6 +166,12 @@ def sendfile(ctx):
     return None
 
 
+# Here's an invalid command just to test things out
+# @discord.command(name="s", description="name to short")
+# def invalid(ctx):
+#     return "This will never work..."
+
+
 # This is the URL that your app will listen for Discord Interactions on
 # Put this into the developer portal
 discord.set_route("/interactions")

@@ -329,11 +329,24 @@ class DiscordInteractions:
 
             response = requests.post(
                 url, json=json, headers=self.auth_headers(app))
-            response.raise_for_status()
+            try:
+                response.raise_for_status()
+            except requests.exceptions.HTTPError:
+                raise ValueError(
+                    f"Unable to register command {command.name} with {json}\n"
+                    f"{response.status_code} {response.text}")
             command.id = response.json()["id"]
 
     def add_slash_command(self, command, app=None, name=None,
                           description=None, options=[]):
+        if not 3 <= len(name) <= 32:
+            raise ValueError(
+                f"Error adding command {name}: "
+                "Command name must be between 3 and 32 characters.")
+        if not 1 <= len(description) <= 100:
+            raise ValueError(
+                f"Error adding command {name}: "
+                "Command description must be between 1 and 100 characters.")
         slash_command = SlashCommand(command, name, description, options)
         app.discord_commands[name] = slash_command
 
