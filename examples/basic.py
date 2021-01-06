@@ -1,7 +1,10 @@
 import os
+import threading
+import time
 
 from flask import Flask
 from flask_discord_interactions import (DiscordInteractions,
+                                        DiscordInteractionsBlueprint,
                                         InteractionResponse,
                                         CommandOptionType)
 
@@ -10,17 +13,26 @@ app = Flask(__name__)
 discord = DiscordInteractions(app)
 
 
+# Find these in your Discord Developer Portal, store them as environment vars
 app.config["DISCORD_CLIENT_ID"] = os.environ["DISCORD_CLIENT_ID"]
 app.config["DISCORD_PUBLIC_KEY"] = os.environ["DISCORD_PUBLIC_KEY"]
 app.config["DISCORD_CLIENT_SECRET"] = os.environ["DISCORD_CLIENT_SECRET"]
 
 
+# Simplest type of command: respond with a string
 @discord.command()
 def ping(ctx):
     "Respond with a friendly 'pong'!"
     return "Pong!"
 
 
+# You can specify a name and desc explicitly
+# (otherwise it's inferred from function name and docstring)
+# For more complex responses, return an InteractionResponse object
+# You have to define the embed JSON manually
+# Refer to Discord API documentation for details
+# The "ctx" parameter is an InteractionContext object
+# it works similarly to Context in Discord.py
 @discord.command(name="avatar", description="Show your user info")
 def _avatar(ctx):
     return InteractionResponse(embed={
@@ -45,6 +57,11 @@ def _avatar(ctx):
     })
 
 
+# To specify options, include them as a list of JSON objects
+# Refer to the Discord API documentation for details
+# The CommandOptionType enum is helpful
+# Options are passed as keyword arguments to the function
+# Use "with_source=False" to supress the original command message
 @discord.command(options=[{
     "name": "message",
     "description": "The message to repeat",
@@ -60,6 +77,7 @@ def repeat(ctx, message):
     )
 
 
+# Return None to not send a response
 @discord.command()
 def noop(ctx):
     "Do nothing."
@@ -67,6 +85,7 @@ def noop(ctx):
     return None
 
 
+# Define choices in the options JSON, see Discord API docs for details
 @discord.command(options=[{
     "name": "choice",
     "description": "Your favorite animal",
@@ -88,15 +107,60 @@ def favorite(ctx, choice):
     return InteractionResponse(f"{ctx.author.display_name} chooses {choice}!")
 
 
+# Create Blueprint objects to split functionality across modules
+bp = DiscordInteractionsBlueprint()
+
+
+# Use them just like the DiscordInteractions object
+@bp.command()
+def blue(ctx):
+    return ":blue_circle:"
+
+
+# Register them to the DiscordInteractions object
+discord.register_blueprint(bp)
+
+
+# You can continue to send followup messages from background processes
+@discord.command()
+def followup(ctx):
+    def do_followup():
+        print("Followup task started")
+        time.sleep(5)
+        print("Editing original message")
+        ctx.edit("Editing my original message")
+        time.sleep(5)
+        print("Deleting original message")
+        ctx.delete()
+        time.sleep(5)
+        print("Sending new message")
+        new_message = ctx.send("Sending a new message")
+        time.sleep(5)
+        print("Editing new message")
+        ctx.edit("Editing a new message", message=new_message)
+
+    thread = threading.Thread(target=do_followup)
+    thread.start()
+
+    return "Sending an original message"
+
+
+# This is the URL that your app will listen for Discord Interactions on
+# Put this into the developer portal
 discord.set_route("/interactions")
 
 
+# Useful for hosting other content through your app
 @app.route("/")
 def index():
     return "Normal Flask routes work too!"
 
 
+# Clear old slash commands with this (optional, useful mostly for dev)
 discord.clear_slash_commands(guild_id=os.environ["TESTING_GUILD"])
+# Register slash commands with this
+# (omit guild_id parameter to register global commands,
+# but note that these can take up to 1 hour to be registered)
 discord.register_slash_commands(guild_id=os.environ["TESTING_GUILD"])
 
 

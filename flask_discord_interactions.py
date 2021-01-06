@@ -65,7 +65,10 @@ class InteractionContext:
             return ("https://cdn.discordapp.com/avatars/"
                     f"{self.id}/{self.avatar_hash}.png")
 
-    def __init__(self, data=None):
+    def __init__(self, discord, app, data=None):
+        self.client_id = app.config["DISCORD_CLIENT_ID"]
+        self.auth_headers = discord.auth_headers(app)
+
         if data:
             self.author = self.InteractionAuthor(data["member"])
             self.id = data["id"]
@@ -75,6 +78,42 @@ class InteractionContext:
             self.options = data["data"].get("options")
             self.command_name = data["data"]["name"]
             self.command_id = data["data"]["id"]
+
+    def followup_url(self, message=None):
+        url = ("https://discord.com/api/v8/webhooks/"
+               f"{self.client_id}/{self.token}")
+        if message is not None:
+            url += f"/messages/{message}"
+
+        return url
+
+    def edit(self, response, message="@original"):
+        response = InteractionResponse.from_return_value(response)
+
+        response = requests.patch(
+            self.followup_url(message),
+            json=response.dump_followup(),
+            headers=self.auth_headers
+        )
+        response.raise_for_status()
+
+    def delete(self, message="@original"):
+        response = requests.delete(
+            self.followup_url(message),
+            headers=self.auth_headers
+        )
+        response.raise_for_status()
+
+    def send(self, response):
+        response = InteractionResponse.from_return_value(response)
+
+        response = requests.post(
+            self.followup_url(),
+            json=response.dump_followup(),
+            headers=self.auth_headers
+        )
+        response.raise_for_status()
+        return response.json()["id"]
 
 
 class InteractionResponse:
@@ -105,6 +144,15 @@ class InteractionResponse:
             else:
                 self.response_type = InteractionResponseType.ACKNOWLEDGE
 
+    @staticmethod
+    def from_return_value(result):
+        if result is None:
+            return InteractionResponse()
+        elif isinstance(result, InteractionResponse):
+            return result
+        else:
+            return InteractionResponse(str(result))
+
     def dump(self):
         return {
             "type": self.response_type,
@@ -114,6 +162,14 @@ class InteractionResponse:
                 "embeds": self.embeds,
                 "allowed_mentions": self.allowed_mentions
             }
+        }
+
+    def dump_followup(self):
+        return {
+            "content": self.content,
+            "tts": self.tts,
+            "embeds": self.embeds,
+            "allowed_mentions": self.allowed_mentions
         }
 
 
@@ -133,9 +189,32 @@ class SlashCommand:
             kwargs[option["name"]] = option["value"]
         return kwargs
 
-    def run(self, data):
-        context = InteractionContext(data)
+    def run(self, discord, app, data):
+        context = InteractionContext(discord, app, data)
         return self.command(context, **self.create_kwargs(data))
+
+
+class DiscordInteractionsBlueprint:
+    def __init__(self):
+        self.discord_commands = {}
+
+    def add_slash_command(self, command, name=None,
+                          description=None, options=[]):
+        slash_command = SlashCommand(command, name, description, options)
+        self.discord_commands[name] = slash_command
+
+    def command(self, name=None, description=None, options=[]):
+        "Decorator to create a Slash Command"
+        def decorator(func):
+            nonlocal name, description, options
+            if name is None:
+                name = func.__name__
+            if description is None:
+                description = func.__doc__ or "No description"
+            self.add_slash_command(func, name, description, options)
+            return func
+
+        return decorator
 
 
 class DiscordInteractions:
@@ -249,11 +328,17 @@ class DiscordInteractions:
             if name is None:
                 name = func.__name__
             if description is None:
-                description = func.__doc__
+                description = func.__doc__ or "No description"
             self.add_slash_command(func, app, name, description, options)
             return func
 
         return decorator
+
+    def register_blueprint(self, blueprint, app=None):
+        if app is None:
+            app = self.app
+
+        app.discord_commands.update(blueprint.discord_commands)
 
     def verify_signature(self, data, signature, timestamp):
         message = timestamp.encode() + data
@@ -274,7 +359,7 @@ class DiscordInteractions:
         if slash_command is None:
             raise ValueError(f"Invalid command name: {slash_command}")
 
-        return slash_command.run(data)
+        return slash_command.run(self, current_app, data)
 
     def set_route(self, route, app=None):
         if app is None:
@@ -298,15 +383,6 @@ class DiscordInteractions:
 
             result = self.run_command(request.json)
 
-            response = {}
-
-            if result is None:
-                response = InteractionResponse()
-            elif isinstance(result, str):
-                response = InteractionResponse(result)
-            elif isinstance(result, InteractionResponse):
-                response = result
-            else:
-                raise ValueError("Command returned invalid response")
+            response = InteractionResponse.from_return_value(result)
 
             return jsonify(response.dump())
