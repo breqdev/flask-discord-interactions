@@ -122,6 +122,7 @@ discord.register_blueprint(bp)
 
 
 # You can continue to send followup messages from background processes
+# You can also send files now (although you can't with the initial response)
 @discord.command()
 def followup(ctx):
     def do_followup():
@@ -129,6 +130,11 @@ def followup(ctx):
         time.sleep(5)
         print("Editing original message")
         ctx.edit("Editing my original message")
+        time.sleep(5)
+        print("Sending a file")
+        ctx.send(InteractionResponse(
+            content="Sending a file",
+            file=("README.md", open("README.md", "r"), "text/markdown")))
         time.sleep(5)
         print("Deleting original message")
         ctx.delete()
@@ -143,6 +149,21 @@ def followup(ctx):
     thread.start()
 
     return "Sending an original message"
+
+
+# Here's a workaround you can do to send a file immediately
+@discord.command()
+def sendfile(ctx):
+    def do_send():
+        ctx.send(InteractionResponse(
+            content="Here's my file!",
+            file=("README.md", open("README.md", "r"), "text/markdown")
+        ))
+
+    thread = threading.Thread(target=do_send)
+    thread.start()
+
+    return None
 
 
 # This is the URL that your app will listen for Discord Interactions on

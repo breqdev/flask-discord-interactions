@@ -1,4 +1,5 @@
 import time
+import json
 
 import requests
 
@@ -109,8 +110,8 @@ class InteractionContext:
 
         response = requests.post(
             self.followup_url(),
-            json=response.dump_followup(),
-            headers=self.auth_headers
+            headers=self.auth_headers,
+            **response.dump_multipart()
         )
         response.raise_for_status()
         return response.json()["id"]
@@ -119,7 +120,7 @@ class InteractionContext:
 class InteractionResponse:
     def __init__(self, content=None, *, tts=False, embed=None, embeds=None,
                  allowed_mentions={"parse": ["roles", "users", "everyone"]},
-                 with_source=True):
+                 with_source=True, file=None, files=None):
         self.content = content
         self.tts = tts
 
@@ -127,8 +128,14 @@ class InteractionResponse:
             raise ValueError("Specify only one of embed or embeds")
         if embed is not None:
             embeds = [embed]
-
         self.embeds = embeds
+
+        if file is not None and files is not None:
+            raise ValueError("Specify only one of file or files")
+        if file is not None:
+            files = [file]
+        self.files = files
+
         self.allowed_mentions = allowed_mentions
 
         if self.embeds is not None or self.content is not None:
@@ -171,6 +178,18 @@ class InteractionResponse:
             "embeds": self.embeds,
             "allowed_mentions": self.allowed_mentions
         }
+
+    def dump_multipart(self):
+        if self.files:
+            payload_json = json.dumps(self.dump_followup())
+
+            multipart = []
+            for file in self.files:
+                multipart.append(("file", file))
+
+            return {"data": {"payload_json": payload_json}, "files": multipart}
+        else:
+            return {"json": self.dump_followup()}
 
 
 class SlashCommand:
