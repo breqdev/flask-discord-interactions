@@ -183,12 +183,12 @@ def index():
     return "Normal Flask routes work too!"
 
 
-# Clear old slash commands with this (optional, useful mostly for dev)
-discord.clear_slash_commands(guild_id=os.environ["TESTING_GUILD"])
 # Register slash commands with this
 # (omit guild_id parameter to register global commands,
 # but note that these can take up to 1 hour to be registered)
 discord.register_slash_commands(guild_id=os.environ["TESTING_GUILD"])
+# Clear old slash commands with this (optional, useful mostly for dev)
+discord.clear_slash_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
 if __name__ == '__main__':

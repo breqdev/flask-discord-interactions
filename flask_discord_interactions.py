@@ -279,7 +279,7 @@ class DiscordInteractions:
             self.fetch_token(app)
         return {"Authorization": f"Bearer {app.discord_token['access_token']}"}
 
-    def clear_slash_commands(self, app=None, guild_id=None):
+    def clear_slash_commands(self, app=None, guild_id=None, only_unused=True):
         if app is None:
             app = self.app
 
@@ -296,6 +296,9 @@ class DiscordInteractions:
 
         for command in response.json():
             id = command["id"]
+
+            if command["name"] in app.discord_commands and only_unused:
+                continue
 
             if guild_id:
                 url = ("https://discord.com/api/v8/applications/"
