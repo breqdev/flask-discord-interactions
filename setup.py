@@ -14,7 +14,7 @@ setup(
     description='A Flask extension for Discord slash commands.',
     long_description=readme,
     long_description_content_type="text/markdown",
-    py_modules=['flask_discord_interactions'],
+    packages=['flask_discord_interactions'],
     zip_safe=False,
     include_package_data=True,
     platforms='any',
