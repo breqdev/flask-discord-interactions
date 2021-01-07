@@ -279,9 +279,11 @@ class DiscordInteractions:
             self.fetch_token(app)
         return {"Authorization": f"Bearer {app.discord_token['access_token']}"}
 
-    def clear_slash_commands(self, app=None, guild_id=None, only_unused=True):
+    def update_slash_commands(self, app=None, guild_id=None):
         if app is None:
             app = self.app
+
+        needed = app.discord_commands.copy()
 
         if guild_id:
             url = ("https://discord.com/api/v8/applications/"
@@ -293,37 +295,34 @@ class DiscordInteractions:
 
         response = requests.get(url, headers=self.auth_headers(app))
         response.raise_for_status()
+        current = response.json()
 
-        for command in response.json():
+        for command in current:
+            if command["name"] in needed:
+                target = needed[command["name"]]
+                if command["description"] == target.description:
+                    if (not command.get("options") and not target.options
+                            or command.get("options") == target.options):
+                        del needed[command["name"]]
+
+                        target.id = command["id"]
+                        continue
+
             id = command["id"]
-
-            if command["name"] in app.discord_commands and only_unused:
-                continue
-
             if guild_id:
-                url = ("https://discord.com/api/v8/applications/"
-                       f"{app.config['DISCORD_CLIENT_ID']}/"
-                       f"guilds/{guild_id}/commands/{id}")
+                delete_url = ("https://discord.com/api/v8/applications/"
+                              f"{app.config['DISCORD_CLIENT_ID']}/"
+                              f"guilds/{guild_id}/commands/{id}")
             else:
-                url = ("https://discord.com/api/v8/applications/"
-                       f"{app.config['DISCORD_CLIENT_ID']}/commands/{id}")
+                delete_url = (
+                    "https://discord.com/api/v8/applications/"
+                    f"{app.config['DISCORD_CLIENT_ID']}/commands/{id}")
 
-            response = requests.delete(url, headers=self.auth_headers(app))
+            response = requests.delete(
+                delete_url, headers=self.auth_headers(app))
             response.raise_for_status()
 
-    def register_slash_commands(self, app=None, guild_id=None):
-        if app is None:
-            app = self.app
-
-        for command in app.discord_commands.values():
-            if guild_id:
-                url = ("https://discord.com/api/v8/applications/"
-                       f"{app.config['DISCORD_CLIENT_ID']}/"
-                       f"guilds/{guild_id}/commands")
-            else:
-                url = ("https://discord.com/api/v8/applications/"
-                       f"{app.config['DISCORD_CLIENT_ID']}/commands")
-
+        for name, command in needed.items():
             json = {
                 "name": command.name,
                 "description": command.description,
