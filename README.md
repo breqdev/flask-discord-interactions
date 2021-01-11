@@ -31,8 +31,7 @@ def ping(ctx):
 discord.set_route("/interactions")
 
 
-discord.clear_slash_commands(guild_id=os.environ["TESTING_GUILD"])
-discord.register_slash_commands(guild_id=os.environ["TESTING_GUILD"])
+discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
 if __name__ == '__main__':

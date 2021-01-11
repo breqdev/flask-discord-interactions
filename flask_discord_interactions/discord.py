@@ -72,7 +72,7 @@ class DiscordInteractions:
         )
 
         response.raise_for_status()
-        app.discord_token = response.json()  # TODO: handle token expiration
+        app.discord_token = response.json()
         app.discord_token["expires_on"] = (time.time()
                                            + app.discord_token["expires_in"]/2)
 
