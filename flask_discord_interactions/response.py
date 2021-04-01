@@ -3,17 +3,14 @@ import json
 
 class InteractionResponseType:
     PONG = 1
-    ACKNOWLEDGE = 2  # DEPRECATED
-    CHANNEL_MESSAGE = 3  # DEPRECATED
     CHANNEL_MESSAGE_WITH_SOURCE = 4
-    ACKNOWLEDGE_WITH_SOURCE = 5  # (renamed, old name kept for compatibility)
     DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE = 5
 
 
 class InteractionResponse:
     def __init__(self, content=None, *, tts=False, embed=None, embeds=None,
                  allowed_mentions={"parse": ["roles", "users", "everyone"]},
-                 with_source=True, file=None, files=None):
+                 deferred=False, file=None, files=None):
         self.content = content
         self.tts = tts
 
@@ -31,18 +28,17 @@ class InteractionResponse:
 
         self.allowed_mentions = allowed_mentions
 
-        if self.embeds is not None or self.content is not None:
-            if with_source:
-                self.response_type = \
-                    InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE
-            else:
-                self.response_type = InteractionResponseType.CHANNEL_MESSAGE
+        if deferred:
+            self.response_type = \
+                InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
         else:
-            if with_source:
-                self.response_type = \
-                    InteractionResponseType.ACKNOWLEDGE_WITH_SOURCE
-            else:
-                self.response_type = InteractionResponseType.ACKNOWLEDGE
+            self.response_type = \
+                InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE
+
+        if (self.content is None and self.embeds is None
+                and self.files is None and not deferred):
+            raise ValueError(
+                "Supply at least one of content, embeds, files, or deferred.")
 
     @staticmethod
     def from_return_value(result):

@@ -1,9 +1,14 @@
+import sys
 import os
 import threading
 import time
+import urllib.parse
 
 from flask import Flask
-from flask_discord_interactions import (DiscordInteractions,
+
+sys.path.insert(1, ".")
+
+from flask_discord_interactions import (DiscordInteractions,  # noqa: E402
                                         DiscordInteractionsBlueprint,
                                         InteractionResponse,
                                         CommandOptionType)
@@ -61,7 +66,6 @@ def _avatar(ctx):
 # Refer to the Discord API documentation for details
 # The CommandOptionType enum is helpful
 # Options are passed as keyword arguments to the function
-# Use "with_source=False" to supress the original command message
 @discord.command(options=[{
     "name": "message",
     "description": "The message to repeat",
@@ -73,16 +77,7 @@ def repeat(ctx, message):
     return InteractionResponse(
         f"{ctx.author.display_name} says {message}!",
         allowed_mentions={"parse": []},
-        with_source=False
     )
-
-
-# Return None to not send a response
-@discord.command()
-def noop(ctx):
-    "Do nothing."
-    print(ctx.token)
-    return None
 
 
 # Define choices in the options JSON, see Discord API docs for details
@@ -105,6 +100,125 @@ def noop(ctx):
 def favorite(ctx, choice):
     "What is your favorite animal?"
     return InteractionResponse(f"{ctx.author.display_name} chooses {choice}!")
+
+
+# You can define subcommands as options in the JSON as well
+# The subcommand name is received as a positional argument
+@discord.command(options=[
+    {
+        "name": "google",
+        "description": "Search with Google",
+        "type": CommandOptionType.SUB_COMMAND,
+        "options": [{
+            "name": "query",
+            "description": "Search query",
+            "type": CommandOptionType.STRING,
+            "required": True
+        }]
+    },
+    {
+        "name": "bing",
+        "description": "Search with Bing",
+        "type": CommandOptionType.SUB_COMMAND,
+        "options": [{
+            "name": "query",
+            "description": "Search query",
+            "type": CommandOptionType.STRING,
+            "required": True
+        }]
+    },
+    {
+        "name": "yahoo",
+        "description": "Search with Yahoo",
+        "type": CommandOptionType.SUB_COMMAND,
+        "options": [{
+            "name": "query",
+            "description": "Search query",
+            "type": CommandOptionType.STRING,
+            "required": True
+        }]
+    }
+])
+def search(ctx, subcommand, *, query):
+    "Search the Internet!"
+    quoted = urllib.parse.quote_plus(query)
+    if subcommand == "google":
+        return f"https://google.com/search?q={quoted}"
+    if subcommand == "bing":
+        return f"https://bing.com/search?q={quoted}"
+    if subcommand == "yahoo":
+        return f"https://yahoo.com/search?q={quoted}"
+
+
+# Subcommand groups are also supported
+@discord.command(options=[
+    {
+        "name": "to",
+        "description": "Convert a number into a certain base",
+        "type": CommandOptionType.SUB_COMMAND_GROUP,
+        "options": [
+            {
+                "name": "bin",
+                "description": "Convert a number to binary",
+                "type": CommandOptionType.SUB_COMMAND,
+                "options": [{
+                    "name": "number",
+                    "description": "The number to convert",
+                    "type": CommandOptionType.INTEGER
+                }]
+            },
+            {
+                "name": "hex",
+                "description": "Convert a number to hexadecimal",
+                "type": CommandOptionType.SUB_COMMAND,
+                "options": [{
+                    "name": "number",
+                    "description": "The number to convert",
+                    "type": CommandOptionType.INTEGER
+                }]
+            }
+        ]
+    },
+    {
+        "name": "from",
+        "description": "Convert a number to base 10",
+        "type": CommandOptionType.SUB_COMMAND_GROUP,
+        "options": [
+            {
+                "name": "bin",
+                "description": "Convert a number from binary",
+                "type": CommandOptionType.SUB_COMMAND,
+                "options": [{
+                    "name": "number",
+                    "description": "The number to convert",
+                    "type": CommandOptionType.STRING
+                }]
+            },
+            {
+                "name": "hex",
+                "description": "Convert a number from hexadecimal",
+                "type": CommandOptionType.SUB_COMMAND,
+                "options": [{
+                    "name": "number",
+                    "description": "The number to convert",
+                    "type": CommandOptionType.STRING
+                }]
+            }
+        ]
+    }
+])
+def base(ctx, command, subcommand, *, number):
+    "Convert a number between bases"
+    if command == "to":
+        if subcommand == "bin":
+            return bin(number)
+        elif subcommand == "hex":
+            return hex(number)
+    elif command == "from":
+        if subcommand == "bin":
+            return int(number, base=2)
+        elif subcommand == "hex":
+            return int(number, base=16)
 
 
 # Create Blueprint objects to split functionality across modules
@@ -151,23 +265,25 @@ def followup(ctx):
     return "Sending an original message"
 
 
-# Here's a workaround you can do to send a file immediately
+# You can set deferred=True to display a loading state to the user
 @discord.command()
-def sendfile(ctx):
-    def do_send():
-        ctx.send(InteractionResponse(
-            content="Here's my file!",
-            file=("README.md", open("README.md", "r"), "text/markdown")
-        ))
+def long_calculation(ctx):
+    def do_calculation():
+        # pretend this takes a really long time
+        result = 2 + 2
 
-    thread = threading.Thread(target=do_send)
+        time.sleep(10)
+
+        ctx.edit(f"Result: {result}")
+
+    thread = threading.Thread(target=do_calculation)
     thread.start()
 
-    return None
+    return InteractionResponse(deferred=True)
 
 
 # Here's an invalid command just to test things out
-# @discord.command(name="s", description="name to short")
+# @discord.command(name="s", description="name too short")
 # def invalid(ctx):
 #     return "This will never work..."
 

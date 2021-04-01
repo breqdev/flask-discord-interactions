@@ -19,15 +19,26 @@ class SlashCommand:
         self.description = description
         self.options = options
 
-    def create_kwargs(self, data):
-        if "options" not in data["data"]:
-            return {}
+    def create_args(self, data):
+        if "options" not in data:
+            return [], {}
 
+        args = []
         kwargs = {}
-        for option in data["data"]["options"]:
-            kwargs[option["name"]] = option["value"]
-        return kwargs
+        for option in data["options"]:
+            if option["type"] in [
+                    CommandOptionType.SUB_COMMAND,
+                    CommandOptionType.SUB_COMMAND_GROUP]:
+                args.append(option["name"])
+                sub_args, sub_kwargs = self.create_args(option)
+                args += sub_args
+                kwargs.update(sub_kwargs)
+            else:
+                kwargs[option["name"]] = option["value"]
+
+        return args, kwargs
 
     def run(self, discord, app, data):
         context = InteractionContext(discord, app, data)
-        return self.command(context, **self.create_kwargs(data))
+        args, kwargs = self.create_args(data["data"])
+        return self.command(context, *args, **kwargs)
