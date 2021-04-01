@@ -80,6 +80,78 @@ def repeat(ctx, message):
     )
 
 
+# You can access data about users with the context object
+@discord.command(description="Show someone else's user info", options=[{
+    "name": "user",
+    "description": "The user to show information about",
+    "type": CommandOptionType.USER,
+    "required": True
+}])
+def avatar_of(ctx, user):
+    return InteractionResponse(embed={
+        "title": user.display_name,
+        "description": "Avatar Info",
+        "fields": [
+            {
+                "name": "Username",
+                "value": (f"**{user.username}**"
+                          f"#{user.discriminator}")
+            },
+            {
+                "name": "User ID",
+                "value": user.id
+            }
+        ],
+        "image": {"url": user.avatar_url}
+    })
+
+
+# Role info is also available
+@discord.command(options=[
+    {
+        "name": "user",
+        "description": "The user to show information about",
+        "type": CommandOptionType.USER,
+        "required": True
+    },
+    {
+        "name": "role",
+        "description": "The role to show information about",
+        "type": CommandOptionType.ROLE,
+        "required": True
+    }
+])
+def has_role(ctx, user, role):
+    if role.id in user.roles:
+        return f"Yes, user {user.display_name} has role {role.name}."
+    else:
+        return f"No, user {user.display_name} does not have role {role.name}."
+
+
+# Channel info, too!
+@discord.command(options=[{
+    "name": "channel",
+    "description": "The channel to show information about",
+    "type": CommandOptionType.CHANNEL,
+    "required": True
+}])
+def channel_info(ctx, channel):
+    return InteractionResponse(embed={
+        "title": channel.name,
+        "description": channel.topic,
+        "fields": [
+            {
+                "name": "Channel ID",
+                "value": channel.id
+            },
+            {
+                "name": "NSFW?",
+                "value": "Yes" if channel.nsfw else "No"
+            }
+        ]
+    })
+
+
 # Define choices in the options JSON, see Discord API docs for details
 @discord.command(options=[{
     "name": "choice",

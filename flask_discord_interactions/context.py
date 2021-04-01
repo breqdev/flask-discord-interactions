@@ -3,45 +3,100 @@ import requests
 from .response import InteractionResponse
 
 
+class CommandOptionType:
+    SUB_COMMAND = 1
+    SUB_COMMAND_GROUP = 2
+    STRING = 3
+    INTEGER = 4
+    BOOLEAN = 5
+    USER = 6
+    CHANNEL = 7
+    ROLE = 8
+
+
+class ChannelType:
+    GUILD_TEXT = 0
+    DM = 1
+    GUILD_VOICE = 2
+    GROUP_DM = 3
+    GUILD_CATEGORY = 4
+    GUILD_NEWS = 5
+    GUILD_STORE = 6
+
+
+class InteractionUser:
+    def __init__(self, data=None):
+        if data:
+            self.id = data.get("id")
+            self.username = data.get("username")
+            self.discriminator = data.get("discriminator")
+            self.avatar_hash = data.get("avatar")
+            self.bot = data.get("bot", False)
+            self.system = data.get("system", False)
+            self.mfa_enabled = data.get("mfa_enabled", False)
+            self.locale = data.get("locale")
+            self.flags = data.get("flags")
+            self.premium_type = data.get("premium_type")
+            self.public_flags = data.get("public_flags")
+
+    @property
+    def display_name(self):
+        return self.username
+
+    @property
+    def avatar_url(self):
+        return ("https://cdn.discordapp.com/avatars/"
+                f"{self.id}/{self.avatar_hash}.png")
+
+
+class InteractionMember(InteractionUser):
+    def __init__(self, data=None):
+        if data:
+            super().__init__(data["user"])
+
+            self.nick = data.get("nick")
+            self.roles = data.get("roles")
+            self.joined_at = data.get("joined_at")
+            self.premium_since = data.get("premium_since")
+            self.deaf = data.get("deaf")
+            self.mute = data.get("mute")
+            self.pending = data.get("pending")
+
+    @property
+    def display_name(self):
+        return self.nick or self.username
+
+
+class InteractionChannel:
+    def __init__(self, data=None):
+        if data:
+            self.id = data.get("id")
+            self.name = data.get("name")
+            self.permissions = data.get("permissions")
+            self.type = data.get("type")
+
+
+class InteractionRole:
+    def __init__(self, data=None):
+        if data:
+            self.id = data.get("id")
+            self.name = data.get("name")
+            self.color = data.get("color")
+            self.hoist = data.get("hoist")
+            self.position = data.get("position")
+            self.permissions = data.get("permissions")
+            self.managed = data.get("managed")
+            self.mentionable = data.get("mentionable")
+            self.tags = data.get("tags", {})
+
+
 class InteractionContext:
-    class InteractionAuthor:
-        def __init__(self, data=None):
-            if data:
-                self.id = data["user"]["id"]
-                self.username = data["user"]["username"]
-                self.discriminator = data["user"]["discriminator"]
-                self.avatar_hash = data["user"]["avatar"]
-                self.bot = data["user"].get("bot", False)
-                self.system = data["user"].get("system", False)
-                self.mfa_enabled = data["user"].get("mfa_enabled", False)
-                self.locale = data["user"].get("locale")
-                self.flags = data["user"].get("flags")
-                self.premium_type = data["user"].get("premium_type")
-                self.public_flags = data["user"].get("public_flags")
-
-                self.nick = data["nick"]
-                self.roles = data["roles"]
-                self.joined_at = data["joined_at"]
-                self.premium_since = data.get("premium_since")
-                self.deaf = data["deaf"]
-                self.mute = data["mute"]
-                self.pending = data.get("pending")
-
-        @property
-        def display_name(self):
-            return self.nick or self.username
-
-        @property
-        def avatar_url(self):
-            return ("https://cdn.discordapp.com/avatars/"
-                    f"{self.id}/{self.avatar_hash}.png")
-
     def __init__(self, discord, app, data=None):
         self.client_id = app.config["DISCORD_CLIENT_ID"]
         self.auth_headers = discord.auth_headers(app)
 
         if data:
-            self.author = self.InteractionAuthor(data["member"])
+            self.author = InteractionMember(data["member"])
             self.id = data["id"]
             self.token = data["token"]
             self.channel_id = data["channel_id"]
@@ -49,6 +104,51 @@ class InteractionContext:
             self.options = data["data"].get("options")
             self.command_name = data["data"]["name"]
             self.command_id = data["data"]["id"]
+
+            self.parse_resolved(data["data"].get("resolved", {}))
+
+    def parse_resolved(self, data):
+        self.members = {}
+        for id in data.get("members", {}):
+            member_info = data["members"][id]
+            member_info["user"] = data["users"][id]
+            self.members[id] = InteractionMember(member_info)
+
+        self.channels = {id: InteractionChannel(data)
+                         for id, data in data.get("channels", {}).items()}
+
+        self.roles = {id: InteractionRole(data)
+                      for id, data in data.get("roles", {}).items()}
+
+    def create_args(self, data, resolved):
+        if "options" not in data:
+            return [], {}
+
+        args = []
+        kwargs = {}
+        for option in data["options"]:
+            if option["type"] in [
+                    CommandOptionType.SUB_COMMAND,
+                    CommandOptionType.SUB_COMMAND_GROUP]:
+                args.append(option["name"])
+                sub_args, sub_kwargs = self.create_args(option, resolved)
+                args += sub_args
+                kwargs.update(sub_kwargs)
+            elif option["type"] == CommandOptionType.USER:
+                member_data = resolved["members"][option["value"]]
+                member_data["user"] = resolved["users"][option["value"]]
+
+                kwargs[option["name"]] = InteractionMember(member_data)
+            elif option["type"] == CommandOptionType.CHANNEL:
+                kwargs[option["name"]] = InteractionChannel(
+                    resolved["channels"][option["value"]])
+            elif option["type"] == CommandOptionType.ROLE:
+                kwargs[option["name"]] = InteractionRole(
+                    resolved["roles"][option["value"]])
+            else:
+                kwargs[option["name"]] = option["value"]
+
+        return args, kwargs
 
     def followup_url(self, message=None):
         url = ("https://discord.com/api/v8/webhooks/"
