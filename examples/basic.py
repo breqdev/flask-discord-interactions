@@ -151,6 +151,7 @@ def search(ctx, subcommand, *, query):
 
 
 # Subcommand groups are also supported
+# Use ephemeral=True to only display the response to the user
 @discord.command(options=[
     {
         "name": "to",
@@ -211,14 +212,16 @@ def base(ctx, command, subcommand, *, number):
     "Convert a number between bases"
     if command == "to":
         if subcommand == "bin":
-            return bin(number)
+            res = bin(number)[2:]
         elif subcommand == "hex":
-            return hex(number)
+            res = hex(number)[2:]
     elif command == "from":
         if subcommand == "bin":
-            return int(number, base=2)
+            res = str(int(number, base=2))
         elif subcommand == "hex":
-            return int(number, base=16)
+            res = str(int(number, base=16))
+
+    return InteractionResponse(f"Result: {res}", ephemeral=True)
 
 
 # Create Blueprint objects to split functionality across modules

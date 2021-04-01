@@ -10,7 +10,7 @@ class InteractionResponseType:
 class InteractionResponse:
     def __init__(self, content=None, *, tts=False, embed=None, embeds=None,
                  allowed_mentions={"parse": ["roles", "users", "everyone"]},
-                 deferred=False, file=None, files=None):
+                 deferred=False, ephemeral=False, file=None, files=None):
         self.content = content
         self.tts = tts
 
@@ -35,6 +35,8 @@ class InteractionResponse:
             self.response_type = \
                 InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE
 
+        self.flags = 64 if ephemeral else 0
+
         if (self.content is None and self.embeds is None
                 and self.files is None and not deferred):
             raise ValueError(
@@ -56,7 +58,8 @@ class InteractionResponse:
                 "content": self.content,
                 "tts": self.tts,
                 "embeds": self.embeds,
-                "allowed_mentions": self.allowed_mentions
+                "allowed_mentions": self.allowed_mentions,
+                "flags": self.flags
             }
         }
 
