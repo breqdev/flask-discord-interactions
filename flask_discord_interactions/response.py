@@ -3,10 +3,11 @@ import json
 
 class InteractionResponseType:
     PONG = 1
-    ACKNOWLEDGE = 2
-    CHANNEL_MESSAGE = 3
+    ACKNOWLEDGE = 2  # DEPRECATED
+    CHANNEL_MESSAGE = 3  # DEPRECATED
     CHANNEL_MESSAGE_WITH_SOURCE = 4
-    ACKNOWLEDGE_WITH_SOURCE = 5
+    ACKNOWLEDGE_WITH_SOURCE = 5  # (renamed, old name kept for compatibility)
+    DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE = 5
 
 
 class InteractionResponse:
