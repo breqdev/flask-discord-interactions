@@ -1,13 +1,13 @@
 import json
 
 
-class InteractionResponseType:
+class ResponseType:
     PONG = 1
     CHANNEL_MESSAGE_WITH_SOURCE = 4
     DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE = 5
 
 
-class InteractionResponse:
+class Response:
     def __init__(self, content=None, *, tts=False, embed=None, embeds=None,
                  allowed_mentions={"parse": ["roles", "users", "everyone"]},
                  deferred=False, ephemeral=False, file=None, files=None):
@@ -30,10 +30,10 @@ class InteractionResponse:
 
         if deferred:
             self.response_type = \
-                InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
+                ResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
         else:
             self.response_type = \
-                InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE
+                ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
 
         self.flags = 64 if ephemeral else 0
 
@@ -45,11 +45,11 @@ class InteractionResponse:
     @staticmethod
     def from_return_value(result):
         if result is None:
-            return InteractionResponse()
-        elif isinstance(result, InteractionResponse):
+            return Response()
+        elif isinstance(result, Response):
             return result
         else:
-            return InteractionResponse(str(result))
+            return Response(str(result))
 
     def dump(self):
         return {

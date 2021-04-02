@@ -7,8 +7,8 @@ from flask import current_app, request, jsonify
 from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
 
-from .command import SlashCommand
-from .response import InteractionResponse, InteractionResponseType
+from .command import SlashCommand, SlashCommandGroup
+from .response import Response, ResponseType
 
 
 class InteractionType:
@@ -21,26 +21,33 @@ class DiscordInteractionsBlueprint:
         self.discord_commands = {}
 
     def add_slash_command(self, command, name=None,
-                          description=None, options=[]):
-        slash_command = SlashCommand(command, name, description, options)
-        self.discord_commands[name] = slash_command
+                          description=None, options=None, annotations=None):
+        slash_command = SlashCommand(
+            command, name, description, options, annotations)
+        self.discord_commands[slash_command.name] = slash_command
 
-    def command(self, name=None, description=None, options=[]):
+    def command(self, name=None, description=None,
+                options=None, annotations=None):
         "Decorator to create a Slash Command"
+
         def decorator(func):
             nonlocal name, description, options
-            if name is None:
-                name = func.__name__
-            if description is None:
-                description = func.__doc__ or "No description"
-            self.add_slash_command(func, name, description, options)
+            self.add_slash_command(
+                func, name, description, options, annotations)
             return func
 
         return decorator
 
+    def command_group(self, name, description="No description"):
+        group = SlashCommandGroup(name, description)
+        self.discord_commands[name] = group
+        return group
 
-class DiscordInteractions:
+
+class DiscordInteractions(DiscordInteractionsBlueprint):
     def __init__(self, app=None):
+        super().__init__()
+
         self.app = app
         if app is not None:
             self.init_app(app)
@@ -49,7 +56,7 @@ class DiscordInteractions:
         app.config.setdefault("DISCORD_CLIENT_ID", "")
         app.config.setdefault("DISCORD_PUBLIC_KEY", "")
         app.config.setdefault("DISCORD_CLIENT_SECRET", "")
-        app.discord_commands = {}
+        app.discord_commands = self.discord_commands
         app.discord_token = None
 
     def fetch_token(self, app=None):
@@ -126,50 +133,15 @@ class DiscordInteractions:
             response.raise_for_status()
 
         for name, command in needed.items():
-            json = {
-                "name": command.name,
-                "description": command.description,
-                "options": command.options
-            }
-
             response = requests.post(
-                url, json=json, headers=self.auth_headers(app))
+                url, json=command.dump(), headers=self.auth_headers(app))
             try:
                 response.raise_for_status()
             except requests.exceptions.HTTPError:
                 raise ValueError(
-                    f"Unable to register command {command.name} with {json}\n"
+                    f"Unable to register command {command.name}\n"
                     f"{response.status_code} {response.text}")
             command.id = response.json()["id"]
-
-    def add_slash_command(self, command, app=None, name=None,
-                          description=None, options=[]):
-        if not 3 <= len(name) <= 32:
-            raise ValueError(
-                f"Error adding command {name}: "
-                "Command name must be between 3 and 32 characters.")
-        if not 1 <= len(description) <= 100:
-            raise ValueError(
-                f"Error adding command {name}: "
-                "Command description must be between 1 and 100 characters.")
-        slash_command = SlashCommand(command, name, description, options)
-        app.discord_commands[name] = slash_command
-
-    def command(self, app=None, name=None, description=None, options=[]):
-        "Decorator to create a Slash Command"
-        if app is None:
-            app = self.app
-
-        def decorator(func):
-            nonlocal app, name, description, options
-            if name is None:
-                name = func.__name__
-            if description is None:
-                description = func.__doc__ or "No description"
-            self.add_slash_command(func, app, name, description, options)
-            return func
-
-        return decorator
 
     def register_blueprint(self, blueprint, app=None):
         if app is None:
@@ -196,7 +168,7 @@ class DiscordInteractions:
         if slash_command is None:
             raise ValueError(f"Invalid command name: {slash_command}")
 
-        return slash_command.run(self, current_app, data)
+        return slash_command.make_context_and_run(self, current_app, data)
 
     def set_route(self, route, app=None):
         if app is None:
@@ -215,11 +187,11 @@ class DiscordInteractions:
             if (request.json
                     and request.json.get("type") == InteractionType.PING):
                 return jsonify({
-                    "type": InteractionResponseType.PONG
+                    "type": ResponseType.PONG
                 })
 
             result = self.run_command(request.json)
 
-            response = InteractionResponse.from_return_value(result)
+            response = Response.from_return_value(result)
 
             return jsonify(response.dump())

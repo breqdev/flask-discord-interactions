@@ -2,16 +2,18 @@ import sys
 import os
 import threading
 import time
-import urllib.parse
 
 from flask import Flask
 
+# This is just here for the sake of examples testing
+# (you don't actually need it in your code)
 sys.path.insert(1, ".")
 
 from flask_discord_interactions import (DiscordInteractions,  # noqa: E402
                                         DiscordInteractionsBlueprint,
-                                        InteractionResponse,
-                                        CommandOptionType)
+                                        Response,
+                                        CommandOptionType,
+                                        Member, Role, Channel)
 
 
 app = Flask(__name__)
@@ -33,14 +35,13 @@ def ping(ctx):
 
 # You can specify a name and desc explicitly
 # (otherwise it's inferred from function name and docstring)
-# For more complex responses, return an InteractionResponse object
-# You have to define the embed JSON manually
-# Refer to Discord API documentation for details
-# The "ctx" parameter is an InteractionContext object
+# For more complex responses, return an Response object
+# You have to define the embed JSON manually (see API docs)
+# The "ctx" parameter is an Context object
 # it works similarly to Context in Discord.py
 @discord.command(name="avatar", description="Show your user info")
 def _avatar(ctx):
-    return InteractionResponse(embed={
+    return Response(embed={
         "title": ctx.author.display_name,
         "description": "Avatar Info",
         "fields": [
@@ -62,33 +63,21 @@ def _avatar(ctx):
     })
 
 
-# To specify options, include them as a list of JSON objects
-# Refer to the Discord API documentation for details
-# The CommandOptionType enum is helpful
-# Options are passed as keyword arguments to the function
-@discord.command(options=[{
-    "name": "message",
-    "description": "The message to repeat",
-    "type": CommandOptionType.STRING,
-    "required": True
-}])
-def repeat(ctx, message):
+# To specify options, include them with type annotations, just like Discord.py
+@discord.command(annotations={"message": "The message to repeat"})
+def repeat(ctx, message: str = "Hello!"):
     "Repeat the message (and escape mentions)"
-    return InteractionResponse(
+    return Response(
         f"{ctx.author.display_name} says {message}!",
         allowed_mentions={"parse": []},
     )
 
 
 # You can access data about users with the context object
-@discord.command(description="Show someone else's user info", options=[{
-    "name": "user",
-    "description": "The user to show information about",
-    "type": CommandOptionType.USER,
-    "required": True
-}])
-def avatar_of(ctx, user):
-    return InteractionResponse(embed={
+@discord.command(annotations={"user": "The user to show information about"})
+def avatar_of(ctx, user: Member):
+    "Show someone else's user info"
+    return Response(embed={
         "title": user.display_name,
         "description": "Avatar Info",
         "fields": [
@@ -107,21 +96,8 @@ def avatar_of(ctx, user):
 
 
 # Role info is also available
-@discord.command(options=[
-    {
-        "name": "user",
-        "description": "The user to show information about",
-        "type": CommandOptionType.USER,
-        "required": True
-    },
-    {
-        "name": "role",
-        "description": "The role to show information about",
-        "type": CommandOptionType.ROLE,
-        "required": True
-    }
-])
-def has_role(ctx, user, role):
+@discord.command()
+def has_role(ctx, user: Member, role: Role):
     if role.id in user.roles:
         return f"Yes, user {user.display_name} has role {role.name}."
     else:
@@ -129,14 +105,9 @@ def has_role(ctx, user, role):
 
 
 # Channel info, too!
-@discord.command(options=[{
-    "name": "channel",
-    "description": "The channel to show information about",
-    "type": CommandOptionType.CHANNEL,
-    "required": True
-}])
-def channel_info(ctx, channel):
-    return InteractionResponse(embed={
+@discord.command()
+def channel_info(ctx, channel: Channel):
+    return Response(embed={
         "title": channel.name,
         "description": channel.topic,
         "fields": [
@@ -171,129 +142,53 @@ def channel_info(ctx, channel):
 }])
 def favorite(ctx, choice):
     "What is your favorite animal?"
-    return InteractionResponse(f"{ctx.author.display_name} chooses {choice}!")
+    return Response(f"{ctx.author.display_name} chooses {choice}!")
 
 
-# You can define subcommands as options in the JSON as well
-# The subcommand name is received as a positional argument
-@discord.command(options=[
-    {
-        "name": "google",
-        "description": "Search with Google",
-        "type": CommandOptionType.SUB_COMMAND,
-        "options": [{
-            "name": "query",
-            "description": "Search query",
-            "type": CommandOptionType.STRING,
-            "required": True
-        }]
-    },
-    {
-        "name": "bing",
-        "description": "Search with Bing",
-        "type": CommandOptionType.SUB_COMMAND,
-        "options": [{
-            "name": "query",
-            "description": "Search query",
-            "type": CommandOptionType.STRING,
-            "required": True
-        }]
-    },
-    {
-        "name": "yahoo",
-        "description": "Search with Yahoo",
-        "type": CommandOptionType.SUB_COMMAND,
-        "options": [{
-            "name": "query",
-            "description": "Search query",
-            "type": CommandOptionType.STRING,
-            "required": True
-        }]
-    }
-])
-def search(ctx, subcommand, *, query):
-    "Search the Internet!"
-    quoted = urllib.parse.quote_plus(query)
-    if subcommand == "google":
-        return f"https://google.com/search?q={quoted}"
-    if subcommand == "bing":
-        return f"https://bing.com/search?q={quoted}"
-    if subcommand == "yahoo":
-        return f"https://yahoo.com/search?q={quoted}"
+# You can use a decorator syntax to define subcommands
+comic = discord.command_group("comic")
+
+
+@comic.command()
+def xkcd(ctx, number: int):
+    return f"https://xkcd.com/{number}/"
+
+
+@comic.command()
+def homestuck(ctx, number: int):
+    return f"https://homestuck.com/story/{number}"
 
 
 # Subcommand groups are also supported
 # Use ephemeral=True to only display the response to the user
-@discord.command(options=[
-    {
-        "name": "to",
-        "description": "Convert a number into a certain base",
-        "type": CommandOptionType.SUB_COMMAND_GROUP,
-        "options": [
-            {
-                "name": "bin",
-                "description": "Convert a number to binary",
-                "type": CommandOptionType.SUB_COMMAND,
-                "options": [{
-                    "name": "number",
-                    "description": "The number to convert",
-                    "type": CommandOptionType.INTEGER
-                }]
-            },
-            {
-                "name": "hex",
-                "description": "Convert a number to hexadecimal",
-                "type": CommandOptionType.SUB_COMMAND,
-                "options": [{
-                    "name": "number",
-                    "description": "The number to convert",
-                    "type": CommandOptionType.INTEGER
-                }]
-            }
-        ]
-    },
-    {
-        "name": "from",
-        "description": "Convert a number to base 10",
-        "type": CommandOptionType.SUB_COMMAND_GROUP,
-        "options": [
-            {
-                "name": "bin",
-                "description": "Convert a number from binary",
-                "type": CommandOptionType.SUB_COMMAND,
-                "options": [{
-                    "name": "number",
-                    "description": "The number to convert",
-                    "type": CommandOptionType.STRING
-                }]
-            },
-            {
-                "name": "hex",
-                "description": "Convert a number from hexadecimal",
-                "type": CommandOptionType.SUB_COMMAND,
-                "options": [{
-                    "name": "number",
-                    "description": "The number to convert",
-                    "type": CommandOptionType.STRING
-                }]
-            }
-        ]
-    }
-])
-def base(ctx, command, subcommand, *, number):
-    "Convert a number between bases"
-    if command == "to":
-        if subcommand == "bin":
-            res = bin(number)[2:]
-        elif subcommand == "hex":
-            res = hex(number)[2:]
-    elif command == "from":
-        if subcommand == "bin":
-            res = str(int(number, base=2))
-        elif subcommand == "hex":
-            res = str(int(number, base=16))
+base = discord.command_group("base", "Convert a number between bases")
 
-    return InteractionResponse(f"Result: {res}", ephemeral=True)
+base_to = base.subgroup("to", "Convert a number into a certain base")
+base_from = base.subgroup("from", "Convert a number out of a certian base")
+
+
+@base_to.command(name="bin")
+def base_to_bin(ctx, number: int):
+    "Convert a number into binary"
+    return Response(bin(number), ephemeral=True)
+
+
+@base_to.command(name="hex")
+def base_to_hex(ctx, number: int):
+    "Convert a number into hexadecimal"
+    return Response(hex(number), ephemeral=True)
+
+
+@base_from.command(name="bin")
+def base_from_bin(ctx, number: str):
+    "Convert a number out of binary"
+    return Response(int(number, base=2), ephemeral=True)
+
+
+@base_from.command(name="hex")
+def base_from_hex(ctx, number: str):
+    "Convert a number out of hexadecimal"
+    return Response(int(number, base=16), ephemeral=True)
 
 
 # Create Blueprint objects to split functionality across modules
@@ -321,7 +216,7 @@ def followup(ctx):
         ctx.edit("Editing my original message")
         time.sleep(5)
         print("Sending a file")
-        ctx.send(InteractionResponse(
+        ctx.send(Response(
             content="Sending a file",
             file=("README.md", open("README.md", "r"), "text/markdown")))
         time.sleep(5)
@@ -342,19 +237,16 @@ def followup(ctx):
 
 # You can set deferred=True to display a loading state to the user
 @discord.command()
-def long_calculation(ctx):
-    def do_calculation():
-        # pretend this takes a really long time
-        result = 2 + 2
+def delay(ctx, duration: int):
+    def do_delay():
+        time.sleep(duration)
 
-        time.sleep(10)
+        ctx.edit("Hiya!")
 
-        ctx.edit(f"Result: {result}")
-
-    thread = threading.Thread(target=do_calculation)
+    thread = threading.Thread(target=do_delay)
     thread.start()
 
-    return InteractionResponse(deferred=True)
+    return Response(deferred=True)
 
 
 # Here's an invalid command just to test things out

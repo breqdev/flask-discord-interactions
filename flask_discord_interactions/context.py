@@ -1,6 +1,6 @@
 import requests
 
-from .response import InteractionResponse
+from .response import Response
 
 
 class CommandOptionType:
@@ -24,7 +24,7 @@ class ChannelType:
     GUILD_STORE = 6
 
 
-class InteractionUser:
+class User:
     def __init__(self, data=None):
         if data:
             self.id = data.get("id")
@@ -49,7 +49,7 @@ class InteractionUser:
                 f"{self.id}/{self.avatar_hash}.png")
 
 
-class InteractionMember(InteractionUser):
+class Member(User):
     def __init__(self, data=None):
         if data:
             super().__init__(data["user"])
@@ -67,7 +67,7 @@ class InteractionMember(InteractionUser):
         return self.nick or self.username
 
 
-class InteractionChannel:
+class Channel:
     def __init__(self, data=None):
         if data:
             self.id = data.get("id")
@@ -76,7 +76,7 @@ class InteractionChannel:
             self.type = data.get("type")
 
 
-class InteractionRole:
+class Role:
     def __init__(self, data=None):
         if data:
             self.id = data.get("id")
@@ -90,13 +90,13 @@ class InteractionRole:
             self.tags = data.get("tags", {})
 
 
-class InteractionContext:
+class Context:
     def __init__(self, discord, app, data=None):
         self.client_id = app.config["DISCORD_CLIENT_ID"]
         self.auth_headers = discord.auth_headers(app)
 
         if data:
-            self.author = InteractionMember(data["member"])
+            self.author = Member(data["member"])
             self.id = data["id"]
             self.token = data["token"]
             self.channel_id = data["channel_id"]
@@ -112,12 +112,12 @@ class InteractionContext:
         for id in data.get("members", {}):
             member_info = data["members"][id]
             member_info["user"] = data["users"][id]
-            self.members[id] = InteractionMember(member_info)
+            self.members[id] = Member(member_info)
 
-        self.channels = {id: InteractionChannel(data)
+        self.channels = {id: Channel(data)
                          for id, data in data.get("channels", {}).items()}
 
-        self.roles = {id: InteractionRole(data)
+        self.roles = {id: Role(data)
                       for id, data in data.get("roles", {}).items()}
 
     def create_args(self, data, resolved):
@@ -138,12 +138,12 @@ class InteractionContext:
                 member_data = resolved["members"][option["value"]]
                 member_data["user"] = resolved["users"][option["value"]]
 
-                kwargs[option["name"]] = InteractionMember(member_data)
+                kwargs[option["name"]] = Member(member_data)
             elif option["type"] == CommandOptionType.CHANNEL:
-                kwargs[option["name"]] = InteractionChannel(
+                kwargs[option["name"]] = Channel(
                     resolved["channels"][option["value"]])
             elif option["type"] == CommandOptionType.ROLE:
-                kwargs[option["name"]] = InteractionRole(
+                kwargs[option["name"]] = Role(
                     resolved["roles"][option["value"]])
             else:
                 kwargs[option["name"]] = option["value"]
@@ -159,7 +159,7 @@ class InteractionContext:
         return url
 
     def edit(self, response, message="@original"):
-        response = InteractionResponse.from_return_value(response)
+        response = Response.from_return_value(response)
 
         response = requests.patch(
             self.followup_url(message),
@@ -176,7 +176,7 @@ class InteractionContext:
         response.raise_for_status()
 
     def send(self, response):
-        response = InteractionResponse.from_return_value(response)
+        response = Response.from_return_value(response)
 
         response = requests.post(
             self.followup_url(),
