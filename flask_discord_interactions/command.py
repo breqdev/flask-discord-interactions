@@ -1,7 +1,7 @@
 import inspect
 import itertools
 
-from .context import (InteractionContext, CommandOptionType,
+from .context import (Context, CommandOptionType,
                       User, Member, Channel, Role)
 
 
@@ -60,7 +60,7 @@ class SlashCommand:
                 self.options.append(option)
 
     def make_context_and_run(self, discord, app, data):
-        context = InteractionContext(discord, app, data)
+        context = Context(discord, app, data)
         args, kwargs = context.create_args(
             data["data"], resolved=data["data"].get("resolved"))
         return self.run(context, *args, **kwargs)
@@ -115,7 +115,7 @@ class SlashCommandSubgroup(SlashCommand):
 
 class SlashCommandGroup(SlashCommandSubgroup):
     def make_context_and_run(self, discord, app, data):
-        context = InteractionContext(discord, app, data)
+        context = Context(discord, app, data)
         subcommands, kwargs = context.create_args(
             data["data"], resolved=data["data"].get("resolved"))
 

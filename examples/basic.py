@@ -37,7 +37,7 @@ def ping(ctx):
 # (otherwise it's inferred from function name and docstring)
 # For more complex responses, return an Response object
 # You have to define the embed JSON manually (see API docs)
-# The "ctx" parameter is an InteractionContext object
+# The "ctx" parameter is an Context object
 # it works similarly to Context in Discord.py
 @discord.command(name="avatar", description="Show your user info")
 def _avatar(ctx):

@@ -90,7 +90,7 @@ class Role:
             self.tags = data.get("tags", {})
 
 
-class InteractionContext:
+class Context:
     def __init__(self, discord, app, data=None):
         self.client_id = app.config["DISCORD_CLIENT_ID"]
         self.auth_headers = discord.auth_headers(app)
