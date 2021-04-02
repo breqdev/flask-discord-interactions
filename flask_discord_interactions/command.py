@@ -1,12 +1,17 @@
-from .context import InteractionContext, CommandOptionType
+import inspect
+import itertools
+
+from .context import (InteractionContext, CommandOptionType,
+                      User, Member, Channel, Role)
 
 
 class SlashCommand:
-    def __init__(self, command, name, description, options):
+    def __init__(self, command, name, description, options, annotations):
         self.command = command
         self.name = name
         self.description = description
         self.options = options
+        self.annotations = annotations or {}
 
         if self.name is None:
             self.name = command.__name__
@@ -21,6 +26,38 @@ class SlashCommand:
             raise ValueError(
                 f"Error adding command {self.name}: "
                 "Command description must be between 1 and 100 characters.")
+
+        if self.options is None:
+            sig = inspect.signature(self.command)
+
+            self.options = []
+            for parameter in itertools.islice(
+                    sig.parameters.values(), 1, None):
+
+                if parameter.annotation == int:
+                    ptype = CommandOptionType.INTEGER
+                elif parameter.annotation == bool:
+                    ptype = CommandOptionType.BOOLEAN
+                elif parameter.annotation == str:
+                    ptype = CommandOptionType.STRING
+                elif parameter.annotation in [User, Member]:
+                    ptype = CommandOptionType.USER
+                elif parameter.annotation == Channel:
+                    ptype = CommandOptionType.CHANNEL
+                elif parameter.annotation == Role:
+                    ptype = CommandOptionType.ROLE
+                else:
+                    raise ValueError(
+                        f"Invalid type annotation {parameter.annotation}")
+
+                option = {
+                    "name": parameter.name,
+                    "description": self.annotations.get(
+                        parameter.name, "No description"),
+                    "type": ptype,
+                    "required": (parameter.default == parameter.empty)
+                }
+                self.options.append(option)
 
     def run(self, discord, app, data):
         context = InteractionContext(discord, app, data)
@@ -42,12 +79,14 @@ class SlashCommandGroup(SlashCommand):
         self.description = description
         self.subcommands = {}
 
-    def command(self, name=None, description=None, options=[]):
+    def command(self, name=None, description=None,
+                options=None, annotations=None):
         "Decorator to create a subcommand"
 
         def decorator(func):
-            nonlocal name, description, options
-            subcommand = SlashCommand(func, name, description, options)
+            nonlocal name, description, options, annotations
+            subcommand = SlashCommand(
+                func, name, description, options, annotations)
             self.subcommands[subcommand.name] = subcommand
             return func
 

@@ -21,26 +21,33 @@ class DiscordInteractionsBlueprint:
         self.discord_commands = {}
 
     def add_slash_command(self, command, name=None,
-                          description=None, options=[]):
-        slash_command = SlashCommand(command, name, description, options)
-        self.discord_commands[name] = slash_command
+                          description=None, options=None, annotations=None):
+        slash_command = SlashCommand(
+            command, name, description, options, annotations)
+        self.discord_commands[slash_command.name] = slash_command
 
-    def command(self, name=None, description=None, options=[]):
+    def command(self, name=None, description=None,
+                options=None, annotations=None):
         "Decorator to create a Slash Command"
+
         def decorator(func):
             nonlocal name, description, options
-            if name is None:
-                name = func.__name__
-            if description is None:
-                description = func.__doc__ or "No description"
-            self.add_slash_command(func, name, description, options)
+            self.add_slash_command(
+                func, name, description, options, annotations)
             return func
 
         return decorator
 
+    def command_group(self, name, description="No description"):
+        group = SlashCommandGroup(name, description)
+        self.discord_commands[name] = group
+        return group
 
-class DiscordInteractions:
+
+class DiscordInteractions(DiscordInteractionsBlueprint):
     def __init__(self, app=None):
+        super().__init__()
+
         self.app = app
         if app is not None:
             self.init_app(app)
@@ -49,7 +56,7 @@ class DiscordInteractions:
         app.config.setdefault("DISCORD_CLIENT_ID", "")
         app.config.setdefault("DISCORD_PUBLIC_KEY", "")
         app.config.setdefault("DISCORD_CLIENT_SECRET", "")
-        app.discord_commands = {}
+        app.discord_commands = self.discord_commands
         app.discord_token = None
 
     def fetch_token(self, app=None):
@@ -135,31 +142,6 @@ class DiscordInteractions:
                     f"Unable to register command {command.name}\n"
                     f"{response.status_code} {response.text}")
             command.id = response.json()["id"]
-
-    def add_slash_command(self, command, app=None, name=None,
-                          description=None, options=[]):
-        slash_command = SlashCommand(command, name, description, options)
-        app.discord_commands[name] = slash_command
-
-    def command(self, app=None, name=None, description=None, options=[]):
-        "Decorator to create a Slash Command"
-        if app is None:
-            app = self.app
-
-        def decorator(func):
-            nonlocal app, name, description, options
-            self.add_slash_command(func, app, name, description, options)
-            return func
-
-        return decorator
-
-    def command_group(self, name, description="No description", app=None):
-        if app is None:
-            app = self.app
-
-        group = SlashCommandGroup(name, description)
-        app.discord_commands[name] = group
-        return group
 
     def register_blueprint(self, blueprint, app=None):
         if app is None:
