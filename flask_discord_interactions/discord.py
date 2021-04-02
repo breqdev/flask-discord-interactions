@@ -7,7 +7,7 @@ from flask import current_app, request, jsonify
 from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
 
-from .command import SlashCommand
+from .command import SlashCommand, SlashCommandGroup
 from .response import InteractionResponse, InteractionResponseType
 
 
@@ -126,32 +126,18 @@ class DiscordInteractions:
             response.raise_for_status()
 
         for name, command in needed.items():
-            json = {
-                "name": command.name,
-                "description": command.description,
-                "options": command.options
-            }
-
             response = requests.post(
-                url, json=json, headers=self.auth_headers(app))
+                url, json=command.dump(), headers=self.auth_headers(app))
             try:
                 response.raise_for_status()
             except requests.exceptions.HTTPError:
                 raise ValueError(
-                    f"Unable to register command {command.name} with {json}\n"
+                    f"Unable to register command {command.name}\n"
                     f"{response.status_code} {response.text}")
             command.id = response.json()["id"]
 
     def add_slash_command(self, command, app=None, name=None,
                           description=None, options=[]):
-        if not 3 <= len(name) <= 32:
-            raise ValueError(
-                f"Error adding command {name}: "
-                "Command name must be between 3 and 32 characters.")
-        if not 1 <= len(description) <= 100:
-            raise ValueError(
-                f"Error adding command {name}: "
-                "Command description must be between 1 and 100 characters.")
         slash_command = SlashCommand(command, name, description, options)
         app.discord_commands[name] = slash_command
 
@@ -162,14 +148,18 @@ class DiscordInteractions:
 
         def decorator(func):
             nonlocal app, name, description, options
-            if name is None:
-                name = func.__name__
-            if description is None:
-                description = func.__doc__ or "No description"
             self.add_slash_command(func, app, name, description, options)
             return func
 
         return decorator
+
+    def command_group(self, name, description="No description", app=None):
+        if app is None:
+            app = self.app
+
+        group = SlashCommandGroup(name, description)
+        app.discord_commands[name] = group
+        return group
 
     def register_blueprint(self, blueprint, app=None):
         if app is None:

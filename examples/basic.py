@@ -222,6 +222,30 @@ def search(ctx, subcommand, *, query):
         return f"https://yahoo.com/search?q={quoted}"
 
 
+# Alternatively, you can use a decorator syntax
+comic = discord.command_group("comic")
+
+
+@comic.command(options=[{
+    "name": "number",
+    "description": "Comic Number",
+    "type": CommandOptionType.INTEGER,
+    "required": True
+}])
+def xkcd(ctx, number):
+    return f"https://xkcd.com/{number}/"
+
+
+@comic.command(options=[{
+    "name": "number",
+    "description": "Comic Number",
+    "type": CommandOptionType.INTEGER,
+    "required": True
+}])
+def homestuck(ctx, number):
+    return f"https://homestuck.com/story/{number}"
+
+
 # Subcommand groups are also supported
 # Use ephemeral=True to only display the response to the user
 @discord.command(options=[
