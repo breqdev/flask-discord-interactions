@@ -2,7 +2,7 @@ from .command import SlashCommand, SlashCommandSubgroup, SlashCommandGroup
 from .context import (InteractionContext, CommandOptionType, ChannelType,
                       Member, User, Role, Channel)
 from .discord import DiscordInteractions, DiscordInteractionsBlueprint
-from .response import InteractionResponse, InteractionResponseType
+from .response import Response, ResponseType
 
 
 __all__ = [
@@ -18,6 +18,6 @@ __all__ = [
     Channel,
     DiscordInteractions,
     DiscordInteractionsBlueprint,
-    InteractionResponse,
-    InteractionResponseType
+    Response,
+    ResponseType
 ]

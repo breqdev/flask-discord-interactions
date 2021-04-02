@@ -1,6 +1,6 @@
 import requests
 
-from .response import InteractionResponse
+from .response import Response
 
 
 class CommandOptionType:
@@ -159,7 +159,7 @@ class InteractionContext:
         return url
 
     def edit(self, response, message="@original"):
-        response = InteractionResponse.from_return_value(response)
+        response = Response.from_return_value(response)
 
         response = requests.patch(
             self.followup_url(message),
@@ -176,7 +176,7 @@ class InteractionContext:
         response.raise_for_status()
 
     def send(self, response):
-        response = InteractionResponse.from_return_value(response)
+        response = Response.from_return_value(response)
 
         response = requests.post(
             self.followup_url(),

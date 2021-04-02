@@ -8,7 +8,7 @@ from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
 
 from .command import SlashCommand, SlashCommandGroup
-from .response import InteractionResponse, InteractionResponseType
+from .response import Response, ResponseType
 
 
 class InteractionType:
@@ -187,11 +187,11 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             if (request.json
                     and request.json.get("type") == InteractionType.PING):
                 return jsonify({
-                    "type": InteractionResponseType.PONG
+                    "type": ResponseType.PONG
                 })
 
             result = self.run_command(request.json)
 
-            response = InteractionResponse.from_return_value(result)
+            response = Response.from_return_value(result)
 
             return jsonify(response.dump())

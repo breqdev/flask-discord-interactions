@@ -5,11 +5,13 @@ import time
 
 from flask import Flask
 
+# This is just here for the sake of examples testing
+# (you don't actually need it in your code)
 sys.path.insert(1, ".")
 
 from flask_discord_interactions import (DiscordInteractions,  # noqa: E402
                                         DiscordInteractionsBlueprint,
-                                        InteractionResponse,
+                                        Response,
                                         CommandOptionType,
                                         Member, Role, Channel)
 
@@ -33,13 +35,13 @@ def ping(ctx):
 
 # You can specify a name and desc explicitly
 # (otherwise it's inferred from function name and docstring)
-# For more complex responses, return an InteractionResponse object
+# For more complex responses, return an Response object
 # You have to define the embed JSON manually (see API docs)
 # The "ctx" parameter is an InteractionContext object
 # it works similarly to Context in Discord.py
 @discord.command(name="avatar", description="Show your user info")
 def _avatar(ctx):
-    return InteractionResponse(embed={
+    return Response(embed={
         "title": ctx.author.display_name,
         "description": "Avatar Info",
         "fields": [
@@ -65,7 +67,7 @@ def _avatar(ctx):
 @discord.command(annotations={"message": "The message to repeat"})
 def repeat(ctx, message: str = "Hello!"):
     "Repeat the message (and escape mentions)"
-    return InteractionResponse(
+    return Response(
         f"{ctx.author.display_name} says {message}!",
         allowed_mentions={"parse": []},
     )
@@ -75,7 +77,7 @@ def repeat(ctx, message: str = "Hello!"):
 @discord.command(annotations={"user": "The user to show information about"})
 def avatar_of(ctx, user: Member):
     "Show someone else's user info"
-    return InteractionResponse(embed={
+    return Response(embed={
         "title": user.display_name,
         "description": "Avatar Info",
         "fields": [
@@ -105,7 +107,7 @@ def has_role(ctx, user: Member, role: Role):
 # Channel info, too!
 @discord.command()
 def channel_info(ctx, channel: Channel):
-    return InteractionResponse(embed={
+    return Response(embed={
         "title": channel.name,
         "description": channel.topic,
         "fields": [
@@ -140,7 +142,7 @@ def channel_info(ctx, channel: Channel):
 }])
 def favorite(ctx, choice):
     "What is your favorite animal?"
-    return InteractionResponse(f"{ctx.author.display_name} chooses {choice}!")
+    return Response(f"{ctx.author.display_name} chooses {choice}!")
 
 
 # You can use a decorator syntax to define subcommands
@@ -168,25 +170,25 @@ base_from = base.subgroup("from", "Convert a number out of a certian base")
 @base_to.command(name="bin")
 def base_to_bin(ctx, number: int):
     "Convert a number into binary"
-    return InteractionResponse(bin(number), ephemeral=True)
+    return Response(bin(number), ephemeral=True)
 
 
 @base_to.command(name="hex")
 def base_to_hex(ctx, number: int):
     "Convert a number into hexadecimal"
-    return InteractionResponse(hex(number), ephemeral=True)
+    return Response(hex(number), ephemeral=True)
 
 
 @base_from.command(name="bin")
 def base_from_bin(ctx, number: str):
     "Convert a number out of binary"
-    return InteractionResponse(int(number, base=2), ephemeral=True)
+    return Response(int(number, base=2), ephemeral=True)
 
 
 @base_from.command(name="hex")
 def base_from_hex(ctx, number: str):
     "Convert a number out of hexadecimal"
-    return InteractionResponse(int(number, base=16), ephemeral=True)
+    return Response(int(number, base=16), ephemeral=True)
 
 
 # Create Blueprint objects to split functionality across modules
@@ -214,7 +216,7 @@ def followup(ctx):
         ctx.edit("Editing my original message")
         time.sleep(5)
         print("Sending a file")
-        ctx.send(InteractionResponse(
+        ctx.send(Response(
             content="Sending a file",
             file=("README.md", open("README.md", "r"), "text/markdown")))
         time.sleep(5)
@@ -244,7 +246,7 @@ def delay(ctx, duration: int):
     thread = threading.Thread(target=do_delay)
     thread.start()
 
-    return InteractionResponse(deferred=True)
+    return Response(deferred=True)
 
 
 # Here's an invalid command just to test things out
