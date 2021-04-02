@@ -59,10 +59,13 @@ class SlashCommand:
                 }
                 self.options.append(option)
 
-    def run(self, discord, app, data):
+    def make_context_and_run(self, discord, app, data):
         context = InteractionContext(discord, app, data)
         args, kwargs = context.create_args(
             data["data"], resolved=data["data"].get("resolved"))
+        return self.run(context, *args, **kwargs)
+
+    def run(self, context, *args, **kwargs):
         return self.command(context, *args, **kwargs)
 
     def dump(self):
@@ -73,7 +76,7 @@ class SlashCommand:
         }
 
 
-class SlashCommandGroup(SlashCommand):
+class SlashCommandSubgroup(SlashCommand):
     def __init__(self, name, description):
         self.name = name
         self.description = description
@@ -92,20 +95,33 @@ class SlashCommandGroup(SlashCommand):
 
         return decorator
 
-    def run(self, discord, app, data):
-        context = InteractionContext(discord, app, data)
-        subcommands, kwargs = context.create_args(
-            data["data"], resolved=data["data"].get("resolved"))
-
-        return self.subcommands[subcommands[0]].command(
-            context, *subcommands[1:], **kwargs)
-
     @property
     def options(self):
         options = []
         for command in self.subcommands.values():
             data = command.dump()
-            data["type"] = CommandOptionType.SUB_COMMAND
+            if isinstance(command, SlashCommandSubgroup):
+                data["type"] = CommandOptionType.SUB_COMMAND_GROUP
+            else:
+                data["type"] = CommandOptionType.SUB_COMMAND
             options.append(data)
 
         return options
+
+    def run(self, context, *subcommands, **kwargs):
+        return self.subcommands[subcommands[0]].run(
+            context, *subcommands[1:], **kwargs)
+
+
+class SlashCommandGroup(SlashCommandSubgroup):
+    def make_context_and_run(self, discord, app, data):
+        context = InteractionContext(discord, app, data)
+        subcommands, kwargs = context.create_args(
+            data["data"], resolved=data["data"].get("resolved"))
+
+        return self.run(context, *subcommands, **kwargs)
+
+    def subgroup(self, name, description="No description"):
+        group = SlashCommandSubgroup(name, description)
+        self.subcommands[name] = group
+        return group

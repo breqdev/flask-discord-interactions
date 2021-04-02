@@ -168,7 +168,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         if slash_command is None:
             raise ValueError(f"Invalid command name: {slash_command}")
 
-        return slash_command.run(self, current_app, data)
+        return slash_command.make_context_and_run(self, current_app, data)
 
     def set_route(self, route, app=None):
         if app is None:
