@@ -109,15 +109,10 @@ def has_role(ctx, user: Member, role: Role):
 def channel_info(ctx, channel: Channel):
     return Response(embed={
         "title": channel.name,
-        "description": channel.topic,
         "fields": [
             {
                 "name": "Channel ID",
                 "value": channel.id
-            },
-            {
-                "name": "NSFW?",
-                "value": "Yes" if channel.nsfw else "No"
             }
         ]
     })
