@@ -42,6 +42,10 @@ class Response:
             raise ValueError(
                 "Supply at least one of content, embeds, files, or deferred.")
 
+        if ephemeral and (self.embeds is not None or self.files is not None):
+            raise ValueError(
+                "Ephemeral responses cannot include embeds or files.")
+
     @staticmethod
     def from_return_value(result):
         if result is None:
