@@ -154,9 +154,10 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         Args:
             response : requests response object
         """
+
+        rate_limit_remaining = int(response.headers["X-RateLimit-Remaining"])
+        rate_limit_reset = float(response.headers["X-RateLimit-Reset"])
         # rate_limit_limit = response.headers["X-RateLimit-Limit"]
-        rate_limit_remaining = response.headers["X-RateLimit-Remaining"]
-        rate_limit_reset = response.headers["X-RateLimit-Reset"]
         # rate_limit_bucket = response.headers["X-RateLimit-Bucket"]
 
         if (
