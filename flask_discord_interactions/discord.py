@@ -135,6 +135,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         for name, command in needed.items():
             response = requests.post(
                 url, json=command.dump(), headers=self.auth_headers(app))
+            self._throttle(response)
             try:
                 response.raise_for_status()
             except requests.exceptions.HTTPError:
@@ -142,6 +143,23 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                     f"Unable to register command {command.name}\n"
                     f"{response.status_code} {response.text}")
             command.id = response.json()["id"]
+
+    def _throttle(self, response):
+        """
+        throttle the number of posts made
+        see discord rate limits here
+        https://discord.com/developers/docs/topics/rate-limits
+        Args:
+            response : requests response object
+        """
+
+        rate_limit_remaining = int(response.headers["X-RateLimit-Remaining"])
+        rate_limit_reset = float(response.headers["X-RateLimit-Reset"])
+        # rate_limit_limit = response.headers["X-RateLimit-Limit"]
+        # rate_limit_bucket = response.headers["X-RateLimit-Bucket"]
+
+        if not rate_limit_remaining:
+            time.sleep(rate_limit_reset - time.time())
 
     def register_blueprint(self, blueprint, app=None):
         if app is None:
