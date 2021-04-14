@@ -20,18 +20,20 @@ class DiscordInteractionsBlueprint:
     def __init__(self):
         self.discord_commands = {}
 
-    def add_slash_command(
-        self, command, name=None, description=None, options=None, annotations=None
-    ):
-        slash_command = SlashCommand(command, name, description, options, annotations)
+    def add_slash_command(self, command, name=None,
+                          description=None, options=None, annotations=None):
+        slash_command = SlashCommand(
+            command, name, description, options, annotations)
         self.discord_commands[slash_command.name] = slash_command
 
-    def command(self, name=None, description=None, options=None, annotations=None):
+    def command(self, name=None, description=None,
+                options=None, annotations=None):
         "Decorator to create a Slash Command"
 
         def decorator(func):
             nonlocal name, description, options
-            self.add_slash_command(func, name, description, options, annotations)
+            self.add_slash_command(
+                func, name, description, options, annotations)
             return func
 
         return decorator
@@ -65,20 +67,25 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             "https://discord.com/api/v8/oauth2/token",
             data={
                 "grant_type": "client_credentials",
-                "scope": "applications.commands.update",
+                "scope": "applications.commands.update"
             },
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
-            auth=(app.config["DISCORD_CLIENT_ID"], app.config["DISCORD_CLIENT_SECRET"]),
+            headers={
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            auth=(
+                app.config["DISCORD_CLIENT_ID"],
+                app.config["DISCORD_CLIENT_SECRET"]
+            )
         )
 
         response.raise_for_status()
         app.discord_token = response.json()
-        app.discord_token["expires_on"] = (
-            time.time() + app.discord_token["expires_in"] / 2
-        )
+        app.discord_token["expires_on"] = (time.time()
+                                           + app.discord_token["expires_in"]/2)
 
     def auth_headers(self, app):
-        if app.discord_token is None or time.time() > app.discord_token["expires_on"]:
+        if (app.discord_token is None
+                or time.time() > app.discord_token["expires_on"]):
             self.fetch_token(app)
         return {"Authorization": f"Bearer {app.discord_token['access_token']}"}
 
@@ -89,16 +96,12 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         needed = app.discord_commands.copy()
 
         if guild_id:
-            url = (
-                "https://discord.com/api/v8/applications/"
-                f"{app.config['DISCORD_CLIENT_ID']}/"
-                f"guilds/{guild_id}/commands"
-            )
+            url = ("https://discord.com/api/v8/applications/"
+                   f"{app.config['DISCORD_CLIENT_ID']}/"
+                   f"guilds/{guild_id}/commands")
         else:
-            url = (
-                "https://discord.com/api/v8/applications/"
-                f"{app.config['DISCORD_CLIENT_ID']}/commands"
-            )
+            url = ("https://discord.com/api/v8/applications/"
+                   f"{app.config['DISCORD_CLIENT_ID']}/commands")
 
         response = requests.get(url, headers=self.auth_headers(app))
         response.raise_for_status()
@@ -108,11 +111,8 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             if command["name"] in needed:
                 target = needed[command["name"]]
                 if command["description"] == target.description:
-                    if (
-                        not command.get("options")
-                        and not target.options
-                        or command.get("options") == target.options
-                    ):
+                    if (not command.get("options") and not target.options
+                            or command.get("options") == target.options):
                         del needed[command["name"]]
 
                         target.id = command["id"]
@@ -120,37 +120,35 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
             id = command["id"]
             if guild_id:
-                delete_url = (
-                    "https://discord.com/api/v8/applications/"
-                    f"{app.config['DISCORD_CLIENT_ID']}/"
-                    f"guilds/{guild_id}/commands/{id}"
-                )
+                delete_url = ("https://discord.com/api/v8/applications/"
+                              f"{app.config['DISCORD_CLIENT_ID']}/"
+                              f"guilds/{guild_id}/commands/{id}")
             else:
                 delete_url = (
                     "https://discord.com/api/v8/applications/"
-                    f"{app.config['DISCORD_CLIENT_ID']}/commands/{id}"
-                )
+                    f"{app.config['DISCORD_CLIENT_ID']}/commands/{id}")
 
-            response = requests.delete(delete_url, headers=self.auth_headers(app))
+            response = requests.delete(
+                delete_url, headers=self.auth_headers(app))
             response.raise_for_status()
 
         for name, command in needed.items():
             response = requests.post(
-                url, json=command.dump(), headers=self.auth_headers(app)
-            )
+                url, json=command.dump(), headers=self.auth_headers(app))
             self._throttle(response)
             try:
                 response.raise_for_status()
             except requests.exceptions.HTTPError:
                 raise ValueError(
                     f"Unable to register command {command.name}\n"
-                    f"{response.status_code} {response.text}"
-                )
+                    f"{response.status_code} {response.text}")
             command.id = response.json()["id"]
 
     def _throttle(self, response):
-        """throttle the number of posts made
-        see discord rate limits here https://discord.com/developers/docs/topics/rate-limits
+        """
+        throttle the number of posts made
+        see discord rate limits here
+        https://discord.com/developers/docs/topics/rate-limits
         Args:
             response : requests response object
         """
@@ -160,13 +158,8 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         # rate_limit_limit = response.headers["X-RateLimit-Limit"]
         # rate_limit_bucket = response.headers["X-RateLimit-Bucket"]
 
-        if (
-            rate_limit_remaining == 0
-        ):  # if rate limit hits zero pause until rate limit epoch has passed
-            while (
-                time.time() < rate_limit_reset
-            ):  # compare current epoch time against reset epoch time
-                time.sleep(1)
+        if not rate_limit_remaining:
+            time.sleep(rate_limit_reset - time.time())
 
     def register_blueprint(self, blueprint, app=None):
         if app is None:
@@ -176,7 +169,8 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
     def verify_signature(self, data, signature, timestamp):
         message = timestamp.encode() + data
-        verify_key = VerifyKey(bytes.fromhex(current_app.config["DISCORD_PUBLIC_KEY"]))
+        verify_key = VerifyKey(
+            bytes.fromhex(current_app.config["DISCORD_PUBLIC_KEY"]))
         try:
             verify_key.verify(message, bytes.fromhex(signature))
         except BadSignatureError:
@@ -200,18 +194,19 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         @app.route(route, methods=["POST"])
         def interactions():
-            signature = request.headers.get("X-Signature-Ed25519")
-            timestamp = request.headers.get("X-Signature-Timestamp")
+            signature = request.headers.get('X-Signature-Ed25519')
+            timestamp = request.headers.get('X-Signature-Timestamp')
 
-            if (
-                signature is None
-                or timestamp is None
-                or not self.verify_signature(request.data, signature, timestamp)
-            ):
+            if (signature is None or timestamp is None
+                    or not self.verify_signature(
+                    request.data, signature, timestamp)):
                 return "Bad Request Signature", 401
 
-            if request.json and request.json.get("type") == InteractionType.PING:
-                return jsonify({"type": ResponseType.PONG})
+            if (request.json
+                    and request.json.get("type") == InteractionType.PING):
+                return jsonify({
+                    "type": ResponseType.PONG
+                })
 
             result = self.run_command(request.json)
 
