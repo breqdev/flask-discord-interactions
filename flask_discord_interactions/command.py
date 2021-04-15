@@ -6,6 +6,31 @@ from .context import (Context, CommandOptionType,
 
 
 class SlashCommand:
+    """
+    Represents a Slash Command.
+
+    Attributes
+    ----------
+    command
+        Function to call when the slash command is invoked.
+    name
+        Name for this command (appears in the Discord client). If omitted,
+        infers the name based on the name of the function.
+    description
+        Description for this command (appears in the Discord client). If
+        omitted, infers the description based on the docstring of the function,
+        or sets the description to "No description".
+    options
+        Array of options that can be passed to this command. If omitted,
+        infers the options based on the function parameters and type
+        annotations.
+    annotations
+        Dictionary of descriptions for each option provided. Use this only if
+        you want the options to be inferred from the parameters and type
+        annotations. Do not use with "options". If omitted, and if options is
+        not provided, option descriptions default to "No description".
+    """
+
     def __init__(self, command, name, description, options, annotations):
         self.command = command
         self.name = name
@@ -60,15 +85,43 @@ class SlashCommand:
                 self.options.append(option)
 
     def make_context_and_run(self, discord, app, data):
+        """
+        Creates the context object for an invocation of this slash command,
+        then invokes itself.
+
+        Parameters
+        ----------
+        discord
+            The DiscordInteractions object used to receive this interaction.
+        app
+            The Flask app used to receive this interaction.
+        data
+            The incoming interaction data.
+        """
+
         context = Context(discord, app, data)
         args, kwargs = context.create_args(
             data["data"], resolved=data["data"].get("resolved"))
         return self.run(context, *args, **kwargs)
 
     def run(self, context, *args, **kwargs):
+        """
+        Invokes the function defining this slash command.
+
+        Parameters
+        ----------
+        context
+            The Context object representing the current state.
+        *args
+            Any subcommands of the current command being called.
+        **kwargs
+            Any other options in the current invocation.
+        """
+
         return self.command(context, *args, **kwargs)
 
     def dump(self):
+        "Returns this command as a dict for registration with the Discord API."
         return {
             "name": self.name,
             "description": self.description,
@@ -77,6 +130,17 @@ class SlashCommand:
 
 
 class SlashCommandSubgroup(SlashCommand):
+    """
+    Represents a Subgroup of :class:`SlashCommand` s.
+
+    Attributes
+    ----------
+    name
+        The name of this subgroup, shown in the Discord client.
+    description
+        The description of this subgroup, shown in the Discord client.
+    """
+
     def __init__(self, name, description):
         self.name = name
         self.description = description
@@ -84,7 +148,22 @@ class SlashCommandSubgroup(SlashCommand):
 
     def command(self, name=None, description=None,
                 options=None, annotations=None):
-        "Decorator to create a subcommand"
+        """
+        Decorator to create a new Subcommand of this Subgroup.
+
+        Parameters
+        ----------
+        name
+            The name of the command, as displayed in the Discord client.
+        description
+            The description of the command.
+        options
+            A list of options for the command, overriding the function's
+            keyword arguments.
+        annotations
+            If options is not provided, descriptions for each of the options
+            defined in the function's keyword arguments.
+        """
 
         def decorator(func):
             nonlocal name, description, options, annotations
@@ -97,6 +176,10 @@ class SlashCommandSubgroup(SlashCommand):
 
     @property
     def options(self):
+        """
+        Returns an array of options that can be passed to this command.
+        Computed based on the options of each subcommand or subcommand group.
+        """
         options = []
         for command in self.subcommands.values():
             data = command.dump()
@@ -109,12 +192,39 @@ class SlashCommandSubgroup(SlashCommand):
         return options
 
     def run(self, context, *subcommands, **kwargs):
+        """
+        Invokes the relevant subcommand for the given :class:`Context`.
+
+        Parameters
+        ----------
+        context
+            The :class:`Context` object representing the current state.
+        *args
+            List of subcommands of the current command group being invoked.
+        **kwargs
+            Any other options in the current invocation.
+        """
         return self.subcommands[subcommands[0]].run(
             context, *subcommands[1:], **kwargs)
 
 
 class SlashCommandGroup(SlashCommandSubgroup):
     def make_context_and_run(self, discord, app, data):
+        """
+        Creates the :class:`Context` for an invocation of this slash command
+        group, then invokes itself.
+
+        Parameters
+        ----------
+        discord
+            The :class:`DiscordInteractions` object used to receive this
+            interaction.
+        app
+            The Flask app used to receive this interaction.
+        data
+            The incoming interaction data.
+        """
+
         context = Context(discord, app, data)
         subcommands, kwargs = context.create_args(
             data["data"], resolved=data["data"].get("resolved"))
@@ -122,6 +232,18 @@ class SlashCommandGroup(SlashCommandSubgroup):
         return self.run(context, *subcommands, **kwargs)
 
     def subgroup(self, name, description="No description"):
+        """
+        Create a new :class:`SlashCommandSubroup`
+        (which can contain multiple subcommands)
+
+        Parameters
+        ----------
+        name
+            The name of the subgroup, as displayed in the Discord client.
+        description
+            The description of the subgroup. Defaults to "No description".
+        """
+
         group = SlashCommandSubgroup(name, description)
         self.subcommands[name] = group
         return group
