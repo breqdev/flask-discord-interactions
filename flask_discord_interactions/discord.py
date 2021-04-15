@@ -130,6 +130,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
             response = requests.delete(
                 delete_url, headers=self.auth_headers(app))
+            self._throttle(response)
             response.raise_for_status()
 
         for name, command in needed.items():
