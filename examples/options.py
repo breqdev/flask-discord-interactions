@@ -7,7 +7,7 @@ from flask import Flask
 sys.path.insert(1, ".")
 
 from flask_discord_interactions import (DiscordInteractions,  # noqa: E402
-                                        Response)
+                                        Response, Member, Channel, Role)
 
 
 app = Flask(__name__)
@@ -30,6 +30,17 @@ def repeat(ctx, message: str = "Hello!"):
         f"{ctx.author.display_name} says {message}!",
         allowed_mentions={"parse": []},
     )
+
+
+# You can use str, int, or bool
+@discord.command()
+def add_one(ctx, number: int):
+    return Response(str(number + 1), ephemeral=True)
+
+
+@discord.command()
+def and_gate(ctx, a: bool, b: bool):
+    return f"{a} AND {b} is {a and b}"
 
 
 # For using the "choices" field, you can use an Enum
@@ -64,6 +75,51 @@ class BigNumber(enum.IntEnum):
 def big_number(ctx, number: BigNumber):
     "Print out a large number"
     return f"One more than the number is {number+1}."
+
+
+# For User, Channel, and Role options, your function is passed an object
+# that provides information about the resource
+# You can access data about users with the context object
+@discord.command(annotations={"user": "The user to show information about"})
+def avatar_of(ctx, user: Member):
+    "Show someone else's user info"
+    return Response(embed={
+        "title": user.display_name,
+        "description": "Avatar Info",
+        "fields": [
+            {
+                "name": "Username",
+                "value": (f"**{user.username}**"
+                          f"#{user.discriminator}")
+            },
+            {
+                "name": "User ID",
+                "value": user.id
+            }
+        ],
+        "image": {"url": user.avatar_url}
+    })
+
+
+@discord.command()
+def has_role(ctx, user: Member, role: Role):
+    if role.id in user.roles:
+        return f"Yes, user {user.display_name} has role {role.name}."
+    else:
+        return f"No, user {user.display_name} does not have role {role.name}."
+
+
+@discord.command()
+def channel_info(ctx, channel: Channel):
+    return Response(embed={
+        "title": channel.name,
+        "fields": [
+            {
+                "name": "Channel ID",
+                "value": channel.id
+            }
+        ]
+    })
 
 
 discord.set_route("/interactions")
