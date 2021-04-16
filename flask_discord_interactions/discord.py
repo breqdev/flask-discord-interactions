@@ -42,8 +42,8 @@ class DiscordInteractionsBlueprint:
             A list of options for the command, overriding the function's
             keyword arguments.
         annotations
-            If options is not provided, descriptions for each of the options
-            defined in the function's keyword arguments.
+            If ``options`` is not provided, descriptions for each of the
+            options defined in the function's keyword arguments.
         """
         slash_command = SlashCommand(
             command, name, description, options, annotations)
@@ -64,8 +64,8 @@ class DiscordInteractionsBlueprint:
             A list of options for the command, overriding the function's
             keyword arguments.
         annotations
-            If options is not provided, descriptions for each of the options
-            defined in the function's keyword arguments.
+            If ``options`` is not provided, descriptions for each of the
+            options defined in the function's keyword arguments.
         """
 
         def decorator(func):
@@ -125,9 +125,9 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
     def fetch_token(self, app=None):
         """
-        Fetch an OAuth2 token from Discord using the CLIENT_ID and
-        CLIENT_SECRET with the applications.commands.update scope. This can
-        be used to register new slash commands.
+        Fetch an OAuth2 token from Discord using the ``CLIENT_ID`` and
+        ``CLIENT_SECRET`` with the ``applications.commands.update`` scope. This
+        can be used to register new slash commands.
 
         Parameters
         ----------
@@ -247,7 +247,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
     def throttle(self, response):
         """
         Throttle the number of HTTP requests made to Discord
-        using the X-RateLimit headers
+        using the ``X-RateLimit`` headers
         https://discord.com/developers/docs/topics/rate-limits
 
         Parameters

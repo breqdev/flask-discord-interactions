@@ -23,7 +23,7 @@ class Response:
     embed
         The embed object (dict) accompanying the message.
     embeds
-        An array of embed objects. Specify just one of embed or embeds.
+        An array of embed objects. Specify just one of ``embed`` or ``embeds``.
     allowed_mentions
         An object representing which roles and users the message is allowed
         to mention. See the Discord API docs for details.
@@ -38,7 +38,7 @@ class Response:
         The file to attach to the message. Only valid for outgoing webhooks.
     files
         An array of files to attach to the message. Speficy just one of
-        file or files. Only valid for outgoing webhooks.
+        ``file`` or ``files``. Only valid for outgoing webhooks.
     """
     def __init__(self, content=None, *, tts=False, embed=None, embeds=None,
                  allowed_mentions={"parse": ["roles", "users", "everyone"]},
@@ -82,12 +82,13 @@ class Response:
     def from_return_value(result):
         """
         Convert a function return value into a Response object.
-        Converts None to an empty response, or any other type to its str().
+        Converts ``None`` to an empty response, or any other type to ``str``
+        as message content.
 
         Parameters
         ----------
         result
-            The function return value to convert into a Response object.
+            The function return value to convert into a ``Response`` object.
         """
 
         if result is None:
@@ -99,8 +100,8 @@ class Response:
 
     def dump(self):
         """
-        Return this Response as a dict to be sent in response to an incoming
-        webhook.
+        Return this ``Response`` as a dict to be sent in response to an
+        incoming webhook.
         """
 
         return {
@@ -116,7 +117,7 @@ class Response:
 
     def dump_followup(self):
         """
-        Return this Response as a dict to be sent to an outgoing webhook.
+        Return this ``Response`` as a dict to be sent to an outgoing webhook.
         """
 
         return {
@@ -128,10 +129,11 @@ class Response:
 
     def dump_multipart(self):
         """
-        Return this Response to be sent to an outgoing webhook.
+        Return this ``Response`` to be sent to an outgoing webhook.
         Handles multipart encoding for file attachments.
 
-        Returns an object that may have 'data', 'files', or 'json' fields.
+        Returns an object that may have ``data``, ``files``, or ``json``
+        fields.
         """
 
         if self.files:

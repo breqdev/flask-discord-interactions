@@ -240,7 +240,7 @@ class Context:
 
     def parse_resolved(self, data):
         """
-        Parse the "resolved" section of the incoming interaction data.
+        Parse the ``"resolved"`` section of the incoming interaction data.
 
         This section includes objects representing each user, member, channel,
         and role passed as an argument to the command.
@@ -248,7 +248,7 @@ class Context:
         Parameters
         ----------
         data
-            The "resolved" section of the incoming interaction data.
+            The ``"resolved"`` section of the incoming interaction data.
         """
 
         self.members = {}
@@ -270,14 +270,14 @@ class Context:
 
         This function is recursive: when a subcommand is invoked, this function
         will call itself with the subcommand option data. This is why the
-        resolved data is passed as a separate argument.
+        ``"resolved"`` data is passed as a separate argument.
 
         Parameters
         ----------
         data
             An object with the incoming data for the invocation.
         resolved
-            The "resolved" section of the incoming interaction data.
+            The ``"resolved"`` section of the incoming interaction data.
         """
 
         if "options" not in data:

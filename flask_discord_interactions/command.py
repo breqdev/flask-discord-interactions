@@ -27,8 +27,9 @@ class SlashCommand:
     annotations
         Dictionary of descriptions for each option provided. Use this only if
         you want the options to be inferred from the parameters and type
-        annotations. Do not use with "options". If omitted, and if options is
-        not provided, option descriptions default to "No description".
+        annotations. Do not use with ``options``. If omitted, and if
+        ``options`` is not provided, option descriptions default to
+        "No description".
     """
 
     def __init__(self, command, name, description, options, annotations):
@@ -86,13 +87,14 @@ class SlashCommand:
 
     def make_context_and_run(self, discord, app, data):
         """
-        Creates the context object for an invocation of this slash command,
-        then invokes itself.
+        Creates the :class:`Context` object for an invocation of this slash
+        command, then invokes itself.
 
         Parameters
         ----------
         discord
-            The DiscordInteractions object used to receive this interaction.
+            The :class:`DiscordInteractions` object used to receive this
+            interaction.
         app
             The Flask app used to receive this interaction.
         data
@@ -111,7 +113,7 @@ class SlashCommand:
         Parameters
         ----------
         context
-            The Context object representing the current state.
+            The :class:`Context` object representing the current state.
         *args
             Any subcommands of the current command being called.
         **kwargs
@@ -161,8 +163,8 @@ class SlashCommandSubgroup(SlashCommand):
             A list of options for the command, overriding the function's
             keyword arguments.
         annotations
-            If options is not provided, descriptions for each of the options
-            defined in the function's keyword arguments.
+            If ``options`` is not provided, descriptions for each of the
+            options defined in the function's keyword arguments.
         """
 
         def decorator(func):
