@@ -1,3 +1,5 @@
+.. _tutorial-page:
+
 Bot Setup Tutorial
 ==================
 
@@ -41,9 +43,9 @@ The example also uses the environment variable `TESTING_GUILD` to store the ID o
 Run the program
 ---------------
 
-You should be able to run an example program without any errors now. It should register slash commands in your server. However, these slash commands will not work yet.
+You should be able to run a program without any errors now. It should register slash commands in your server. However, these slash commands will not work yet.
 
-Here's a quick "hello world" program, or you can look in the project examples directory.
+Here's a quick "hello world" program:
 
 .. code-block:: python
 

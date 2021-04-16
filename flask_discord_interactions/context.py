@@ -193,8 +193,7 @@ class Role:
 
 class Context:
     """
-    Represents the context in which a :class:`SlashCommand` is invoked,
-    including the invoking user ID, channel ID, guild ID, options, etc.
+    Represents the context in which a :class:`SlashCommand` is invoked.
 
     Attributes
     ----------
