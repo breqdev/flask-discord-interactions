@@ -1,3 +1,4 @@
+import enum
 import inspect
 import itertools
 
@@ -60,21 +61,32 @@ class SlashCommand:
             for parameter in itertools.islice(
                     sig.parameters.values(), 1, None):
 
-                if parameter.annotation == int:
+                annotation = parameter.annotation
+
+                # Primitive Types
+                if annotation == int:
                     ptype = CommandOptionType.INTEGER
-                elif parameter.annotation == bool:
+                elif annotation == bool:
                     ptype = CommandOptionType.BOOLEAN
-                elif parameter.annotation == str:
+                elif annotation == str:
                     ptype = CommandOptionType.STRING
-                elif parameter.annotation in [User, Member]:
+
+                # Discord Models
+                elif annotation in [User, Member]:
                     ptype = CommandOptionType.USER
-                elif parameter.annotation == Channel:
+                elif annotation == Channel:
                     ptype = CommandOptionType.CHANNEL
-                elif parameter.annotation == Role:
+                elif annotation == Role:
                     ptype = CommandOptionType.ROLE
+
+                # Enums (Used with choices)
+                elif issubclass(annotation, enum.IntEnum):
+                    ptype = CommandOptionType.INTEGER
+                elif issubclass(annotation, enum.Enum):
+                    ptype = CommandOptionType.STRING
+
                 else:
-                    raise ValueError(
-                        f"Invalid type annotation {parameter.annotation}")
+                    raise ValueError(f"Invalid type annotation {annotation}")
 
                 option = {
                     "name": parameter.name,
@@ -83,6 +95,23 @@ class SlashCommand:
                     "type": ptype,
                     "required": (parameter.default == parameter.empty)
                 }
+
+                if issubclass(annotation, enum.Enum):
+                    choices = []
+
+                    if issubclass(annotation, enum.IntEnum):
+                        value_type = int
+                    else:
+                        value_type = str
+
+                    for name, member in annotation.__members__.items():
+                        choices.append({
+                            "name": name,
+                            "value": value_type(member.value)
+                        })
+
+                    option["choices"] = choices
+
                 self.options.append(option)
 
     def make_context_and_run(self, discord, app, data):
