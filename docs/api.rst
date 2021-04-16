@@ -7,4 +7,5 @@ API Reference
     discord.rst
     command.rst
     context.rst
+    options.rst
     response.rst
