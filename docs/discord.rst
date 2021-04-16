@@ -1,8 +1,13 @@
 Discord
 =======
 
-The :class:`.DiscordInteractions` class manages a collection of
-:class:`.SlashCommand` s for you.
+The :class:`.DiscordInteractions` and :class:`.DiscordInteractionsBlueprint`
+classes manage a collection of :class:`.SlashCommand` s for you.
+
+DiscordInteractions
+-------------------
+
+
 
 Generally, the first thing you want to do in your application is create your
 Flask app and then your :class:`.DiscordInteractions` object:
@@ -142,6 +147,9 @@ As your app grows, Blueprints are a great way to keep things organized.
 Note that you can also use the
 :meth:`.DiscordInteractionsBlueprint.command_group` method to create a
 command group, just like with the :class:`.DiscordInteractions` object.
+
+Full API
+^^^^^^^^
 
 .. autoclass:: flask_discord_interactions.DiscordInteractionsBlueprint
     :members:

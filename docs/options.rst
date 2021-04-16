@@ -24,7 +24,7 @@ The ``annotations`` parameter is used to provide a description for each option
 for more information about the decorator.
 
 Primitives
-^^^^^^^^^^
+----------
 
 You can use ``str``, ``int``, or ``bool`` for string, integer, and boolean
 options.
@@ -41,7 +41,7 @@ options.
         return f"{a} AND {b} is {a and b}"
 
 Discord Models
-^^^^^^^^^^^^^^
+--------------
 
 For User, Channel, and Role options, you can receive an object with context
 information about the option:
@@ -56,7 +56,7 @@ information about the option:
             return f"No, user {user.display_name} does not have role {role.name}."
 
 Choices
-^^^^^^^
+-------
 
 To specify a list of choices the user can choose from, you can use Python's
 :py:class:`enum.Enum` class.
@@ -101,7 +101,7 @@ instead of a string:
         return f"One more than the number is {number+1}."
 
 Full API
-^^^^^^^^
+--------
 
 .. autoclass:: flask_discord_interactions.CommandOptionType
     :members:

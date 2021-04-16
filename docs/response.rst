@@ -77,7 +77,7 @@ bot is echoing user input. You can read more about this parameter on the
 `Discord API docs <https://discord.com/developers/docs/resources/channel#allowed-mentions-object>`_.
 
 Full API
-^^^^^^^^
+--------
 
 .. autoclass:: flask_discord_interactions.Response
     :members:
