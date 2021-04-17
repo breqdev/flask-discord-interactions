@@ -32,6 +32,71 @@ The function must return either a string or a
 more information about what kind of responses are valid, see
 :ref:`response-page`.
 
+Advanced Usage
+^^^^^^^^^^^^^^
+
+If you use the ``options`` parameter of the
+:meth:`.DiscordInteractions.command` decorator to specify options manually,
+then it will override the options inferred from the function arguments
+and type annotation. You can use this to, for instance, route multiple 
+subcommands with different options to the same function. This isn't the
+recommended approach, but it is supported by the API.
+
+.. code-block:: python
+
+    @discord.command(options=[
+        {
+            "name": "google",
+            "description": "Search with Google",
+            "type": CommandOptionType.SUB_COMMAND,
+            "options": [{
+                "name": "query",
+                "description": "Search query",
+                "type": CommandOptionType.STRING,
+                "required": True
+            }]
+        },
+        {
+            "name": "bing",
+            "description": "Search with Bing",
+            "type": CommandOptionType.SUB_COMMAND,
+            "options": [{
+                "name": "query",
+                "description": "Search query",
+                "type": CommandOptionType.STRING,
+                "required": True
+            }]
+        },
+        {
+            "name": "yahoo",
+            "description": "Search with Yahoo",
+            "type": CommandOptionType.SUB_COMMAND,
+            "options": [{
+                "name": "query",
+                "description": "Search query",
+                "type": CommandOptionType.STRING,
+                "required": True
+            }]
+        }
+    ])
+    def search(ctx, subcommand, *, query):
+        "Search the Internet!"
+        quoted = urllib.parse.quote_plus(query)
+        if subcommand == "google":
+            return f"https://google.com/search?q={quoted}"
+        if subcommand == "bing":
+            return f"https://bing.com/search?q={quoted}"
+        if subcommand == "yahoo":
+            return f"https://yahoo.com/search?q={quoted}"
+
+As you can see, this approach is extremely verbose, so it isn't recommended.
+
+The arguments passed to the function are:
+
+* First positional argument: The :class:`.Context` object.
+* Additional positional arguments: Subcommand group (if present), followed by subcommand (if present).
+* Keyword arguments: The options passed to the command.
+
 Full API
 ^^^^^^^^
 
