@@ -120,6 +120,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         app.config.setdefault("DISCORD_CLIENT_ID", "")
         app.config.setdefault("DISCORD_PUBLIC_KEY", "")
         app.config.setdefault("DISCORD_CLIENT_SECRET", "")
+        app.config.setdefault("DONT_REGISTER_WITH_DISCORD", False)
         app.discord_commands = self.discord_commands
         app.discord_token = None
 
@@ -138,6 +139,15 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         if app is None:
             app = self.app
 
+        if app.config['DONT_REGISTER_WITH_DISCORD']:
+            app.discord_token = {
+                'token_type':'Bearer',
+                'scope':'applications.commands.update',
+                'expires_in':604800,
+                'access_token':'DONT_REGISTER_WITH_DISCORD'
+            }
+            app.discord_token["expires_on"] = (time.time() + app.discord_token["expires_in"]/2)
+            return
         response = requests.post(
             "https://discord.com/api/v8/oauth2/token",
             data={
