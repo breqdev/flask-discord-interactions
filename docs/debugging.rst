@@ -1,11 +1,11 @@
-Debugging
-==========
+Debugging with an HTTP Client
+=============================
 
 This section describes how you may debug your bot locally by issuing commands
 through tools such as `curl <https://curl.se/>`_, `Postman <https://www.postman.com/>`_,
 or any other HTTP client.
 
-It is assumed you already know the basics of setting up a bot. If not, see :ref:`discord-page`.
+It is assumed you already know the basics of setting up a bot. If not, see :ref:`tutorial-page`.
 
 Configuration
 -------------
@@ -14,10 +14,10 @@ Messages sent from Discord to your bot are signed and are verified when received
 calculate the signature for your request can be time consuming and shouldn't be needed in a local
 environment.
 
-A config parameter `DONT_VALIDATE_SIGNATURE` is provided which when set to `True` will bypass
+A config parameter ``DONT_VALIDATE_SIGNATURE`` is provided which when set to ``True`` will bypass
 signature verification. This should only be set in debug mode and never in production.
 
-Another config parameter `DONT_REGISTER_WITH_DISCORD` may be set to `True` to bypass registering
+Another config parameter ``DONT_REGISTER_WITH_DISCORD`` may be set to ``True`` to bypass registering
 your slash commands with Discord when launched. Registering too many times in succession may result
 in being temporarily limited by Discord. For local debugging it is not needed.
 
@@ -27,7 +27,7 @@ Example
 The following is simple example of a bot that will disable signature verification and Discord
 registration.
 
-It exposes one command `pong` with an optional `pong` parameter.
+It exposes one command ``/ping`` with an optional ``pong`` parameter.
 
 .. code-block:: python
 
@@ -65,8 +65,8 @@ It exposes one command `pong` with an optional `pong` parameter.
 Testing
 -------
 
-Assuming your bot is running at http://127.0.0.1:5000 and uses the `interactions` route, the
-below is a simple example of calling `/ping` with a `pong` parameter set to `Pong`.
+Assuming your bot is running at ``http://127.0.0.1:5000`` and uses the ``/interactions`` route, the
+below is a simple example of calling ``/ping`` with a ``pong`` parameter set to ``Pong``.
 
 This is only a subset of the available JSON that may be passed in, but is the minimal needed
 for this example to work.
@@ -85,7 +85,7 @@ for this example to work.
                 {
                     "type": 1,
                     "name": "Pong"
-                }         
+                }
             ]
         },
         "member": {
@@ -94,12 +94,12 @@ for this example to work.
             "user": {
                 "id": 1,
                 "username": "test"
-            }         
+            }
         }
     }'
 
-In Postman, you would issue a POST request to http://127.0.0.1:5000/interactions setting the 
-header `Content-Type: application/json` and your message as a raw JSON body.
+In Postman, you would issue a POST request to ``http://127.0.0.1:5000/interactions`` setting the
+header ``Content-Type: application/json`` and your message as a raw JSON body.
 
-In the Curl example above, the value given to the `--data-raw` parameter would be the JSON body
+In the Curl example above, the value given to the ``--data-raw`` parameter would be the JSON body
 content, without the single quotes at the start and end.

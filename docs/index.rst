@@ -36,7 +36,7 @@ Documentation
     :maxdepth: 2
 
     api.rst
-    tutorial.rst
+    tutorials.rst
 
 How is this different from ``discord-py-slash-command``?
 --------------------------------------------------------
