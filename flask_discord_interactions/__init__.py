@@ -20,7 +20,7 @@ from flask_discord_interactions.discord import (
 )
 
 from flask_discord_interactions.response import Response, ResponseType
-from flask_discord_interactions.client import TestClient
+from flask_discord_interactions.client import Client
 
 
 # deprecated names
@@ -43,7 +43,7 @@ __all__ = [
     "DiscordInteractionsBlueprint",
     "Response",
     "ResponseType",
-    "TestClient",
+    "Client",
 
     "InteractionResponse",
     "InteractionContext"

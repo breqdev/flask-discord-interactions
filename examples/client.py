@@ -8,14 +8,14 @@ from flask import Flask
 sys.path.insert(1, ".")
 
 from flask_discord_interactions import (DiscordInteractions,  # noqa: E402
-                                        TestClient, Response,
+                                        Client, Response,
                                         CommandOptionType)
 
 
 app = Flask(__name__)
 discord = DiscordInteractions(app)
 
-test_client = TestClient(discord)
+test_client = Client(discord)
 
 
 # Simplest type of command: respond with a string

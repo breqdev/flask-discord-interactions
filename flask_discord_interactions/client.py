@@ -3,7 +3,7 @@ from flask_discord_interactions.context import Context
 from flask_discord_interactions.command import SlashCommandSubgroup
 
 
-class TestClient:
+class Client:
     def __init__(self, discord):
         self.discord = discord
 
