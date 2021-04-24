@@ -3,8 +3,8 @@ name: Lint, Test, Build, and Publish the Python package
 on: push
 
 jobs:
-  build:
-    name: Lint, Test, and Build in each version of Python
+  lint-n-test:
+    name: Lint and test
     runs-on: ubuntu-latest
 
     strategy:
@@ -21,7 +21,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pytest build
+        pip install flake8 pytest
         pip install -r requirements.txt
     - name: Lint with flake8
       run: |
@@ -30,26 +30,27 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
-    - name: Build a binary wheel and source tarball
-      run: |
-        python -m build --sdist --wheel --outdir dist/ .
-    - name: Upload builds
-      uses: actions/upload-artifact@v2
-      with:
-        name: pypi-dist
-        path: dist/
 
-  publish:
-    name: Publish the built sdists and wheels to PyPI
-    needs: build
+  build-n-publish:
+    name: Build and publish to PyPI
+    needs: lint-n-test
 
     runs-on: ubuntu-latest
 
     steps:
-    - name: Download builds
-      uses: actions/download-artifact@v2
+    - name: Checkout Repo
+      uses: actions/checkout@v2
+    - name: Set up latest Python
+      uses: actions/setup-python@v2
       with:
-        name: pypi-dist
+        python-version: 3.x
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build
+    - name: Build a binary wheel and source tarball
+      run: |
+        python -m build --sdist --wheel --outdir dist/ .
     - name: Publish to PyPI
       if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
       uses: pypa/gh-action-pypi-publish@release/v1
