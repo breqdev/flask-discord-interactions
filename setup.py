@@ -9,7 +9,7 @@ setup(
     name='Flask-Discord-Interactions',
     version='0.1.8',
     url='https://github.com/Breq16/flask-discord-interactions',
-    author='Wesley Chalmers',
+    author='Brooke Chalmers',
     author_email='breq@breq.dev',
     description='A Flask extension for Discord slash commands.',
     long_description=readme,

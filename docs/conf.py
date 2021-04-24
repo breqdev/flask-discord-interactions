@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'Flask-Discord-Interactions'
-copyright = '2021, Wesley Chalmers'
-author = 'Wesley Chalmers'
+copyright = '2021, Brooke Chalmers'
+author = 'Brooke Chalmers'
 
 
 # -- General configuration ---------------------------------------------------
