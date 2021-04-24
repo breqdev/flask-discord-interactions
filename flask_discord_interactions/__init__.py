@@ -20,7 +20,7 @@ from flask_discord_interactions.discord import (
 )
 
 from flask_discord_interactions.response import Response, ResponseType
-from flask_discord_interactions.test_client import TestClient
+from flask_discord_interactions.client import TestClient
 
 
 # deprecated names
