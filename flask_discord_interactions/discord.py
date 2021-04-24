@@ -7,8 +7,8 @@ from flask import current_app, request, jsonify
 from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
 
-from .command import SlashCommand, SlashCommandGroup
-from .response import Response, ResponseType
+from flask_discord_interactions.command import SlashCommand, SlashCommandGroup
+from flask_discord_interactions.response import Response, ResponseType
 
 
 class InteractionType:

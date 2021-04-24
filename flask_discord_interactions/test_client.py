@@ -1,6 +1,6 @@
-from .response import Response
-from .context import Context
-from .command import SlashCommandSubgroup
+from flask_discord_interactions.response import Response
+from flask_discord_interactions.context import Context
+from flask_discord_interactions.command import SlashCommandSubgroup
 
 
 class TestClient:

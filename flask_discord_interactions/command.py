@@ -2,8 +2,8 @@ import enum
 import inspect
 import itertools
 
-from .context import (Context, CommandOptionType,
-                      User, Member, Channel, Role)
+from flask_discord_interactions.context import (Context, CommandOptionType,
+                                                User, Member, Channel, Role)
 
 
 class SlashCommand:

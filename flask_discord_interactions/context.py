@@ -1,6 +1,6 @@
 import requests
 
-from .response import Response
+from flask_discord_interactions.response import Response
 
 
 class CommandOptionType:
