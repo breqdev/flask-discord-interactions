@@ -3,6 +3,7 @@ from .context import (Context, CommandOptionType, ChannelType,
                       Member, User, Role, Channel)
 from .discord import DiscordInteractions, DiscordInteractionsBlueprint
 from .response import Response, ResponseType
+from .test_client import TestClient
 
 
 # deprecated names
@@ -25,6 +26,7 @@ __all__ = [
     "DiscordInteractionsBlueprint",
     "Response",
     "ResponseType",
+    "TestClient",
 
     "InteractionResponse",
     "InteractionContext"

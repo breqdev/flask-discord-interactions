@@ -221,9 +221,9 @@ class Context:
         :class:`Role` object for each role specified as an option.
     """
 
-    def __init__(self, discord, app, data=None):
-        self.client_id = app.config["DISCORD_CLIENT_ID"]
-        self.auth_headers = discord.auth_headers(app)
+    def __init__(self, discord=None, app=None, data=None):
+        self.client_id = app.config["DISCORD_CLIENT_ID"] if app else ""
+        self.auth_headers = discord.auth_headers(app) if discord else {}
 
         if data:
             self.author = Member(data["member"])
