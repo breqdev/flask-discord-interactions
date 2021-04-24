@@ -1,4 +1,3 @@
-import os
 import sys
 
 from flask import Flask
@@ -26,8 +25,8 @@ def ping(ctx, pong: str = "pong"):
     return f"Pong {pong}!"
 
 
-print(test_client.command("ping"))
-print(test_client.command("ping", pong="ping"))
+print(test_client.run("ping"))
+print(test_client.run("ping", pong="ping"))
 
 
 groupy = discord.command_group("groupy")
@@ -41,8 +40,8 @@ def group(ctx, embed: bool):
         return "Groupy group"
 
 
-print(test_client.command("groupy", "group", True))
-print(test_client.command("groupy", "group", False))
+print(test_client.run("groupy", "group", True))
+print(test_client.run("groupy", "group", False))
 
 
 @discord.command(options=[
@@ -59,5 +58,5 @@ def manual_style_group(ctx, sub):
     return f"subcommand is {sub}"
 
 
-print(test_client.command("manual_style_group", "subcommand_1"))
-print(test_client.command("manual_style_group", "subcommand_2"))
+print(test_client.run("manual_style_group", "subcommand_1"))
+print(test_client.run("manual_style_group", "subcommand_2"))

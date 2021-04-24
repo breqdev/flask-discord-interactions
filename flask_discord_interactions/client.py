@@ -33,7 +33,7 @@ class TestClient:
             }
         })
 
-    def command(self, *names, **params):
+    def run(self, *names, **params):
         command = self.discord.discord_commands[names[0]]
 
         i = 1
