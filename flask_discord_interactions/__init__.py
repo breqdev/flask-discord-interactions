@@ -20,6 +20,8 @@ from flask_discord_interactions.discord import (
 )
 
 from flask_discord_interactions.response import Response, ResponseType
+import flask_discord_interactions.embed as embed
+from flask_discord_interactions.embed import Embed
 from flask_discord_interactions.client import Client
 
 
@@ -29,6 +31,8 @@ InteractionContext = Context
 
 
 __all__ = [
+    "embed",
+
     "SlashCommand",
     "SlashCommandSubgroup",
     "SlashCommandGroup",
@@ -43,6 +47,7 @@ __all__ = [
     "DiscordInteractionsBlueprint",
     "Response",
     "ResponseType",
+    "Embed",
     "Client",
 
     "InteractionResponse",

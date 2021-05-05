@@ -1,7 +1,10 @@
 .. _response-page:
 
-Response
-========
+Responses
+=========
+
+Response objects
+----------------
 
 Response objects are used whenever your bot responds to an Interaction or sends
 or edits a followup message. They can contain content, embeds, files, and
@@ -77,9 +80,9 @@ bot is echoing user input. You can read more about this parameter on the
 `Discord API docs <https://discord.com/developers/docs/resources/channel#allowed-mentions-object>`_.
 
 Full API
---------
+^^^^^^^^
 
-.. autoclass:: flask_discord_interactions.Response
+.. autoclass:: flask_discord_interactions.Response(**kwargs)
     :members:
 
 |
@@ -89,4 +92,73 @@ Full API
     :undoc-members:
     :member-order: bysource
 
+Embeds
+------
 
+Embed objects let you represent Embeds which you can return as part of
+responses.
+
+.. code-block:: python
+
+    from flask_discord_interactions import Embed, embed
+
+    @discord.command()
+    def my_embed(ctx):
+        "Embeds!"
+
+        return Response(embed=Embed(
+            title="Embeds!",
+            description="Embeds can be specified as Embed objects.",
+            fields=[
+                embed.Field(
+                    name="Can they use markdown?",
+                    value="**Yes!** [link](https://google.com/)"
+                ),
+                embed.Field(
+                    name="Where do I learn about how to format this object?",
+                    value=("[Try this visualizer!]"
+                        "(https://leovoel.github.io/embed-visualizer/)")
+                )
+            ]
+        ))
+
+The :class:`.Embed` class represents a single Embed. You can also use
+:class:`.embed.Field`, :class:`.embed.Author`, :class:`.embed.Footer`, or
+:class:`.embed.Provider` for those fields. :class:`.embed.Media` can be used
+for images, videos, and thumbnails.
+
+Full API
+^^^^^^^^
+
+.. autoclass:: flask_discord_interactions.Embed(**kwargs)
+    :members:
+
+|
+
+.. autoclass:: flask_discord_interactions.embed.Field
+    :members:
+    :undoc-members:
+
+|
+
+.. autoclass:: flask_discord_interactions.embed.Author
+    :members:
+    :undoc-members:
+
+|
+
+.. autoclass:: flask_discord_interactions.embed.Footer
+    :members:
+    :undoc-members:
+
+|
+
+.. autoclass:: flask_discord_interactions.embed.Provider
+    :members:
+    :undoc-members:
+
+|
+
+.. autoclass:: flask_discord_interactions.embed.Media
+    :members:
+    :undoc-members:
