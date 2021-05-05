@@ -41,6 +41,26 @@ class Author:
 class Embed:
     """
     Represents an Embed to be sent as part of a Response.
+
+    Attributes
+    ----------
+    title
+        The title of the embed.
+    description
+        The description in the embed.
+    url
+        The URL that the embed title links to.
+    timestamp
+        An ISO8601 timestamp included in the embed.
+    color
+        An integer representing the color of the sidebar of the embed.
+    footer
+    image
+    thumbnail
+    video
+    provider
+    author
+    fields
     """
     title: str = None
     description: str = None
