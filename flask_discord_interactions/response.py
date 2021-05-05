@@ -1,6 +1,9 @@
 import json
 import dataclasses
-from typing import List
+from typing import List, Union
+
+
+from flask_discord_interactions.embed import Embed
 
 
 class ResponseType:
@@ -45,8 +48,8 @@ class Response:
     """
     content: str = None
     tts: bool = False
-    embed: dict = None
-    embeds: List[dict] = None
+    embed: Union[Embed, dict] = None
+    embeds: List[Union[Embed, dict]] = None
     allowed_mentions: dict = dataclasses.field(
         default_factory=lambda: {"parse": ["roles", "users", "everyone"]})
     deferred: bool = False
@@ -91,6 +94,17 @@ class Response:
         """
         return 64 if self.ephemeral else 0
 
+    @property
+    def embeds_as_dict(self):
+        "Returns the embeds of this Response as a list of dicts."
+        embeds = []
+        for embed in self.embeds:
+            if dataclasses.is_dataclass(embed):
+                embeds.append(dataclasses.asdict(embed))
+            else:
+                embeds.append(embed)
+        return embeds
+
     @classmethod
     def from_return_value(cls, result):
         """
@@ -126,7 +140,7 @@ class Response:
             "data": {
                 "content": self.content,
                 "tts": self.tts,
-                "embeds": self.embeds,
+                "embeds": self.embeds_as_dict,
                 "allowed_mentions": self.allowed_mentions,
                 "flags": self.flags
             }
@@ -144,7 +158,7 @@ class Response:
         return {
             "content": self.content,
             "tts": self.tts,
-            "embeds": self.embeds,
+            "embeds": self.embeds_as_dict,
             "allowed_mentions": self.allowed_mentions
         }
 
