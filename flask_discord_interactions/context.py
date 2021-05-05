@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import List
+import inspect
 
 import requests
 
@@ -29,8 +30,17 @@ class ChannelType:
     GUILD_STORE = 6
 
 
+class ContextObject:
+    @classmethod
+    def from_dict(cls, data):
+        return cls(**{
+            k: v for k, v in data.items()
+            if k in inspect.signature(cls).parameters
+        })
+
+
 @dataclass
-class User:
+class User(ContextObject):
     """
     Represents a User (the identity of a Discord user, not tied to any
     specific guild).
@@ -71,6 +81,11 @@ class User:
     flags: int = None
     premium_type: int = None
     public_flags: int = None
+
+    @classmethod
+    def from_dict(cls, data):
+        data = {**data, **data.get("user", {})}
+        return super().from_dict(data)
 
     @property
     def display_name(self):
@@ -125,7 +140,7 @@ class Member(User):
 
 
 @dataclass
-class Channel:
+class Channel(ContextObject):
     """
     Represents a Channel in Discord. This includes voice channels, text
     channels, and channel categories.
@@ -148,7 +163,7 @@ class Channel:
 
 
 @dataclass
-class Role:
+class Role(ContextObject):
     """
     Represents a Role in Discord.
 
@@ -184,7 +199,7 @@ class Role:
 
 
 @dataclass
-class Context:
+class Context(ContextObject):
     """
     Represents the context in which a :class:`SlashCommand` is invoked.
 
@@ -236,7 +251,7 @@ class Context:
         self.client_id = app.config["DISCORD_CLIENT_ID"] if app else ""
         self.auth_headers = discord.auth_headers(app) if discord else {}
 
-        self.author = Member(**data.get("member", {}))
+        self.author = Member.from_dict(data.get("member", {}))
         self.id = data.get("id")
         self.token = data.get("token")
         self.channel_id = data.get("channel_id")
@@ -246,6 +261,7 @@ class Context:
         self.command_id = data.get("data", {}).get("id")
 
         self.parse_resolved(data.get("data", {}).get("resolved", {}))
+        return self
 
     def parse_resolved(self, data):
         """
@@ -264,12 +280,12 @@ class Context:
         for id in data.get("members", {}):
             member_info = data["members"][id]
             member_info["user"] = data["users"][id]
-            self.members[id] = Member(member_info)
+            self.members[id] = Member.from_dict(member_info)
 
-        self.channels = {id: Channel(data)
+        self.channels = {id: Channel.from_dict(data)
                          for id, data in data.get("channels", {}).items()}
 
-        self.roles = {id: Role(data)
+        self.roles = {id: Role.from_dict(data)
                       for id, data in data.get("roles", {}).items()}
 
     def create_args(self, data, resolved):
@@ -306,13 +322,13 @@ class Context:
                 member_data = resolved["members"][option["value"]]
                 member_data["user"] = resolved["users"][option["value"]]
 
-                kwargs[option["name"]] = Member(**member_data)
+                kwargs[option["name"]] = Member.from_dict(member_data)
             elif option["type"] == CommandOptionType.CHANNEL:
-                kwargs[option["name"]] = Channel(
-                    **resolved["channels"][option["value"]])
+                kwargs[option["name"]] = Channel.from_dict(
+                    resolved["channels"][option["value"]])
             elif option["type"] == CommandOptionType.ROLE:
-                kwargs[option["name"]] = Role(
-                    **resolved["roles"][option["value"]])
+                kwargs[option["name"]] = Role.from_dict(
+                    resolved["roles"][option["value"]])
             else:
                 kwargs[option["name"]] = option["value"]
 
