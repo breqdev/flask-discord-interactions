@@ -11,8 +11,13 @@ class Client:
         self.current_context = Context()
 
     @contextmanager
-    def context(self, context=None):
-        self.current_context = context
+    def context(self, context=None, **kwargs):
+        if context:
+            self.current_context = context
+        elif kwargs:
+            self.current_context = Context(**kwargs)
+        else:
+            self.current_context = Context()
         try:
             yield self.current_context
         finally:
