@@ -23,6 +23,7 @@ setup(
         "requests",
         "PyNaCl"
     ],
+    tests_require=["pytest"],
     classifiers=[
         'Environment :: Web Environment',
         'Intended Audience :: Developers',

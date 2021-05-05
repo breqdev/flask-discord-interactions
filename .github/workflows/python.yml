@@ -1,0 +1,61 @@
+name: Lint, Test, Build, and Publish the Python package
+
+on: push
+
+jobs:
+  lint-n-test:
+    name: Lint and test
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest pytest-cov sphinx
+        pip install -r requirements.txt
+    - name: Lint with flake8
+      run: |
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Build Sphinx docs
+      run: |
+        make -C docs html
+    - name: Test with pytest
+      run: |
+        pytest --cov=flask_discord_interactions
+
+  build-n-publish:
+    name: Build and publish to PyPI
+    needs: lint-n-test
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v2
+    - name: Set up latest Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build
+    - name: Build a binary wheel and source tarball
+      run: |
+        python -m build --sdist --wheel --outdir dist/ .
+    - name: Publish to PyPI
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}

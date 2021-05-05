@@ -98,6 +98,11 @@ class Response:
         else:
             return Response(str(result))
 
+    def __repr__(self):
+        return (f"Response(content={repr(self.content)} "
+                f"len(embeds)={len(self.embeds or [])} "
+                f"len(files)={len(self.files or [])})")
+
     def dump(self):
         """
         Return this ``Response`` as a dict to be sent in response to an

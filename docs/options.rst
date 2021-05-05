@@ -110,7 +110,7 @@ Full API
 
 |
 
-.. autoclass:: flask_discord_interactions.Channel
+.. autoclass:: flask_discord_interactions.Channel(**kwargs)
     :members:
 
 |
@@ -122,16 +122,16 @@ Full API
 
 |
 
-.. autoclass:: flask_discord_interactions.User
+.. autoclass:: flask_discord_interactions.User(**kwargs)
     :members:
 
 |
 
-.. autoclass:: flask_discord_interactions.Member
+.. autoclass:: flask_discord_interactions.Member(**kwargs)
     :members:
     :show-inheritance:
 
 |
 
-.. autoclass:: flask_discord_interactions.Role
+.. autoclass:: flask_discord_interactions.Role(**kwargs)
     :members:
