@@ -78,6 +78,11 @@ class Response:
             raise ValueError(
                 "Ephemeral responses cannot include embeds or files.")
 
+        if self.embeds is not None:
+            for i, embed in enumerate(self.embeds):
+                if not dataclasses.is_dataclass(embed):
+                    self.embeds[i] = Embed(**embed)
+
     @property
     def response_type(self):
         "The Discord response type of the Interaction response."
@@ -94,19 +99,12 @@ class Response:
         """
         return 64 if self.ephemeral else 0
 
-    @property
-    def embeds_as_dict(self):
+    def dump_embeds(self):
         "Returns the embeds of this Response as a list of dicts."
         if self.embeds is None:
             return None
 
-        embeds = []
-        for embed in self.embeds:
-            if dataclasses.is_dataclass(embed):
-                embeds.append(dataclasses.asdict(embed))
-            else:
-                embeds.append(embed)
-        return embeds
+        return [dataclasses.asdict(embed) for embed in self.embeds]
 
     @classmethod
     def from_return_value(cls, result):
@@ -143,7 +141,7 @@ class Response:
             "data": {
                 "content": self.content,
                 "tts": self.tts,
-                "embeds": self.embeds_as_dict,
+                "embeds": self.dump_embeds(),
                 "allowed_mentions": self.allowed_mentions,
                 "flags": self.flags
             }
@@ -161,7 +159,7 @@ class Response:
         return {
             "content": self.content,
             "tts": self.tts,
-            "embeds": self.embeds_as_dict,
+            "embeds": self.dump_embeds(),
             "allowed_mentions": self.allowed_mentions
         }
 
