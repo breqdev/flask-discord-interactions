@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+
 from flask_discord_interactions.response import Response
 from flask_discord_interactions.context import Context
 from flask_discord_interactions.command import SlashCommandSubgroup
@@ -6,32 +8,15 @@ from flask_discord_interactions.command import SlashCommandSubgroup
 class Client:
     def __init__(self, discord):
         self.discord = discord
+        self.current_context = Context(data={})
 
-    def make_context(self):
-        return Context(data={
-            "id": 1,
-            "channel_id": "",
-            "guild_id": "",
-            "token": "",
-            "data": {
-                "id": 1,
-                "name": "ping",
-                "options": [
-                    {
-                        "type": 1,
-                        "name": "Pong"
-                    }
-                ]
-            },
-            "member": {
-                "id": 1,
-                "nick": "",
-                "user": {
-                    "id": 1,
-                    "username": "test"
-                }
-            }
-        })
+    @contextmanager
+    def context(self, context=None):
+        self.current_context = context
+        try:
+            yield self.current_context
+        finally:
+            self.current_context = Context(data={})
 
     def run(self, *names, **params):
         command = self.discord.discord_commands[names[0]]
@@ -43,4 +28,4 @@ class Client:
             command = command.subcommands[names[i]]
 
         return Response.from_return_value(
-            command.run(self.make_context(), *names[i:], **params))
+            command.run(self.current_context, *names[i:], **params))

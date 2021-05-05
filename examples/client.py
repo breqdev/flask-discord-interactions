@@ -9,7 +9,8 @@ sys.path.insert(1, ".")
 
 from flask_discord_interactions import (DiscordInteractions,  # noqa: E402
                                         Client, Response,
-                                        CommandOptionType)
+                                        CommandOptionType,
+                                        Context, Member)
 
 
 app = Flask(__name__)
@@ -60,3 +61,15 @@ def manual_style_group(ctx, sub):
 
 print(test_client.run("manual_style_group", "subcommand_1"))
 print(test_client.run("manual_style_group", "subcommand_2"))
+
+
+@discord.command()
+def uses_context(ctx):
+    return f"Your name is {ctx.author.display_name}"
+
+context = Context()
+context.author = Member()
+context.author.username = "Bob"
+
+with test_client.context(context):
+    print(test_client.run("uses_context"))

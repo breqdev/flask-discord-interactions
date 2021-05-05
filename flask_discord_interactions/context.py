@@ -57,19 +57,21 @@ class User:
         Miscellaneous information about the user.
     """
 
-    def __init__(self, data=None):
-        if data:
-            self.id = data.get("id")
-            self.username = data.get("username")
-            self.discriminator = data.get("discriminator")
-            self.avatar_hash = data.get("avatar")
-            self.bot = data.get("bot", False)
-            self.system = data.get("system", False)
-            self.mfa_enabled = data.get("mfa_enabled", False)
-            self.locale = data.get("locale")
-            self.flags = data.get("flags")
-            self.premium_type = data.get("premium_type")
-            self.public_flags = data.get("public_flags")
+    def __init__(self, data={}):
+        if data is None:
+            data = {}
+
+        self.id = data.get("id")
+        self.username = data.get("username")
+        self.discriminator = data.get("discriminator")
+        self.avatar_hash = data.get("avatar")
+        self.bot = data.get("bot", False)
+        self.system = data.get("system", False)
+        self.mfa_enabled = data.get("mfa_enabled", False)
+        self.locale = data.get("locale")
+        self.flags = data.get("flags")
+        self.premium_type = data.get("premium_type")
+        self.public_flags = data.get("public_flags")
 
     @property
     def display_name(self):
@@ -106,17 +108,19 @@ class Member(User):
         Whether the user has passed the membership requirements of a guild.
     """
 
-    def __init__(self, data=None):
-        if data:
-            super().__init__(data["user"])
+    def __init__(self, data={}):
+        if data is None:
+            data = {}
 
-            self.nick = data.get("nick")
-            self.roles = data.get("roles")
-            self.joined_at = data.get("joined_at")
-            self.premium_since = data.get("premium_since")
-            self.deaf = data.get("deaf")
-            self.mute = data.get("mute")
-            self.pending = data.get("pending")
+        super().__init__(data.get("user"))
+
+        self.nick = data.get("nick")
+        self.roles = data.get("roles")
+        self.joined_at = data.get("joined_at")
+        self.premium_since = data.get("premium_since")
+        self.deaf = data.get("deaf")
+        self.mute = data.get("mute")
+        self.pending = data.get("pending")
 
     @property
     def display_name(self):
@@ -144,12 +148,14 @@ class Channel:
         The type of channel.
     """
 
-    def __init__(self, data=None):
-        if data:
-            self.id = data.get("id")
-            self.name = data.get("name")
-            self.permissions = data.get("permissions")
-            self.type = data.get("type")
+    def __init__(self, data={}):
+        if data is None:
+            data = {}
+
+        self.id = data.get("id")
+        self.name = data.get("name")
+        self.permissions = data.get("permissions")
+        self.type = data.get("type")
 
 
 class Role:
@@ -178,17 +184,19 @@ class Role:
         Miscellaneous information about the role.
     """
 
-    def __init__(self, data=None):
-        if data:
-            self.id = data.get("id")
-            self.name = data.get("name")
-            self.color = data.get("color")
-            self.hoist = data.get("hoist")
-            self.position = data.get("position")
-            self.permissions = data.get("permissions")
-            self.managed = data.get("managed")
-            self.mentionable = data.get("mentionable")
-            self.tags = data.get("tags", {})
+    def __init__(self, data={}):
+        if data is None:
+            data = {}
+
+        self.id = data.get("id")
+        self.name = data.get("name")
+        self.color = data.get("color")
+        self.hoist = data.get("hoist")
+        self.position = data.get("position")
+        self.permissions = data.get("permissions")
+        self.managed = data.get("managed")
+        self.mentionable = data.get("mentionable")
+        self.tags = data.get("tags", {})
 
 
 class Context:
@@ -221,21 +229,23 @@ class Context:
         :class:`Role` object for each role specified as an option.
     """
 
-    def __init__(self, discord=None, app=None, data=None):
+    def __init__(self, discord=None, app=None, data={}):
+        if data is None:
+            data = {}
+
         self.client_id = app.config["DISCORD_CLIENT_ID"] if app else ""
         self.auth_headers = discord.auth_headers(app) if discord else {}
 
-        if data:
-            self.author = Member(data["member"])
-            self.id = data["id"]
-            self.token = data["token"]
-            self.channel_id = data["channel_id"]
-            self.guild_id = data["guild_id"]
-            self.options = data["data"].get("options")
-            self.command_name = data["data"]["name"]
-            self.command_id = data["data"]["id"]
+        self.author = Member(data.get("member"))
+        self.id = data.get("id")
+        self.token = data.get("token")
+        self.channel_id = data.get("channel_id")
+        self.guild_id = data.get("guild_id")
+        self.options = data.get("data", {}).get("options")
+        self.command_name = data.get("data", {}).get("name")
+        self.command_id = data.get("data", {}).get("id")
 
-            self.parse_resolved(data["data"].get("resolved", {}))
+        self.parse_resolved(data.get("data", {}).get("resolved", {}))
 
     def parse_resolved(self, data):
         """
