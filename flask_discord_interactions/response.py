@@ -101,10 +101,7 @@ class Response:
 
     def dump_embeds(self):
         "Returns the embeds of this Response as a list of dicts."
-        if self.embeds is None:
-            return None
-
-        return [dataclasses.asdict(embed) for embed in self.embeds]
+        return [embed.dump() for embed in self.embeds] if self.embeds else None
 
     @classmethod
     def from_return_value(cls, result):

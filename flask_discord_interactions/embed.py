@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import List
 
 @dataclass
@@ -18,9 +18,10 @@ class Field:
 @dataclass
 class Media:
     "Represents a thumbnail, image, or video on an Embed."
-    url: str
-    proxy_url: str
-    height: int
+    url: str = None
+    proxy_url: str = None
+    height: int = None
+    width: int = None
 
 @dataclass
 class Provider:
@@ -53,3 +54,14 @@ class Embed:
     provider: Provider = None
     author: Author = None
     fields: List[Field] = None
+
+    def dump(self):
+        "Returns this Embed as a dictionary, removing fields which are None."
+        def filter_none(d):
+            if isinstance(d, dict):
+                return {k: filter_none(v)
+                        for k, v in d.items() if v is not None}
+            else:
+                return d
+
+        return filter_none(asdict(self))
