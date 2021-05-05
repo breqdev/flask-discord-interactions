@@ -4,6 +4,7 @@ import itertools
 
 from flask_discord_interactions.context import (Context, CommandOptionType,
                                                 User, Member, Channel, Role)
+from flask_discord_interactions.response import Response
 
 
 class SlashCommand:
@@ -128,12 +129,20 @@ class SlashCommand:
             The Flask app used to receive this interaction.
         data
             The incoming interaction data.
+
+        Returns
+        -------
+        Response
+            The response by the command, converted to a Response object.
         """
 
         context = Context.from_data(discord, app, data)
         args, kwargs = context.create_args(
             data["data"], resolved=data["data"].get("resolved"))
-        return self.run(context, *args, **kwargs)
+
+        result = self.run(context, *args, **kwargs)
+
+        return Response.from_return_value(result)
 
     def run(self, context, *args, **kwargs):
         """

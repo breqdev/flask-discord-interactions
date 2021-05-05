@@ -91,28 +91,6 @@ class Response:
         """
         return 64 if self.ephemeral else 0
 
-    @property
-    def allowed_initial(self):
-        """
-        Returns if this Response is valid to send as an initial Interaction
-        response (i.e., if it does not contain files).
-        """
-        if self.files:
-            return False
-        return True
-
-    @property
-    def allowed_followup(self):
-        """
-        Returns if this Response is valid to send as a followup Interaction
-        response/webhook (i.e., if it is not set as ephemeral or deferred).
-        """
-        if self.ephemeral:
-            return False
-        if self.deferred:
-            return False
-        return True
-
     @classmethod
     def from_return_value(cls, result):
         """
@@ -139,6 +117,10 @@ class Response:
         incoming webhook.
         """
 
+        if self.files:
+            raise ValueError(
+                "files are not allowed in an initial Interaction response")
+
         return {
             "type": self.response_type,
             "data": {
@@ -154,6 +136,10 @@ class Response:
         """
         Return this ``Response`` as a dict to be sent to an outgoing webhook.
         """
+
+        if self.ephemeral or self.deferred:
+            raise ValueError(
+                "ephemeral and deferred are not valid in followup responses")
 
         return {
             "content": self.content,
