@@ -10,3 +10,4 @@ API Reference
     debugging.rst
     options.rst
     response.rst
+    client.rst
