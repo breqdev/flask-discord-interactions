@@ -376,4 +376,4 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                     "type": ResponseType.PONG
                 })
 
-            return jsonify(self.run_command(request.json))
+            return jsonify(self.run_command(request.json).dump())

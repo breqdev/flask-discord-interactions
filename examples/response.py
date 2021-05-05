@@ -6,7 +6,7 @@ from flask import Flask
 sys.path.insert(1, ".")
 
 from flask_discord_interactions import (DiscordInteractions,  # noqa: E402
-                                        Response)
+                                        Response, Embed, embed)
 
 
 app = Flask(__name__)
@@ -31,13 +31,34 @@ def markdown(ctx):
     return "All *the* **typical** ~~discord~~ _markdown_ `works` ***too.***"
 
 
-@discord.command()
-def embed(ctx):
+@discord.command(name="embed")
+def embed_(ctx):
     "Embeds!"
+
+    return Response(embed=Embed(
+        title="Embeds!",
+        description="Embeds can be specified as Embed objects.",
+        fields=[
+            embed.Field(
+                name="Can they use markdown?",
+                value="**Yes!** [link](https://google.com/)"
+            ),
+            embed.Field(
+                name="Where do I learn about how to format this object?",
+                value=("[Try this visualizer!]"
+                       "(https://leovoel.github.io/embed-visualizer/)")
+            )
+        ]
+    ))
+
+
+@discord.command()
+def dict_embed(ctx):
+    "Embeds as dict objects!"
 
     return Response(embed={
         "title": "Embeds!",
-        "description": "Embeds must be specified as JSON objects.",
+        "description": "Embeds can also be specified as JSON objects.",
         "fields": [
             {
                 "name": "Can they use markdown?",

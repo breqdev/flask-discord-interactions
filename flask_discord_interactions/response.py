@@ -97,6 +97,9 @@ class Response:
     @property
     def embeds_as_dict(self):
         "Returns the embeds of this Response as a list of dicts."
+        if self.embeds is None:
+            return None
+
         embeds = []
         for embed in self.embeds:
             if dataclasses.is_dataclass(embed):
