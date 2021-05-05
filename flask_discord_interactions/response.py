@@ -1,4 +1,6 @@
 import json
+import dataclasses
+from typing import List
 
 
 class ResponseType:
@@ -8,6 +10,7 @@ class ResponseType:
     DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE = 5
 
 
+@dataclasses.dataclass
 class Response:
     """
     Represents a response to a Discord interaction (incoming webhook)
@@ -40,46 +43,78 @@ class Response:
         An array of files to attach to the message. Speficy just one of
         ``file`` or ``files``. Only valid for outgoing webhooks.
     """
-    def __init__(self, content=None, *, tts=False, embed=None, embeds=None,
-                 allowed_mentions={"parse": ["roles", "users", "everyone"]},
-                 deferred=False, ephemeral=False, file=None, files=None):
-        self.content = content
-        self.tts = tts
+    content: str = None
+    tts: bool = False
+    embed: dict = None
+    embeds: List[dict] = None
+    allowed_mentions: dict = dataclasses.field(
+        default_factory=lambda: {"parse": ["roles", "users", "everyone"]})
+    deferred: bool = False
+    ephemeral: bool = False
+    file: tuple = None
+    files: List[tuple] = None
 
-        if embed is not None and embeds is not None:
+    def __post_init__(self):
+        if self.embed is not None and self.embeds is not None:
             raise ValueError("Specify only one of embed or embeds")
-        if embed is not None:
-            embeds = [embed]
-        self.embeds = embeds
+        if self.embed is not None:
+            self.embeds = [self.embed]
 
-        if file is not None and files is not None:
+        if self.file is not None and self.files is not None:
             raise ValueError("Specify only one of file or files")
-        if file is not None:
-            files = [file]
-        self.files = files
-
-        self.allowed_mentions = allowed_mentions
-
-        if deferred:
-            self.response_type = \
-                ResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
-        else:
-            self.response_type = \
-                ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
-
-        self.flags = 64 if ephemeral else 0
+        if self.file is not None:
+            self.files = [self.file]
 
         if (self.content is None and self.embeds is None
-                and self.files is None and not deferred):
+                and self.files is None and not self.deferred):
             raise ValueError(
                 "Supply at least one of content, embeds, files, or deferred.")
 
-        if ephemeral and (self.embeds is not None or self.files is not None):
+        if self.ephemeral and (
+                self.embeds is not None or self.files is not None):
             raise ValueError(
                 "Ephemeral responses cannot include embeds or files.")
 
-    @staticmethod
-    def from_return_value(result):
+    @property
+    def response_type(self):
+        "The Discord response type of the Interaction response."
+        if self.deferred:
+            return ResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
+        else:
+            return ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
+
+    @property
+    def flags(self):
+        """
+        The flags sent with this response, determined by whether it is
+        ephemeral.
+        """
+        return 64 if self.ephemeral else 0
+
+    @property
+    def allowed_initial(self):
+        """
+        Returns if this Response is valid to send as an initial Interaction
+        response (i.e., if it does not contain files).
+        """
+        if self.files:
+            return False
+        return True
+
+    @property
+    def allowed_followup(self):
+        """
+        Returns if this Response is valid to send as a followup Interaction
+        response/webhook (i.e., if it is not set as ephemeral or deferred).
+        """
+        if self.ephemeral:
+            return False
+        if self.deferred:
+            return False
+        return True
+
+    @classmethod
+    def from_return_value(cls, result):
         """
         Convert a function return value into a Response object.
         Converts ``None`` to an empty response, or any other type to ``str``
@@ -92,16 +127,11 @@ class Response:
         """
 
         if result is None:
-            return Response()
-        elif isinstance(result, Response):
+            return cls()
+        elif isinstance(result, cls):
             return result
         else:
-            return Response(str(result))
-
-    def __repr__(self):
-        return (f"Response(content={repr(self.content)} "
-                f"len(embeds)={len(self.embeds or [])} "
-                f"len(files)={len(self.files or [])})")
+            return cls(str(result))
 
     def dump(self):
         """
