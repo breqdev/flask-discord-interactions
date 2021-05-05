@@ -130,7 +130,7 @@ class SlashCommand:
             The incoming interaction data.
         """
 
-        context = Context(discord, app, data)
+        context = Context.from_data(discord, app, data)
         args, kwargs = context.create_args(
             data["data"], resolved=data["data"].get("resolved"))
         return self.run(context, *args, **kwargs)

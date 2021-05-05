@@ -67,9 +67,7 @@ print(test_client.run("manual_style_group", "subcommand_2"))
 def uses_context(ctx):
     return f"Your name is {ctx.author.display_name}"
 
-context = Context()
-context.author = Member()
-context.author.username = "Bob"
+context = Context(author=Member(username="Bob"))
 
 with test_client.context(context):
     print(test_client.run("uses_context"))

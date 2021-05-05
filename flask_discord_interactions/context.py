@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+from typing import List
+
 import requests
 
 from flask_discord_interactions.response import Response
@@ -26,6 +29,7 @@ class ChannelType:
     GUILD_STORE = 6
 
 
+@dataclass
 class User:
     """
     Represents a User (the identity of a Discord user, not tied to any
@@ -56,22 +60,17 @@ class User:
     public_flags
         Miscellaneous information about the user.
     """
-
-    def __init__(self, data={}):
-        if data is None:
-            data = {}
-
-        self.id = data.get("id")
-        self.username = data.get("username")
-        self.discriminator = data.get("discriminator")
-        self.avatar_hash = data.get("avatar")
-        self.bot = data.get("bot", False)
-        self.system = data.get("system", False)
-        self.mfa_enabled = data.get("mfa_enabled", False)
-        self.locale = data.get("locale")
-        self.flags = data.get("flags")
-        self.premium_type = data.get("premium_type")
-        self.public_flags = data.get("public_flags")
+    id: str = None
+    username: str = None
+    discriminator: str = None
+    avatar_hash: str = None
+    bot: bool = None
+    system: bool = None
+    mfa_enabled: bool = None
+    locale: str = None
+    flags: int = None
+    premium_type: int = None
+    public_flags: int = None
 
     @property
     def display_name(self):
@@ -85,6 +84,7 @@ class User:
                 f"{self.id}/{self.avatar_hash}.png")
 
 
+@dataclass
 class Member(User):
     """
     Represents a Member (a specific Discord :class:`User` in one particular
@@ -107,20 +107,13 @@ class Member(User):
     pending
         Whether the user has passed the membership requirements of a guild.
     """
-
-    def __init__(self, data={}):
-        if data is None:
-            data = {}
-
-        super().__init__(data.get("user"))
-
-        self.nick = data.get("nick")
-        self.roles = data.get("roles")
-        self.joined_at = data.get("joined_at")
-        self.premium_since = data.get("premium_since")
-        self.deaf = data.get("deaf")
-        self.mute = data.get("mute")
-        self.pending = data.get("pending")
+    nick: str = None
+    roles: list = None
+    joined_at: str = None
+    premium_since: str = None
+    deaf: bool = None
+    mute: bool = None
+    pending: bool = None
 
     @property
     def display_name(self):
@@ -131,6 +124,7 @@ class Member(User):
         return self.nick or self.username
 
 
+@dataclass
 class Channel:
     """
     Represents a Channel in Discord. This includes voice channels, text
@@ -147,17 +141,13 @@ class Channel:
     type
         The type of channel.
     """
-
-    def __init__(self, data={}):
-        if data is None:
-            data = {}
-
-        self.id = data.get("id")
-        self.name = data.get("name")
-        self.permissions = data.get("permissions")
-        self.type = data.get("type")
+    id: str = None
+    name: str = None
+    permissions: int = None
+    type: int = None
 
 
+@dataclass
 class Role:
     """
     Represents a Role in Discord.
@@ -183,22 +173,17 @@ class Role:
     tags
         Miscellaneous information about the role.
     """
-
-    def __init__(self, data={}):
-        if data is None:
-            data = {}
-
-        self.id = data.get("id")
-        self.name = data.get("name")
-        self.color = data.get("color")
-        self.hoist = data.get("hoist")
-        self.position = data.get("position")
-        self.permissions = data.get("permissions")
-        self.managed = data.get("managed")
-        self.mentionable = data.get("mentionable")
-        self.tags = data.get("tags", {})
+    id: str = None
+    name: str = None
+    color: str = None
+    hoist: bool = None
+    position: int = None
+    managed: bool = None
+    mentionable: bool = None
+    tags: dict = None
 
 
+@dataclass
 class Context:
     """
     Represents the context in which a :class:`SlashCommand` is invoked.
@@ -228,15 +213,30 @@ class Context:
     roles
         :class:`Role` object for each role specified as an option.
     """
+    author: Member = None
+    id: str = None
+    token: str = None
+    channel_id: str = None
+    guild_id: str = None
+    options: list = None
+    command_name: str = None
+    command_id: str = None
+    members: List[Member] = None
+    channels: List[Channel] = None
+    roles: List[Role] = None
 
-    def __init__(self, discord=None, app=None, data={}):
+
+    @classmethod
+    def from_data(cls, discord=None, app=None, data={}):
         if data is None:
             data = {}
+
+        self = cls()
 
         self.client_id = app.config["DISCORD_CLIENT_ID"] if app else ""
         self.auth_headers = discord.auth_headers(app) if discord else {}
 
-        self.author = Member(data.get("member"))
+        self.author = Member(**data.get("member", {}))
         self.id = data.get("id")
         self.token = data.get("token")
         self.channel_id = data.get("channel_id")
@@ -306,13 +306,13 @@ class Context:
                 member_data = resolved["members"][option["value"]]
                 member_data["user"] = resolved["users"][option["value"]]
 
-                kwargs[option["name"]] = Member(member_data)
+                kwargs[option["name"]] = Member(**member_data)
             elif option["type"] == CommandOptionType.CHANNEL:
                 kwargs[option["name"]] = Channel(
-                    resolved["channels"][option["value"]])
+                    **resolved["channels"][option["value"]])
             elif option["type"] == CommandOptionType.ROLE:
                 kwargs[option["name"]] = Role(
-                    resolved["roles"][option["value"]])
+                    **resolved["roles"][option["value"]])
             else:
                 kwargs[option["name"]] = option["value"]
 

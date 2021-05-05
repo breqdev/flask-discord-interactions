@@ -8,7 +8,7 @@ from flask_discord_interactions.command import SlashCommandSubgroup
 class Client:
     def __init__(self, discord):
         self.discord = discord
-        self.current_context = Context(data={})
+        self.current_context = Context()
 
     @contextmanager
     def context(self, context=None):
@@ -16,7 +16,7 @@ class Client:
         try:
             yield self.current_context
         finally:
-            self.current_context = Context(data={})
+            self.current_context = Context()
 
     def run(self, *names, **params):
         command = self.discord.discord_commands[names[0]]
