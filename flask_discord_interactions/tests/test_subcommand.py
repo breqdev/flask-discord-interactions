@@ -1,3 +1,6 @@
+from flask_discord_interactions import CommandOptionType
+
+
 def test_subcommand(discord, client):
     group = discord.command_group("group")
 
@@ -34,3 +37,41 @@ def test_subcommand_groups(discord, client):
     assert client.run("group", "sub_one", "sub_one_one").content == "one one"
     assert client.run("group", "sub_one", "sub_one_two").content == "one two"
     assert client.run("group", "sub_two", "sub_two_one").content == "two one"
+
+
+def test_oldstyle_subcommand(discord, client):
+    @discord.command(options=[
+        {
+            "name": "google",
+            "description": "Search with Google",
+            "type": CommandOptionType.SUB_COMMAND,
+            "options": [{
+                "name": "query",
+                "description": "Search query",
+                "type": CommandOptionType.STRING,
+                "required": True
+            }]
+        },
+        {
+            "name": "bing",
+            "description": "Search with Bing",
+            "type": CommandOptionType.SUB_COMMAND,
+            "options": [{
+                "name": "query",
+                "description": "Search query",
+                "type": CommandOptionType.STRING,
+                "required": True
+            }]
+        }
+    ])
+    def search(ctx, subcommand, *, query):
+        "Search the Internet!"
+        if subcommand == "google":
+            return f"https://google.com/search?q={query}"
+        if subcommand == "bing":
+            return f"https://bing.com/search?q={query}"
+
+    assert client.run("search", "google", query="hello").content == \
+        "https://google.com/search?q=hello"
+    assert client.run("search", "bing", query="hello").content == \
+        "https://bing.com/search?q=hello"

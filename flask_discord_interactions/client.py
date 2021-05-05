@@ -31,8 +31,8 @@ class Client:
             if not isinstance(command, SlashCommandSubgroup):
                 break
             command = command.subcommands[names[i]]
-
-        i += 1
+        else:
+            i += 1
 
         return Response.from_return_value(
             command.run(self.current_context, *names[i:], **params))
