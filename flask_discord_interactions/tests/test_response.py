@@ -1,6 +1,8 @@
+import json
+
 import pytest
 
-from flask_discord_interactions import Response, Embed, embed
+from flask_discord_interactions import Response, ResponseType, Embed, embed
 
 
 def test_content(discord, client):
@@ -56,16 +58,20 @@ def test_class_embed(discord, client):
 
 
 def test_improper_immediate(discord, client):
+    fp = open("README.md", "r")
+
     @discord.command()
     def improper_immediate(ctx):
         return Response(
-            file=("README.md", open("README.md", "r"), "text/markdown")
+            file=("README.md", fp, "text/markdown")
         )
 
     result = client.run("improper_immediate")
 
     with pytest.raises(ValueError):
         result.dump()
+
+    fp.close()
 
 
 def test_improper_followup(discord, client):
@@ -86,3 +92,72 @@ def test_ephemeral(discord, client):
 
     assert client.run("ephemeral").content == "hi"
     assert client.run("ephemeral").flags == 64
+
+
+def test_dump_immediate(discord, client):
+    @discord.command()
+    def use_response(ctx):
+        return Response("hi", tts=True, embed=Embed(title="hello!"))
+
+    expected = {
+        "type": ResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        "data": {
+            "content": "hi",
+            "embeds": [{
+                "title": "hello!"
+            }],
+            "flags": 0,
+            "tts": True,
+            "allowed_mentions": {"parse": ["roles", "users", "everyone"]}
+        }
+    }
+
+    assert client.run("use_response").dump() == expected
+
+
+def test_dump_followup():
+    resp = Response(
+        content="Followup",
+        embed=Embed(title="hello!"),
+    )
+
+    expected = {
+        "content": "Followup",
+        "embeds": [{
+            "title": "hello!"
+        }],
+        "tts": False,
+        "allowed_mentions": {"parse": ["roles", "users", "everyone"]}
+    }
+
+    assert resp.dump_followup() == expected
+
+
+def test_dump_multipart():
+    fp = open("README.md", "r")
+    resp = Response(
+        content="Followup",
+        embed=Embed(title="hello!"),
+        file=("README.md", fp, "text/markdown")
+    )
+
+    expected = {
+        "data": {
+            "payload_json": json.dumps({
+                "content": "Followup",
+                "tts": False,
+                "embeds": [{
+                    "title": "hello!"
+                }],
+                "allowed_mentions": {"parse": ["roles", "users", "everyone"]}
+            })
+        },
+        "files": [
+            ("file", ("README.md", fp, "text/markdown"))
+        ]
+    }
+
+    try:
+        assert resp.dump_multipart() == expected
+    finally:
+        fp.close()
