@@ -1,4 +1,5 @@
 import json
+import inspect
 import dataclasses
 from typing import List, Union
 
@@ -116,8 +117,13 @@ class Response:
             The function return value to convert into a ``Response`` object.
         """
 
+        async def construct_async(result):
+            return cls.from_return_value(await result)
+
         if result is None:
             return cls()
+        elif inspect.isawaitable(result):
+            return construct_async(result)
         elif isinstance(result, cls):
             return result
         else:
