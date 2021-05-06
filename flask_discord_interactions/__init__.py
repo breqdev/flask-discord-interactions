@@ -6,6 +6,7 @@ from flask_discord_interactions.command import (
 
 from flask_discord_interactions.context import (
     Context,
+    AsyncContext,
     CommandOptionType,
     ChannelType,
     Member,
@@ -37,6 +38,7 @@ __all__ = [
     "SlashCommandSubgroup",
     "SlashCommandGroup",
     "Context",
+    "AsyncContext",
     "CommandOptionType",
     "ChannelType",
     "Member",

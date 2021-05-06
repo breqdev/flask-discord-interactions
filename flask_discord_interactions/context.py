@@ -428,6 +428,13 @@ class Context(ContextObject):
 
 @dataclass
 class AsyncContext(Context):
+    """
+    Represents the context in which an asynchronous :class:`SlashCommand` is
+    invoked. Also provides coroutine functions to handle followup messages.
+
+    Users should not need to instantiate this class manually.
+    """
+
     def __post_init__(self):
         self.session = aiohttp.ClientSession(
             headers=self.auth_headers,
