@@ -4,6 +4,11 @@ import inspect
 
 import requests
 
+try:
+    import aiohttp
+except ImportError:
+    aiohttp = None
+
 from flask_discord_interactions.response import Response
 
 
@@ -249,28 +254,29 @@ class Context(ContextObject):
     channels: List[Channel] = None
     roles: List[Role] = None
 
+    client_id: str = ""
+    auth_headers: dict = None
 
     @classmethod
     def from_data(cls, discord=None, app=None, data={}):
         if data is None:
             data = {}
 
-        self = cls()
+        result = cls(
+            client_id = app.config["DISCORD_CLIENT_ID"] if app else "",
+            auth_headers = discord.auth_headers(app) if discord else {},
+            author = Member.from_dict(data.get("member", {})),
+            id = data.get("id"),
+            token = data.get("token"),
+            channel_id = data.get("channel_id"),
+            guild_id = data.get("guild_id"),
+            options = data.get("data", {}).get("options"),
+            command_name = data.get("data", {}).get("name"),
+            command_id = data.get("data", {}).get("id")
+        )
 
-        self.client_id = app.config["DISCORD_CLIENT_ID"] if app else ""
-        self.auth_headers = discord.auth_headers(app) if discord else {}
-
-        self.author = Member.from_dict(data.get("member", {}))
-        self.id = data.get("id")
-        self.token = data.get("token")
-        self.channel_id = data.get("channel_id")
-        self.guild_id = data.get("guild_id")
-        self.options = data.get("data", {}).get("options")
-        self.command_name = data.get("data", {}).get("name")
-        self.command_id = data.get("data", {}).get("id")
-
-        self.parse_resolved(data.get("data", {}).get("resolved", {}))
-        return self
+        result.parse_resolved(data.get("data", {}).get("resolved", {}))
+        return result
 
     def parse_resolved(self, data):
         """
@@ -418,3 +424,67 @@ class Context(ContextObject):
         )
         response.raise_for_status()
         return response.json()["id"]
+
+
+@dataclass
+class AsyncContext(Context):
+    def __post_init__(self):
+        self.session = aiohttp.ClientSession(
+            headers=self.auth_headers,
+            raise_for_status=True,
+        )
+
+        if aiohttp is None:
+            raise ValueError("aiohttp is required to create async contexts")
+
+    async def edit(self, response, message="@original"):
+        """
+        Edit an existing message.
+
+        Parameters
+        ----------
+        response
+            The new response to edit the message to.
+        message
+            The message to edit. If omitted, edits the original message.
+        """
+
+        response = Response.from_return_value(response)
+
+        await self.session.patch(
+            self.followup_url(message), json=response.dump_followup()
+        )
+
+    async def delete(self, message="@original"):
+        """
+        Delete an existing message.
+
+        Parameters
+        ----------
+        message
+            The message to delete. If omitted, deletes the original message.
+        """
+
+        await self.session.delete(self.followup_url(message))
+
+    async def send(self, response):
+        """
+        Send a new followup message.
+
+        Parameters
+        ----------
+        response
+            The response to send as a followup message.
+        """
+
+        response = Response.from_return_value(response)
+
+        async with self.session.post(
+            self.followup_url(),
+            headers=self.auth_headers,
+            **response.dump_multipart()
+        ) as response:
+            return (await response.json())["id"]
+
+    async def close(self):
+        await self.session.close()

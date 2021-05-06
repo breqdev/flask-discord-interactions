@@ -3,7 +3,8 @@ import inspect
 import itertools
 
 from flask_discord_interactions.context import (Context, CommandOptionType,
-                                                User, Member, Channel, Role)
+                                                User, Member, Channel, Role,
+                                                AsyncContext)
 from flask_discord_interactions.response import Response
 
 
@@ -54,6 +55,8 @@ class SlashCommand:
             raise ValueError(
                 f"Error adding command {self.name}: "
                 "Command description must be between 1 and 100 characters.")
+
+        self.is_async = inspect.iscoroutinefunction(self.command)
 
         if self.options is None:
             sig = inspect.signature(self.command)
@@ -136,7 +139,10 @@ class SlashCommand:
             The response by the command, converted to a Response object.
         """
 
-        context = Context.from_data(discord, app, data)
+        if self.is_async:
+            context = AsyncContext.from_data(discord, app, data)
+        else:
+            context = Context.from_data(discord, app, data)
         args, kwargs = context.create_args(
             data["data"], resolved=data["data"].get("resolved"))
 
