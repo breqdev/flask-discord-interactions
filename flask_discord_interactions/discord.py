@@ -1,14 +1,15 @@
 import time
+import inspect
 
 import requests
 
-from flask import current_app, request, jsonify
+from flask import current_app, request, jsonify, abort
 
 from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
 
 from flask_discord_interactions.command import SlashCommand, SlashCommandGroup
-from flask_discord_interactions.response import Response, ResponseType
+from flask_discord_interactions.response import ResponseType
 
 
 class InteractionType:
@@ -299,30 +300,6 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         app.discord_commands.update(blueprint.discord_commands)
 
-    def verify_signature(self, data, signature, timestamp):
-        """
-        Verify the signature sent by Discord with incoming interactions.
-
-        Parameters
-        ----------
-        data
-            The interaction data received.
-        signature
-            The signature to verify, received with the interaction data.
-        timestamp
-            The timestamp that accompanies the signature.
-        """
-
-        message = timestamp.encode() + data
-        verify_key = VerifyKey(
-            bytes.fromhex(current_app.config["DISCORD_PUBLIC_KEY"]))
-        try:
-            verify_key.verify(message, bytes.fromhex(signature))
-        except BadSignatureError:
-            return False
-        else:
-            return True
-
     def run_command(self, data):
         """
         Run the corresponding :class:`SlashCommand` given incoming interaction
@@ -343,6 +320,37 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         return slash_command.make_context_and_run(self, current_app, data)
 
+    def verify_signature(self, request):
+        """
+        Verify the signature sent by Discord with incoming interactions.
+
+        Parameters
+        ----------
+        request
+            The request to verify the signature of.
+        """
+
+        signature = request.headers.get('X-Signature-Ed25519')
+        timestamp = request.headers.get('X-Signature-Timestamp')
+
+        if current_app.config["DONT_VALIDATE_SIGNATURE"]:
+            return
+
+        if signature is None or timestamp is None:
+            abort(401, "Missing signature or timestamp")
+
+        message = timestamp.encode() + request.data
+        verify_key = VerifyKey(
+            bytes.fromhex(current_app.config["DISCORD_PUBLIC_KEY"]))
+        try:
+            verify_key.verify(message, bytes.fromhex(signature))
+        except BadSignatureError:
+            abort(401, "Incorrect Signature")
+
+        if not request.json:
+            abort(400, "Request JSON required")
+
+
     def set_route(self, route, app=None):
         """
         Add a route handler to the Flask app that handles incoming
@@ -361,19 +369,38 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         @app.route(route, methods=["POST"])
         def interactions():
-            signature = request.headers.get('X-Signature-Ed25519')
-            timestamp = request.headers.get('X-Signature-Timestamp')
+            self.verify_signature(request)
 
-            if not current_app.config["DONT_VALIDATE_SIGNATURE"]:
-                if (signature is None or timestamp is None
-                        or not self.verify_signature(
-                        request.data, signature, timestamp)):
-                    return "Bad Request Signature", 401
-
-            if (request.json
-                    and request.json.get("type") == InteractionType.PING):
-                return jsonify({
-                    "type": ResponseType.PONG
-                })
+            if request.json.get("type") == InteractionType.PING:
+                return jsonify({"type": ResponseType.PONG})
 
             return jsonify(self.run_command(request.json).dump())
+
+    def set_route_async(self, route, app=None):
+        """
+        Add a route handler to a Quart app that handles incoming interaction
+        data using asyncio.
+
+        Parameters
+        ----------
+        route
+            The URL path to receive interactions on.
+        app
+            The Flask app to add the route to.
+        """
+
+        if app is None:
+            app = self.app
+
+        @app.route(route, methods=["POST"])
+        async def interactions():
+            self.verify_signature(request)
+
+            if request.json.get("type") == InteractionType.PING:
+                return jsonify({"type": ResponseType.PONG})
+
+            result = self.run_command(request.json)
+            if inspect.isawaitable(result):
+                result = await result
+
+            return jsonify(result.dump())

@@ -11,3 +11,4 @@ API Reference
     options.rst
     response.rst
     client.rst
+    quart.rst
