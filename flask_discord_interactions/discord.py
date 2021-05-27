@@ -15,6 +15,7 @@ from flask_discord_interactions.response import ResponseType
 class InteractionType:
     PING = 1
     APPLICATION_COMMAND = 2
+    MESSAGE_COMPONENT = 3
 
 
 class DiscordInteractionsBlueprint:
