@@ -189,8 +189,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
     def update_slash_commands(self, app=None, guild_id=None):
         """
         Update the list of slash commands registered with Discord.
-        This method will delete old/unused slash commands, update modified
-        slash commands, and register new slash commands.
+        This method will overwrite all existing slash commands.
 
         Parameters
         ----------
@@ -207,8 +206,6 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         if app.config['DONT_REGISTER_WITH_DISCORD']:
             return
 
-        needed = app.discord_commands.copy()
-
         if guild_id:
             url = ("https://discord.com/api/v8/applications/"
                    f"{app.config['DISCORD_CLIENT_ID']}/"
@@ -217,47 +214,21 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             url = ("https://discord.com/api/v8/applications/"
                    f"{app.config['DISCORD_CLIENT_ID']}/commands")
 
-        response = requests.get(url, headers=self.auth_headers(app))
-        response.raise_for_status()
-        current = response.json()
+        overwrite_data = [
+            command.dump() for command in app.discord_commands.values()
+        ]
 
-        for command in current:
-            if command["name"] in needed:
-                target = needed[command["name"]]
-                if command["description"] == target.description:
-                    if (not command.get("options") and not target.options
-                            or command.get("options") == target.options):
-                        del needed[command["name"]]
+        response = requests.put(
+            url, json=overwrite_data, headers=self.auth_headers(app))
+        self.throttle(response)
 
-                        target.id = command["id"]
-                        continue
-
-            id = command["id"]
-            if guild_id:
-                delete_url = ("https://discord.com/api/v8/applications/"
-                              f"{app.config['DISCORD_CLIENT_ID']}/"
-                              f"guilds/{guild_id}/commands/{id}")
-            else:
-                delete_url = (
-                    "https://discord.com/api/v8/applications/"
-                    f"{app.config['DISCORD_CLIENT_ID']}/commands/{id}")
-
-            response = requests.delete(
-                delete_url, headers=self.auth_headers(app))
-            self.throttle(response)
+        try:
             response.raise_for_status()
-
-        for name, command in needed.items():
-            response = requests.post(
-                url, json=command.dump(), headers=self.auth_headers(app))
-            self.throttle(response)
-            try:
-                response.raise_for_status()
-            except requests.exceptions.HTTPError:
-                raise ValueError(
-                    f"Unable to register command {command.name}\n"
-                    f"{response.status_code} {response.text}")
-            command.id = response.json()["id"]
+        except requests.exceptions.HTTPError:
+            raise ValueError(
+                f"Unable to register commands:"
+                f"{response.status_code} {response.text}"
+            )
 
     def throttle(self, response):
         """
@@ -277,7 +248,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         # rate_limit_bucket = response.headers["X-RateLimit-Bucket"]
 
         if not rate_limit_remaining:
-            time.sleep(rate_limit_reset - time.time())
+            time.sleep(max(rate_limit_reset - time.time(), 0))
 
     def register_blueprint(self, blueprint, app=None):
         """
