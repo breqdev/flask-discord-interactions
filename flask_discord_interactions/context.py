@@ -256,6 +256,7 @@ class Context(ContextObject):
 
     client_id: str = ""
     auth_headers: dict = None
+    base_url: str = ""
 
     @classmethod
     def from_data(cls, discord=None, app=None, data={}):
@@ -265,6 +266,7 @@ class Context(ContextObject):
         result = cls(
             client_id = app.config["DISCORD_CLIENT_ID"] if app else "",
             auth_headers = discord.auth_headers(app) if discord else {},
+            base_url = app.config["DISCORD_BASE_URL"] if app else "",
             author = Member.from_dict(data.get("member", {})),
             id = data.get("id"),
             token = data.get("token"),
@@ -361,7 +363,7 @@ class Context(ContextObject):
             "@original", refers to the original message.
         """
 
-        url = ("https://discord.com/api/v8/webhooks/"
+        url = (f"{self.base_url}/webhooks/"
                f"{self.client_id}/{self.token}")
         if message is not None:
             url += f"/messages/{message}"

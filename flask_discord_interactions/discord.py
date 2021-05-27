@@ -118,6 +118,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             The Flask app to initialize.
         """
 
+        app.config.setdefault("DISCORD_BASE_URL", "https://discord.com/api/v9")
         app.config.setdefault("DISCORD_CLIENT_ID", "")
         app.config.setdefault("DISCORD_PUBLIC_KEY", "")
         app.config.setdefault("DISCORD_CLIENT_SECRET", "")
@@ -151,7 +152,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             app.discord_token["expires_on"] = (time.time() + app.discord_token["expires_in"]/2)
             return
         response = requests.post(
-            "https://discord.com/api/v8/oauth2/token",
+            app.config["DISCORD_BASE_URL"] + "/oauth2/token",
             data={
                 "grant_type": "client_credentials",
                 "scope": "applications.commands.update"
@@ -207,11 +208,11 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             return
 
         if guild_id:
-            url = ("https://discord.com/api/v8/applications/"
+            url = (f"{app.config['DISCORD_BASE_URL']}/applications/"
                    f"{app.config['DISCORD_CLIENT_ID']}/"
                    f"guilds/{guild_id}/commands")
         else:
-            url = ("https://discord.com/api/v8/applications/"
+            url = (f"{app.config['DISCORD_BASE_URL']}/applications/"
                    f"{app.config['DISCORD_CLIENT_ID']}/commands")
 
         overwrite_data = [
