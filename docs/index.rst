@@ -1,7 +1,7 @@
 Flask-Discord-Interactions
 ==========================
 
-Flask-Discord-Interactions is a Flask extension that lets you write Discord Slash Commands using a decorator syntax similar to Flask's ``@app.route()`` or Discord.py's ``@bot.command()``.
+Flask-Discord-Interactions is a Flask (or `Quart <https://pgjones.gitlab.io/quart/>`_) extension that lets you write Discord Slash Commands using a decorator syntax similar to Flask's ``@app.route()`` or Discord.py's ``@bot.command()``.
 
 .. code-block:: python
 
@@ -19,6 +19,7 @@ Features
 - Add Discord commands to a Flask app
 - Handle webhook verification
 - Send followup messages with webhooks
+- Use ``async``/``await`` (with Quart)
 
 Installation
 ------------
