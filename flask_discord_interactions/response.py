@@ -74,10 +74,8 @@ class Response:
             raise ValueError(
                 "Supply at least one of content, embeds, files, or deferred.")
 
-        if self.ephemeral and (
-                self.embeds is not None or self.files is not None):
-            raise ValueError(
-                "Ephemeral responses cannot include embeds or files.")
+        if self.ephemeral and self.files is not None:
+            raise ValueError("Ephemeral responses cannot include files.")
 
         if self.embeds is not None:
             for i, embed in enumerate(self.embeds):
