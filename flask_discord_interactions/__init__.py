@@ -23,6 +23,13 @@ from flask_discord_interactions.discord import (
 from flask_discord_interactions.response import Response, ResponseType
 import flask_discord_interactions.embed as embed
 from flask_discord_interactions.embed import Embed
+from flask_discord_interactions.component import (
+    Component,
+    ActionRow,
+    Button,
+    ButtonStyles,
+    ComponentType
+)
 from flask_discord_interactions.client import Client
 
 
@@ -50,6 +57,11 @@ __all__ = [
     "Response",
     "ResponseType",
     "Embed",
+    "Component",
+    "ComponentType",
+    "ActionRow",
+    "Button",
+    "ButtonStyles",
     "Client",
 
     "InteractionResponse",

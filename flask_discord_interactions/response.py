@@ -5,6 +5,7 @@ from typing import List, Union
 
 
 from flask_discord_interactions.embed import Embed
+from flask_discord_interactions.component import Component
 
 
 class ResponseType:
@@ -48,6 +49,9 @@ class Response:
     files
         An array of files to attach to the message. Speficy just one of
         ``file`` or ``files``. Only valid for outgoing webhooks.
+    components
+        An array of :class:`.Component` objects representing message
+        components.
     """
     content: str = None
     tts: bool = False
@@ -59,6 +63,7 @@ class Response:
     ephemeral: bool = False
     file: tuple = None
     files: List[tuple] = None
+    components: List[Component] = None
 
     def __post_init__(self):
         if self.embed is not None and self.embeds is not None:
@@ -104,6 +109,10 @@ class Response:
         "Returns the embeds of this Response as a list of dicts."
         return [embed.dump() for embed in self.embeds] if self.embeds else None
 
+    def dump_components(self):
+        "Returns the message components as a list of dicts."
+        return [c.dump() for c in self.components] if self.components else None
+
     @classmethod
     def from_return_value(cls, result):
         """
@@ -146,7 +155,8 @@ class Response:
                 "tts": self.tts,
                 "embeds": self.dump_embeds(),
                 "allowed_mentions": self.allowed_mentions,
-                "flags": self.flags
+                "flags": self.flags,
+                "components": self.dump_components()
             }
         }
 
@@ -163,7 +173,8 @@ class Response:
             "content": self.content,
             "tts": self.tts,
             "embeds": self.dump_embeds(),
-            "allowed_mentions": self.allowed_mentions
+            "allowed_mentions": self.allowed_mentions,
+            "components": self.dump_components()
         }
 
     def dump_multipart(self):
