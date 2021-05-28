@@ -74,6 +74,7 @@ for this example to work.
 .. code-block:: sh
 
     $ curl --location --request POST 'http://127.0.0.1:5000/interactions' --header 'Content-Type: application/json' --data-raw '{
+        "type": 2,
         "id": 1,
         "channel_id": "",
         "guild_id": "",

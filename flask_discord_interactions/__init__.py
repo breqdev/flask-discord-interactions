@@ -16,6 +16,7 @@ from flask_discord_interactions.context import (
 )
 
 from flask_discord_interactions.discord import (
+    InteractionType,
     DiscordInteractions,
     DiscordInteractionsBlueprint
 )
@@ -52,6 +53,7 @@ __all__ = [
     "User",
     "Role",
     "Channel",
+    "InteractionType",
     "DiscordInteractions",
     "DiscordInteractionsBlueprint",
     "Response",
