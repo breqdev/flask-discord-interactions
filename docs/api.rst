@@ -7,7 +7,6 @@ API Reference
     discord.rst
     command.rst
     context.rst
-    debugging.rst
     options.rst
     response.rst
     client.rst
