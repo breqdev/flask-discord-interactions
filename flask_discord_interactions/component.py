@@ -44,7 +44,7 @@ class ButtonStyles:
 class Button(Component):
     "Represents a Button message component."
     style: int
-    custom_id: str
+    custom_id: str = None
     label: str = None
 
     emoji: dict = None
@@ -52,3 +52,11 @@ class Button(Component):
     disabled: bool = False
 
     type: int = ComponentType.BUTTON
+
+    def __post_init__(self):
+        if self.style == ButtonStyles.LINK:
+            if self.url is None:
+                raise ValueError("Link buttons require a url")
+        else:
+            if self.custom_id is None:
+                raise ValueError("Buttons require custom_id")

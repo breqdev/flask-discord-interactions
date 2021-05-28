@@ -10,7 +10,7 @@ sys.path.insert(1, ".")
 
 from flask_discord_interactions import (DiscordInteractions,  # noqa: E402
                                         Response, ActionRow, Button,
-                                        ButtonStyles)
+                                        ButtonStyles, Embed)
 
 
 app = Flask(__name__)
@@ -31,6 +31,8 @@ discord.update_slash_commands()
 click_count = 0
 
 
+# The handler edits the original response by setting update=True
+# It sets the action for the button with custom_id
 @discord.custom_handler()
 def handle_click(ctx):
     global click_count
@@ -51,6 +53,7 @@ def handle_click(ctx):
     )
 
 
+# The main command sends the initial Response
 @discord.command()
 def click_counter(ctx):
     "Count the number of button clicks"
@@ -69,10 +72,10 @@ def click_counter(ctx):
     )
 
 
+# You can also return a normal message
 @discord.custom_handler()
 def handle_upvote(ctx):
     return f"Upvote by {ctx.author.display_name}!"
-
 
 @discord.custom_handler()
 def handle_downvote(ctx):
@@ -100,6 +103,73 @@ def voting(ctx, question: str):
                     emoji={
                         "name": "⬇️",
                     }
+                )
+            ])
+        ]
+    )
+
+
+# Ephemeral messages and embeds work
+@discord.custom_handler()
+def handle_avatar_view(ctx):
+    return Response(
+        embed=Embed(
+            title=f"{ctx.author.display_name}",
+            description=f"{ctx.author.username}#{ctx.author.discriminator}"
+        ),
+        ephemeral=True
+    )
+
+@discord.command()
+def username(ctx):
+    "Show your username and discriminator"
+
+    return Response(
+        content="Show user info!",
+        components=[
+            ActionRow(components=[
+                Button(
+                    style=ButtonStyles.PRIMARY,
+                    custom_id=handle_avatar_view,
+                    label="View User!"
+                )
+            ])
+        ]
+    )
+
+
+# Return nothing for no action
+@discord.custom_handler()
+def handle_do_nothing(ctx):
+    print("Doing nothing...")
+
+@discord.command()
+def do_nothing(ctx):
+    return Response(
+        content="Do nothing",
+        components=[
+            ActionRow(components=[
+                Button(
+                    style=ButtonStyles.PRIMARY,
+                    custom_id=handle_do_nothing,
+                    label="Nothing at all!"
+                )
+            ])
+        ]
+    )
+
+
+# Link buttons don't need a handler
+@discord.command()
+def google(ctx):
+    return Response(
+        content="search engine",
+        components=[
+            ActionRow(components=[
+                Button(
+                    style=ButtonStyles.LINK,
+                    url="https://www.google.com/",
+                    label="Go to google"
                 )
             ])
         ]
