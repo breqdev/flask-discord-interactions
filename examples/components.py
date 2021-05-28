@@ -24,19 +24,31 @@ app.config["DISCORD_CLIENT_SECRET"] = os.environ["DISCORD_CLIENT_SECRET"]
 discord.update_slash_commands()
 
 
+# In reality, you'd store these values in a database
+# For simplicity, we store them as globals in this example
+# Generally, this is a bad idea
+# https://stackoverflow.com/questions/32815451/
+click_count = 0
+
+
+@discord.custom_handler()
+def handle_click(ctx):
+    global click_count
+    click_count += 1
+    return "Click counted!"
+
+
 @discord.command()
 def click_counter(ctx):
     "Count the number of button clicks"
 
-    count = 0
-
     return Response(
-        content=f"The button has been clicked {count} times",
+        content=f"The button has been clicked {click_count} times",
         components=[
             ActionRow(components=[
                 Button(
                     style=ButtonStyles.PRIMARY,
-                    custom_id="my_test_button",
+                    custom_id=handle_click,
                     label="Click Me!"
                 )
             ])
@@ -44,27 +56,40 @@ def click_counter(ctx):
     )
 
 
+current_score = 0
+
+@discord.custom_handler()
+def handle_upvote(ctx):
+    global current_score
+    current_score += 1
+    return f"Upvote by {ctx.author.display_name}!"
+
+
+@discord.custom_handler()
+def handle_downvote(ctx):
+    global current_score
+    current_score -= 1
+    return f"Downvote by {ctx.author.display_name}!"
+
+
 @discord.command()
 def voting(ctx):
     "Count the number of button clicks"
 
-    upvotes = 0
-    downvotes = 0
-
     return Response(
-        content=f"{upvotes} upvotes, {downvotes} downvotes",
+        content=f"Current score: {current_score}",
         components=[
             ActionRow(components=[
                 Button(
                     style=ButtonStyles.SUCCESS,
-                    custom_id="voting_upvote",
+                    custom_id=handle_upvote,
                     emoji={
                         "name": "⬆️"
                     }
                 ),
                 Button(
                     style=ButtonStyles.DANGER,
-                    custom_id="voting_downvote",
+                    custom_id=handle_downvote,
                     emoji={
                         "name": "⬇️",
                     }
@@ -79,4 +104,5 @@ discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
 if __name__ == '__main__':
-    app.run()
+    # Disable threading because of global variables
+    app.run(threaded=False)
