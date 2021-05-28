@@ -35,7 +35,20 @@ click_count = 0
 def handle_click(ctx):
     global click_count
     click_count += 1
-    return "Click counted!"
+
+    return Response(
+        content=f"The button has been clicked {click_count} times",
+        components=[
+            ActionRow(components=[
+                Button(
+                    style=ButtonStyles.PRIMARY,
+                    custom_id=handle_click,
+                    label="Click Me!"
+                )
+            ])
+        ],
+        update=True
+    )
 
 
 @discord.command()
@@ -56,28 +69,22 @@ def click_counter(ctx):
     )
 
 
-current_score = 0
-
 @discord.custom_handler()
 def handle_upvote(ctx):
-    global current_score
-    current_score += 1
     return f"Upvote by {ctx.author.display_name}!"
 
 
 @discord.custom_handler()
 def handle_downvote(ctx):
-    global current_score
-    current_score -= 1
     return f"Downvote by {ctx.author.display_name}!"
 
 
 @discord.command()
-def voting(ctx):
-    "Count the number of button clicks"
+def voting(ctx, question: str):
+    "Vote on something!"
 
     return Response(
-        content=f"Current score: {current_score}",
+        content=f"The question is: {question}",
         components=[
             ActionRow(components=[
                 Button(

@@ -416,7 +416,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 return jsonify(self.run_command(request.json).dump())
 
             elif interaction_type == InteractionType.MESSAGE_COMPONENT:
-                return jsonify(self.run_handler(request.json).dump())
+                return jsonify(self.run_handler(request.json).dump_handler())
 
     def set_route_async(self, route, app=None):
         """
