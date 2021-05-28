@@ -5,6 +5,7 @@ from typing import List, Union
 
 
 from flask_discord_interactions.embed import Embed
+from flask_discord_interactions.component import Component
 
 
 class ResponseType:
@@ -12,6 +13,8 @@ class ResponseType:
     PONG = 1
     CHANNEL_MESSAGE_WITH_SOURCE = 4
     DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE = 5
+    DEFERRED_UPDATE_MESSAGE = 6
+    UPDATE_MESSAGE = 7
 
 
 @dataclasses.dataclass
@@ -40,12 +43,18 @@ class Response:
     ephemeral
         Whether the message should be ephemeral (only displayed temporarily
         to only the user who used the slash command). Only valid for incoming
-        webhooks. You cannot use embeds with ephemeral messages.
+        webhooks.
+    update
+        Whether to update the initial message. Only valid for Message Component
+        interactions / custom ID handlers.
     file
         The file to attach to the message. Only valid for outgoing webhooks.
     files
         An array of files to attach to the message. Speficy just one of
         ``file`` or ``files``. Only valid for outgoing webhooks.
+    components
+        An array of :class:`.Component` objects representing message
+        components.
     """
     content: str = None
     tts: bool = False
@@ -55,8 +64,10 @@ class Response:
         default_factory=lambda: {"parse": ["roles", "users", "everyone"]})
     deferred: bool = False
     ephemeral: bool = False
+    update: bool = False
     file: tuple = None
     files: List[tuple] = None
+    components: List[Component] = None
 
     def __post_init__(self):
         if self.embed is not None and self.embeds is not None:
@@ -69,11 +80,6 @@ class Response:
         if self.file is not None:
             self.files = [self.file]
 
-        if (self.content is None and self.embeds is None
-                and self.files is None and not self.deferred):
-            raise ValueError(
-                "Supply at least one of content, embeds, files, or deferred.")
-
         if self.ephemeral and self.files is not None:
             raise ValueError("Ephemeral responses cannot include files.")
 
@@ -82,13 +88,21 @@ class Response:
                 if not dataclasses.is_dataclass(embed):
                     self.embeds[i] = Embed(**embed)
 
-    @property
-    def response_type(self):
-        "The Discord response type of the Interaction response."
-        if self.deferred:
-            return ResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
+        if self.update:
+            if self.deferred:
+                self.response_type = ResponseType.DEFERRED_UPDATE_MESSAGE
+            else:
+                self.response_type = ResponseType.UPDATE_MESSAGE
         else:
-            return ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
+            if (self.content is None and self.embeds is None
+                    and self.files is None):
+                # Special case: handler function returns nothing
+                self.response_type = ResponseType.DEFERRED_UPDATE_MESSAGE
+            elif self.deferred:
+                self.response_type = \
+                    ResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
+            else:
+                self.response_type = ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
 
     @property
     def flags(self):
@@ -101,6 +115,10 @@ class Response:
     def dump_embeds(self):
         "Returns the embeds of this Response as a list of dicts."
         return [embed.dump() for embed in self.embeds] if self.embeds else None
+
+    def dump_components(self):
+        "Returns the message components as a list of dicts."
+        return [c.dump() for c in self.components] if self.components else None
 
     @classmethod
     def from_return_value(cls, result):
@@ -133,9 +151,17 @@ class Response:
         incoming webhook.
         """
 
+        if (self.content is None and self.embeds is None
+                and self.files is None and not self.deferred):
+            raise ValueError(
+                "Supply at least one of content, embeds, files, or deferred.")
+
         if self.files:
             raise ValueError(
                 "files are not allowed in an initial Interaction response")
+
+        if self.update:
+            raise ValueError("update is only valid for custom ID handlers")
 
         return {
             "type": self.response_type,
@@ -144,16 +170,45 @@ class Response:
                 "tts": self.tts,
                 "embeds": self.dump_embeds(),
                 "allowed_mentions": self.allowed_mentions,
-                "flags": self.flags
+                "flags": self.flags,
+                "components": self.dump_components()
             }
         }
+
+    def dump_handler(self):
+        """
+        Return this ``Response`` as a dict to be sent in reply to a Message
+        Component interaction.
+        """
+
+        if self.files:
+            raise ValueError(
+                "files are not allowed in a custom handler response")
+
+        return {
+            "type": self.response_type,
+            "data": {
+                "content": self.content,
+                "tts": self.tts,
+                "embeds": self.dump_embeds(),
+                "allowed_mentions": self.allowed_mentions,
+                "flags": self.flags,
+                "components": self.dump_components()
+            }
+        }
+
 
     def dump_followup(self):
         """
         Return this ``Response`` as a dict to be sent to an outgoing webhook.
         """
 
-        if self.ephemeral or self.deferred:
+        if (self.content is None and self.embeds is None
+                and self.files is None and not self.deferred):
+            raise ValueError(
+                "Supply at least one of content, embeds, files, or deferred.")
+
+        if self.ephemeral or self.deferred or self.update:
             raise ValueError(
                 "ephemeral and deferred are not valid in followup responses")
 
@@ -161,7 +216,8 @@ class Response:
             "content": self.content,
             "tts": self.tts,
             "embeds": self.dump_embeds(),
-            "allowed_mentions": self.allowed_mentions
+            "allowed_mentions": self.allowed_mentions,
+            "components": self.dump_components()
         }
 
     def dump_multipart(self):

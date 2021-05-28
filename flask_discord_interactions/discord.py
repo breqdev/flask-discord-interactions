@@ -1,5 +1,6 @@
 import time
 import inspect
+import uuid
 
 import requests
 
@@ -9,12 +10,14 @@ from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
 
 from flask_discord_interactions.command import SlashCommand, SlashCommandGroup
-from flask_discord_interactions.response import ResponseType
+from flask_discord_interactions.context import Context
+from flask_discord_interactions.response import Response, ResponseType
 
 
 class InteractionType:
     PING = 1
     APPLICATION_COMMAND = 2
+    MESSAGE_COMPONENT = 3
 
 
 class DiscordInteractionsBlueprint:
@@ -25,6 +28,7 @@ class DiscordInteractionsBlueprint:
     """
     def __init__(self):
         self.discord_commands = {}
+        self.custom_id_handlers = {}
 
     def add_slash_command(self, command, name=None,
                           description=None, options=None, annotations=None):
@@ -93,6 +97,46 @@ class DiscordInteractionsBlueprint:
         self.discord_commands[name] = group
         return group
 
+    def add_custom_handler(self, handler, custom_id=None):
+        """
+        Add a handler for an incoming interaction with the specified custom ID.
+
+        Parameters
+        ----------
+        handler
+            The function to call to handle the incoming interaction.
+        custom_id
+            The custom ID to respond to. If not specified, the ID will be
+            generated randomly.
+
+        Returns
+        -------
+        str
+            The custom ID that the handler will respond to.
+        """
+        if custom_id is None:
+            custom_id = str(uuid.uuid4())
+
+        self.custom_id_handlers[custom_id] = handler
+        return custom_id
+
+    def custom_handler(self, custom_id=None):
+        """
+        Retuens a decorator to register a handler for a custom ID.
+
+        Parameters
+        ----------
+        custom_id
+            The custom ID to respond to. If not specified, the ID will be
+            generated randomly.
+        """
+        def decorator(func):
+            nonlocal custom_id
+            custom_id = self.add_custom_handler(func, custom_id)
+            return custom_id
+
+        return decorator
+
 
 class DiscordInteractions(DiscordInteractionsBlueprint):
     """
@@ -125,6 +169,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         app.config.setdefault("DONT_VALIDATE_SIGNATURE", False)
         app.config.setdefault("DONT_REGISTER_WITH_DISCORD", False)
         app.discord_commands = self.discord_commands
+        app.custom_id_handlers = self.custom_id_handlers
         app.discord_token = None
 
     def fetch_token(self, app=None):
@@ -271,6 +316,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             app = self.app
 
         app.discord_commands.update(blueprint.discord_commands)
+        app.custom_id_handlers.update(blueprint.custom_id_handlers)
 
     def run_command(self, data):
         """
@@ -291,6 +337,25 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             raise ValueError(f"Invalid command name: {command_name}")
 
         return slash_command.make_context_and_run(self, current_app, data)
+
+    def run_handler(self, data):
+        """
+        Run the corresponding custom ID handler given incoming interaction
+        data.
+
+        Parameters
+        ----------
+        data
+            Incoming interaction data.
+        """
+
+        custom_id = data["data"]["custom_id"]
+        context = Context.from_data(self, current_app, data)
+
+        result = self.custom_id_handlers[custom_id](context)
+
+        return Response.from_return_value(result)
+
 
     def verify_signature(self, request):
         """
@@ -343,10 +408,15 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         def interactions():
             self.verify_signature(request)
 
-            if request.json.get("type") == InteractionType.PING:
+            interaction_type = request.json.get("type")
+            if interaction_type == InteractionType.PING:
                 return jsonify({"type": ResponseType.PONG})
 
-            return jsonify(self.run_command(request.json).dump())
+            elif interaction_type == InteractionType.APPLICATION_COMMAND:
+                return jsonify(self.run_command(request.json).dump())
+
+            elif interaction_type == InteractionType.MESSAGE_COMPONENT:
+                return jsonify(self.run_handler(request.json).dump_handler())
 
     def set_route_async(self, route, app=None):
         """
@@ -368,10 +438,15 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         async def interactions():
             self.verify_signature(request)
 
-            if request.json.get("type") == InteractionType.PING:
+            interaction_type = request.json.get("type")
+            if interaction_type == InteractionType.PING:
                 return jsonify({"type": ResponseType.PONG})
 
-            result = self.run_command(request.json)
+            elif interaction_type == InteractionType.APPLICATION_COMMAND:
+                result = self.run_command(request.json)
+            elif interaction_type == InteractionType.MESSAGE_COMPONENT:
+                result = self.run_handler(request.json)
+
             if inspect.isawaitable(result):
                 result = await result
 

@@ -1,6 +1,6 @@
 from flask import Flask
 
-from flask_discord_interactions import DiscordInteractions, ResponseType
+from flask_discord_interactions import DiscordInteractions, ResponseType, InteractionType
 
 
 def test_flask():
@@ -18,6 +18,7 @@ def test_flask():
 
     with app.test_client() as client:
         response = client.post("/interactions", json={
+            "type": InteractionType.APPLICATION_COMMAND,
             "id": 1,
             "channel_id": "",
             "guild_id": "",
@@ -67,6 +68,7 @@ def test_app_factory():
 
     with app.test_client() as client:
         response = client.post("/interactions", json={
+            "type": InteractionType.APPLICATION_COMMAND,
             "id": 1,
             "channel_id": "",
             "guild_id": "",

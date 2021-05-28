@@ -215,7 +215,8 @@ class Role(ContextObject):
 @dataclass
 class Context(ContextObject):
     """
-    Represents the context in which a :class:`SlashCommand` is invoked.
+    Represents the context in which a :class:`SlashCommand` or custom ID
+    handler is invoked.
 
     Attributes
     ----------

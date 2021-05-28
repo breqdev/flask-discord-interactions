@@ -108,7 +108,8 @@ def test_dump_immediate(discord, client):
             }],
             "flags": 0,
             "tts": True,
-            "allowed_mentions": {"parse": ["roles", "users", "everyone"]}
+            "allowed_mentions": {"parse": ["roles", "users", "everyone"]},
+            "components": None
         }
     }
 
@@ -127,7 +128,8 @@ def test_dump_followup():
             "title": "hello!"
         }],
         "tts": False,
-        "allowed_mentions": {"parse": ["roles", "users", "everyone"]}
+        "allowed_mentions": {"parse": ["roles", "users", "everyone"]},
+        "components": None
     }
 
     assert resp.dump_followup() == expected
@@ -149,7 +151,8 @@ def test_dump_multipart():
                 "embeds": [{
                     "title": "hello!"
                 }],
-                "allowed_mentions": {"parse": ["roles", "users", "everyone"]}
+                "allowed_mentions": {"parse": ["roles", "users", "everyone"]},
+                "components": None
             })
         },
         "files": [
