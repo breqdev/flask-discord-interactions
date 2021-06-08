@@ -62,8 +62,7 @@ def get_page_buttons(*handler):
 
 
 @discord.custom_handler()
-def handle_paginated_static(ctx, pageno):
-    pageno = int(pageno)
+def handle_paginated_static(ctx, pageno: int):
 
     return Response(
         embed=Embed(**mock_page_data[pageno]),
@@ -94,10 +93,8 @@ response_data = {}
 # database, you *will* run into threading issues in production otherwise
 
 @discord.custom_handler()
-def handle_paginated_dynamic(ctx, id, pageno):
+def handle_paginated_dynamic(ctx, id, pageno: int):
     global response_data
-
-    pageno = int(pageno)
 
     return Response(
         embed=Embed(**response_data[id][pageno]),

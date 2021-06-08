@@ -177,11 +177,9 @@ def google(ctx):
 
 
 # Use a list with the Custom ID to include additional state information
+# Optionally specify the type (e.g. int) to automatically convert
 @discord.custom_handler()
-def handle_stateful(ctx, interaction_id, current_count):
-
-    # Any state gets converted into a string
-    current_count = int(current_count)
+def handle_stateful(ctx, interaction_id, current_count: int):
     current_count += 1
 
     return Response(
