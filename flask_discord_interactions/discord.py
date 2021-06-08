@@ -349,10 +349,10 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             Incoming interaction data.
         """
 
-        custom_id = data["data"]["custom_id"]
         context = Context.from_data(self, current_app, data)
 
-        result = self.custom_id_handlers[custom_id](context)
+        handler = self.custom_id_handlers[context.primary_id]
+        result = handler(context, *context.handler_state[1:])
 
         return Response.from_return_value(result)
 

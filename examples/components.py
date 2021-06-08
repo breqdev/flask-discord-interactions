@@ -176,6 +176,48 @@ def google(ctx):
     )
 
 
+# Use a list with the Custom ID to include additional state information
+@discord.custom_handler()
+def handle_stateful(ctx, interaction_id, current_count):
+
+    # Any state gets converted into a string
+    current_count = int(current_count)
+    current_count += 1
+
+    return Response(
+        content=(f"This button has been clicked {current_count} times. "
+                 "Try calling this command multiple times to see--each button "
+                 "count is tracked separately!"),
+        components=[
+            ActionRow(components=[
+                Button(
+                    style=ButtonStyles.PRIMARY,
+                    custom_id=[handle_stateful, interaction_id, current_count],
+                    label="Click Me!"
+                )
+            ])
+        ],
+        update=True
+    )
+
+@discord.command()
+def stateful_click_counter(ctx):
+    "Count the number of button clicks for this specific button."
+
+    return Response(
+        content=f"Click the button!",
+        components=[
+            ActionRow(components=[
+                Button(
+                    style=ButtonStyles.PRIMARY,
+                    custom_id=[handle_stateful, ctx.id, 0],
+                    label="Click Me!"
+                )
+            ])
+        ]
+    )
+
+
 discord.set_route("/interactions")
 discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
 
