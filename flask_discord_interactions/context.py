@@ -259,10 +259,16 @@ class Context(ContextObject):
     auth_headers: dict = None
     base_url: str = ""
 
+    custom_id: str = None
+    primary_id: str = None
+    handler_state: list = None
+
     @classmethod
     def from_data(cls, discord=None, app=None, data={}):
         if data is None:
             data = {}
+
+        custom_id = data.get("data", {}).get("custom_id")
 
         result = cls(
             client_id = app.config["DISCORD_CLIENT_ID"] if app else "",
@@ -275,7 +281,10 @@ class Context(ContextObject):
             guild_id = data.get("guild_id"),
             options = data.get("data", {}).get("options"),
             command_name = data.get("data", {}).get("name"),
-            command_id = data.get("data", {}).get("id")
+            command_id = data.get("data", {}).get("id"),
+            custom_id = custom_id,
+            primary_id = custom_id.split("\n", 1)[0] if custom_id else None,
+            handler_state = custom_id.split("\n") if custom_id else None
         )
 
         result.parse_resolved(data.get("data", {}).get("resolved", {}))

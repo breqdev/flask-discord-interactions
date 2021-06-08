@@ -46,3 +46,47 @@ def test_basic_handler(discord, client):
     client.run("click_counter")
     discord.custom_id_handlers[handle_click](None)
     assert click_count == 1
+
+
+def test_stateful_handler(discord, client):
+    @discord.custom_handler()
+    def handle_click(ctx, click_count):
+        click_count = int(click_count)
+        click_count += 1
+
+        return Response(
+            content=f"{click_count} clicks",
+            components=[
+                ActionRow(components=[
+                    Button(
+                        style=ButtonStyles.PRIMARY,
+                        custom_id=[handle_click, click_count],
+                        label="Click Me!"
+                    )
+                ])
+            ],
+            update=True
+        )
+
+
+    # The main command sends the initial Response
+    @discord.command()
+    def click_counter(ctx):
+        "Count the number of button clicks"
+
+        return Response(
+            content=f"The button has been clicked 0 times",
+            components=[
+                ActionRow(components=[
+                    Button(
+                        style=ButtonStyles.PRIMARY,
+                        custom_id=[handle_click, 0],
+                        label="Click Me!"
+                    )
+                ])
+            ]
+        )
+
+    client.run("click_counter")
+    response = discord.custom_id_handlers[handle_click](None, 0)
+    assert response.content == "1 clicks"

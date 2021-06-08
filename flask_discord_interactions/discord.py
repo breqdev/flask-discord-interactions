@@ -1,6 +1,7 @@
 import time
 import inspect
 import uuid
+import itertools
 
 import requests
 
@@ -349,10 +350,38 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             Incoming interaction data.
         """
 
-        custom_id = data["data"]["custom_id"]
         context = Context.from_data(self, current_app, data)
 
-        result = self.custom_id_handlers[custom_id](context)
+        handler = self.custom_id_handlers[context.primary_id]
+
+        args = context.handler_state[1:]
+
+        sig = inspect.signature(handler)
+
+        iterator = zip(
+            itertools.count(),
+            args,
+            itertools.islice(sig.parameters.values(), 1, None)
+        )
+
+        for i, argument, parameter in iterator:
+            annotation = parameter.annotation
+
+            if annotation == int:
+                args[i] = int(argument)
+
+            elif annotation == bool:
+                if argument == "True":
+                    args[i] = True
+                elif argument == "False":
+                    args[i] = False
+                elif argument == "None":
+                    args[i] = None
+                else:
+                    raise ValueError(
+                        f"Invalid bool in handler state parsing: {args[i]}")
+
+        result = handler(context, *args)
 
         return Response.from_return_value(result)
 

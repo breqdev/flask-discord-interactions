@@ -1,5 +1,5 @@
 from dataclasses import dataclass, asdict
-from typing import List
+from typing import List, Union
 
 class ComponentType:
     ACTION_ROW = 1
@@ -44,7 +44,7 @@ class ButtonStyles:
 class Button(Component):
     "Represents a Button message component."
     style: int
-    custom_id: str = None
+    custom_id: Union[str, List] = None
     label: str = None
 
     emoji: dict = None
@@ -60,3 +60,10 @@ class Button(Component):
         else:
             if self.custom_id is None:
                 raise ValueError("Buttons require custom_id")
+
+        if (isinstance(self.custom_id, list)
+                or isinstance(self.custom_id, tuple)):
+            self.custom_id = "\n".join(str(item) for item in self.custom_id)
+
+        if len(self.custom_id) > 100:
+            raise ValueError("custom_id has maximum 100 characters")
