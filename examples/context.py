@@ -56,6 +56,32 @@ def avatar(ctx):
     })
 
 
+# You can use this to implement a rudimentary server-side permissions system
+@discord.command()
+def admin_only(ctx):
+    if not ctx.author.permissions & 8:
+        return Response(
+            content="Only administrators are allowed to use this command",
+            ephemeral=True
+        )
+
+    return "Hello!"
+
+
+@discord.command()
+def restricted(ctx, special_option: str = None):
+    "Only manage_messages can set special_option"
+
+    if not ctx.author.permissions & 16:  # MANAGE_MESSAGES
+        if special_option is not None:
+            return "Need permissions to use special_option"
+
+    if special_option is not None:
+        return "You have used the special option!"
+    else:
+        return "You have not used the special option."
+
+
 discord.set_route("/interactions")
 discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
 

@@ -129,6 +129,8 @@ class Member(User):
         The timestamp that the user joined the guild at.
     premium_since
         The timestamp that the user started Nitro boosting the guild at.
+    permissions
+        The permissions integer of the user.
     deaf
         Whether the user has been server deafened.
     mute
@@ -140,9 +142,14 @@ class Member(User):
     roles: list = None
     joined_at: str = None
     premium_since: str = None
+    permissions: int = None
     deaf: bool = None
     mute: bool = None
     pending: bool = None
+
+    def __post_init__(self):
+        if isinstance(self.permissions, str):
+            self.permissions = int(self.permissions)
 
     @property
     def display_name(self):

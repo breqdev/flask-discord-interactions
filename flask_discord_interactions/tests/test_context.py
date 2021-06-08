@@ -22,3 +22,19 @@ def test_ids(discord, client):
 
     with client.context(context):
         assert client.run("all_ids").content == "01/02/2003"
+
+
+def test_permissions(discord, client):
+    @discord.command()
+    def is_admin(ctx):
+        return "Yes" if (ctx.author.permissions & 8) else "No"
+
+    context = Context(author=Member(permissions="0"))
+
+    with client.context(context):
+        assert client.run("is_admin").content == "No"
+
+    context = Context(author=Member(permissions="8"))
+
+    with client.context(context):
+        assert client.run("is_admin").content == "Yes"
