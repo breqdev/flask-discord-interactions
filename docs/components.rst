@@ -97,8 +97,77 @@ decorator, like so:
             ]
         )
 
-Custom IDs
-----------
+Storing State
+-------------
+
+It's possible to include some state information inside the custom ID. This
+is a good way to keep your application stateless, which helps with scaling.
+However, the total length of the ID must be less than 100 characters, including
+the actual handler ID and any additional state you pass along. If you find
+yourself exceeding this limit, you should probably be storing that information
+in a database.
+
+The
+`Discord docs <https://discord.com/developers/docs/interactions/message-components#custom-id>`_
+state that:
+
+    This field is a string of max 100 characters, and can be used flexibly to maintain state or pass through other important data.
+
+Flask-Discord-Interactions provides a mechanism to uniquely identify custom
+handlers while allowing additional state information to "come along for the
+ride." Simply pass a list in for the ``custom_id`` field on the button object.
+
+.. code-block:: python
+
+    @discord.custom_handler()
+    def handle_stateful(ctx, interaction_id, current_count: int):
+        current_count += 1
+
+        return Response(
+            content=(f"This button has been clicked {current_count} times. "
+                    "Try calling this command multiple times to see--each button "
+                    "count is tracked separately!"),
+            components=[
+                ActionRow(components=[
+                    Button(
+                        style=ButtonStyles.PRIMARY,
+                        custom_id=[handle_stateful, interaction_id, current_count],
+                        label="Click Me!"
+                    )
+                ])
+            ],
+            update=True
+        )
+
+    @discord.command()
+    def stateful_click_counter(ctx):
+        "Count the number of button clicks for this specific button."
+
+        return Response(
+            content=f"Click the button!",
+            components=[
+                ActionRow(components=[
+                    Button(
+                        style=ButtonStyles.PRIMARY,
+                        custom_id=[handle_stateful, ctx.id, 0],
+                        label="Click Me!"
+                    )
+                ])
+            ]
+        )
+
+This example passes two additional values as state: the ID of the interaction,
+and the current count of the button.
+
+All values will be converted to a string before including them in the custom
+ID. However, to automatically convert them back to a bool or int, you can
+include a type annotation in the handler function, such as in the example above
+(``current_count: int``).
+
+The `pagination example <https://github.com/Breq16/flask-discord-interactions/blob/main/examples/pagination.py>`_ demonstrates more sophisticated use of this technique to allow a user to jump between multiple pages.
+
+Custom ID Internals
+-------------------
 
 Custom IDs are used to uniquely identify a button. Thus, when a web server
 receives an incoming interaction, it can use the custom ID to determine what
@@ -124,6 +193,14 @@ However, if you want more control, there is an escape hatch: the
 parameter which will override the ID given. Alternatively, you can use the
 :meth:`.DiscordInteractions.add_custom_handler` function to avoid the decorator
 syntax entirely.
+
+Additionally, Flask-Discord-Interactions needs to separate this handler ID
+from any additional state that needs to be preserved in the custom ID. To
+accomplish this, newlines are inserted into the custom ID string between
+the handler and any subsequent values. Later, when the custom ID is received
+in an incoming interaction, it is split on the newline character. The first
+line is used as the ID, and any subsequent lines are taken as arguments to the
+handler function.
 
 
 Full API
