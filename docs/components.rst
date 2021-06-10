@@ -18,7 +18,7 @@ handling. When the button is clicked, the user is sent to the link.
 
 .. code-block:: python
 
-    from flask_discord_interactions import Response, ActionRow, Button
+    from flask_discord_interactions import Response, ActionRow, Button, ButtonStyles
 
     @discord.command()
     def google(ctx):
