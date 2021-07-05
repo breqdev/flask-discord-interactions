@@ -28,8 +28,6 @@ Installation
 
     pip3 install flask-discord-interactions
 
-Since this library is new, and Discord Slash Commands are in beta, the API of this library might not be particularly stable. I strongly suggest you pin this library to a specific version when you deploy, and test your code after updates.
-
 Documentation
 -------------
 
