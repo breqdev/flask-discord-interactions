@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 import inspect
+import itertools
 
 import requests
 
@@ -287,6 +288,7 @@ class Context(ContextObject):
             channel_id = data.get("channel_id"),
             guild_id = data.get("guild_id"),
             options = data.get("data", {}).get("options"),
+            resolved = data.get("resolved"),
             command_name = data.get("data", {}).get("name"),
             command_id = data.get("data", {}).get("id"),
             custom_id = custom_id,
@@ -322,51 +324,92 @@ class Context(ContextObject):
         self.roles = {id: Role.from_dict(data)
                       for id, data in data.get("roles", {}).items()}
 
-    def create_args(self, data, resolved):
+    def create_args(self):
         """
         Create the arguments which will be passed to the function when the
         :class:`SlashCommand` is invoked.
+        """
 
-        This function is recursive: when a subcommand is invoked, this function
-        will call itself with the subcommand option data. This is why the
-        ``"resolved"`` data is passed as a separate argument.
+        def create_args_recursive(data, resolved):
+            if "options" not in data:
+                return [], {}
+
+            args = []
+            kwargs = {}
+
+            for option in data["options"]:
+                if option["type"] in [
+                        CommandOptionType.SUB_COMMAND,
+                        CommandOptionType.SUB_COMMAND_GROUP]:
+
+                    args.append(option["name"])
+
+                    sub_args, sub_kwargs = create_args_recursive(
+                        option, resolved)
+
+                    args += sub_args
+                    kwargs.update(sub_kwargs)
+
+                elif option["type"] == CommandOptionType.USER:
+                    member_data = resolved["members"][option["value"]]
+                    member_data["user"] = resolved["users"][option["value"]]
+
+                    kwargs[option["name"]] = Member.from_dict(member_data)
+
+                elif option["type"] == CommandOptionType.CHANNEL:
+                    kwargs[option["name"]] = Channel.from_dict(
+                        resolved["channels"][option["value"]])
+
+                elif option["type"] == CommandOptionType.ROLE:
+                    kwargs[option["name"]] = Role.from_dict(
+                        resolved["roles"][option["value"]])
+
+                else:
+                    kwargs[option["name"]] = option["value"]
+
+            return args, kwargs
+
+        return create_args_recursive({"options": self.options}, self.resolved)
+
+    def create_handler_args(self, handler):
+        """
+        Create the arguments which will be passed to the function when a
+        custom ID handler is invoked.
 
         Parameters
         ----------
         data
             An object with the incoming data for the invocation.
-        resolved
-            The ``"resolved"`` section of the incoming interaction data.
         """
 
-        if "options" not in data:
-            return [], {}
+        args = self.handler_state[1:]
 
-        args = []
-        kwargs = {}
-        for option in data["options"]:
-            if option["type"] in [
-                    CommandOptionType.SUB_COMMAND,
-                    CommandOptionType.SUB_COMMAND_GROUP]:
-                args.append(option["name"])
-                sub_args, sub_kwargs = self.create_args(option, resolved)
-                args += sub_args
-                kwargs.update(sub_kwargs)
-            elif option["type"] == CommandOptionType.USER:
-                member_data = resolved["members"][option["value"]]
-                member_data["user"] = resolved["users"][option["value"]]
+        sig = inspect.signature(handler)
 
-                kwargs[option["name"]] = Member.from_dict(member_data)
-            elif option["type"] == CommandOptionType.CHANNEL:
-                kwargs[option["name"]] = Channel.from_dict(
-                    resolved["channels"][option["value"]])
-            elif option["type"] == CommandOptionType.ROLE:
-                kwargs[option["name"]] = Role.from_dict(
-                    resolved["roles"][option["value"]])
-            else:
-                kwargs[option["name"]] = option["value"]
+        iterator = zip(
+            itertools.count(),
+            args,
+            itertools.islice(sig.parameters.values(), 1, None)
+        )
 
-        return args, kwargs
+        for i, argument, parameter in iterator:
+            annotation = parameter.annotation
+
+            if annotation == int:
+                args[i] = int(argument)
+
+            elif annotation == bool:
+                if argument == "True":
+                    args[i] = True
+                elif argument == "False":
+                    args[i] = False
+                elif argument == "None":
+                    args[i] = None
+                else:
+                    raise ValueError(
+                        f"Invalid bool in handler state parsing: {args[i]}")
+
+        return args
 
     def followup_url(self, message=None):
         """

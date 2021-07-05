@@ -154,8 +154,7 @@ class SlashCommand:
             context = AsyncContext.from_data(discord, app, data)
         else:
             context = Context.from_data(discord, app, data)
-        args, kwargs = context.create_args(
-            data["data"], resolved=data["data"].get("resolved"))
+        args, kwargs = context.create_args()
 
         result = self.run(context, *args, **kwargs)
 
@@ -284,8 +283,7 @@ class SlashCommandGroup(SlashCommandSubgroup):
 
         context = Context.from_data(discord, app, data)
 
-        subcommands, kwargs = context.create_args(
-            data["data"], resolved=data["data"].get("resolved"))
+        subcommands, kwargs = context.create_args()
 
         result = self.run(context, *subcommands, **kwargs)
 
