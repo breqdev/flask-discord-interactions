@@ -1,3 +1,4 @@
+import copy
 from contextlib import contextmanager
 
 from flask_discord_interactions.response import Response
@@ -69,3 +70,27 @@ class Client:
 
         return Response.from_return_value(
             command.run(self.current_context, *names[i:], **params))
+
+    def run_handler(self, custom_id, *args):
+        """
+        Run a specified custom ID handler.
+
+        Parameters
+        ----------
+        custom_id
+            The ID of the handler function to run.
+        *args
+            Options to pass to the handler being called.
+        """
+
+        new_context = copy.deepcopy(self.current_context)
+
+        new_context.custom_id = "\n".join((custom_id, *args))
+        new_context.parse_custom_id()
+
+        handler = self.discord.custom_id_handlers[new_context.primary_id]
+
+        args = new_context.create_handler_args(handler)
+
+        response = handler(new_context, *args)
+        return Response.from_return_value(response)

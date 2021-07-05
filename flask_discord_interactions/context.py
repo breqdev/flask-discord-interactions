@@ -279,8 +279,6 @@ class Context(ContextObject):
         if data is None:
             data = {}
 
-        custom_id = data.get("data", {}).get("custom_id")
-
         result = cls(
             client_id = app.config["DISCORD_CLIENT_ID"] if app else "",
             auth_headers = discord.auth_headers(app) if discord else {},
@@ -294,13 +292,23 @@ class Context(ContextObject):
             resolved = data.get("resolved", {}),
             command_name = data.get("data", {}).get("name"),
             command_id = data.get("data", {}).get("id"),
-            custom_id = custom_id,
-            primary_id = custom_id.split("\n", 1)[0] if custom_id else None,
-            handler_state = custom_id.split("\n") if custom_id else None
+            custom_id = data.get("data", {}).get("custom_id") or ""
         )
 
+        result.parse_custom_id()
         result.parse_resolved()
         return result
+
+    def parse_custom_id(self):
+        """
+        Parse the custom ID of the incoming interaction data.
+
+        This includes the primary ID as well as any state stored in the
+        handler.
+        """
+
+        self.primary_id = self.custom_id.split("\n", 1)[0]
+        self.handler_state = self.custom_id.split("\n")
 
     def parse_resolved(self):
         """
@@ -308,11 +316,6 @@ class Context(ContextObject):
 
         This section includes objects representing each user, member, channel,
         and role passed as an argument to the command.
-
-        Parameters
-        ----------
-        data
-            The ``"resolved"`` section of the incoming interaction data.
         """
 
         self.members = {}
