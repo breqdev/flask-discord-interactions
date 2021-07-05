@@ -1,3 +1,4 @@
+import re
 import enum
 import inspect
 import itertools
@@ -47,10 +48,20 @@ class SlashCommand:
         if self.description is None:
             self.description = command.__doc__ or "No description"
 
-        if not 3 <= len(self.name) <= 32:
+        if not 1 <= len(self.name) <= 32:
             raise ValueError(
                 f"Error adding command {self.name}: "
-                "Command name must be between 3 and 32 characters.")
+                "Command name must be between 1 and 32 characters.")
+        if self.name != self.name.lower():
+            raise ValueError(
+                f"Error adding command {self.name}: "
+                "Command name must be fully lowercase. "
+                "No UPPERCASE or CamelCase names are allowed.")
+        if not re.fullmatch(r"^[\w-]{1,32}$", self.name):
+            raise ValueError(
+                f"Error adding command {self.name}: "
+                "Command name does not match regex. "
+                "(Perhaps it contains an invalid character?)")
         if not 1 <= len(self.description) <= 100:
             raise ValueError(
                 f"Error adding command {self.name}: "
