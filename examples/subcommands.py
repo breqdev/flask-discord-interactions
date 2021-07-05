@@ -33,6 +33,20 @@ def homestuck(ctx, number: int):
     return f"https://homestuck.com/story/{number}"
 
 
+# Subcommands have the same access to context
+whatismy = discord.command_group("whatismy")
+
+
+@whatismy.command()
+def name(ctx):
+    return ctx.author.display_name
+
+
+@whatismy.command()
+def discriminator(ctx):
+    return ctx.author.discriminator
+
+
 # Subcommand groups are also supported
 base = discord.command_group("base", "Convert a number between bases")
 
