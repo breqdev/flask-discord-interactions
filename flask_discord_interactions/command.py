@@ -271,11 +271,14 @@ class SlashCommandGroup(SlashCommandSubgroup):
             The incoming interaction data.
         """
 
-        context = Context(discord, app, data)
+        context = Context.from_data(discord, app, data)
+
         subcommands, kwargs = context.create_args(
             data["data"], resolved=data["data"].get("resolved"))
 
-        return self.run(context, *subcommands, **kwargs)
+        result = self.run(context, *subcommands, **kwargs)
+
+        return Response.from_return_value(result)
 
     def subgroup(self, name, description="No description"):
         """

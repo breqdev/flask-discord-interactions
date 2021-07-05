@@ -1,4 +1,4 @@
-from flask_discord_interactions import CommandOptionType
+from flask_discord_interactions import CommandOptionType, Context, Member
 
 
 def test_subcommand(discord, client):
@@ -75,3 +75,15 @@ def test_oldstyle_subcommand(discord, client):
         "https://google.com/search?q=hello"
     assert client.run("search", "bing", query="hello").content == \
         "https://bing.com/search?q=hello"
+
+def test_context_with_subcommand(discord, client):
+    group = discord.command_group("group")
+
+    @group.command()
+    def subcommand(ctx):
+        return ctx.author.display_name
+
+    context = Context(author=Member(username="Bob"))
+
+    with client.context(context):
+        assert client.run("group", "subcommand").content == "Bob"
