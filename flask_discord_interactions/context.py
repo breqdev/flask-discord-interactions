@@ -240,6 +240,8 @@ class Context(ContextObject):
         The unique ID (snowflake) of the guild this command was invoked in.
     options
         An array of the options passed to the command.
+    resolved
+        Additional data ()
     command_name
         The name of the command that was invoked.
     command_id
@@ -257,6 +259,7 @@ class Context(ContextObject):
     channel_id: str = None
     guild_id: str = None
     options: list = None
+    resolved: dict = None
     command_name: str = None
     command_id: str = None
     members: List[Member] = None
@@ -288,7 +291,7 @@ class Context(ContextObject):
             channel_id = data.get("channel_id"),
             guild_id = data.get("guild_id"),
             options = data.get("data", {}).get("options"),
-            resolved = data.get("resolved"),
+            resolved = data.get("resolved", {}),
             command_name = data.get("data", {}).get("name"),
             command_id = data.get("data", {}).get("id"),
             custom_id = custom_id,
@@ -296,10 +299,10 @@ class Context(ContextObject):
             handler_state = custom_id.split("\n") if custom_id else None
         )
 
-        result.parse_resolved(data.get("data", {}).get("resolved", {}))
+        result.parse_resolved()
         return result
 
-    def parse_resolved(self, data):
+    def parse_resolved(self):
         """
         Parse the ``"resolved"`` section of the incoming interaction data.
 
@@ -313,16 +316,17 @@ class Context(ContextObject):
         """
 
         self.members = {}
-        for id in data.get("members", {}):
-            member_info = data["members"][id]
-            member_info["user"] = data["users"][id]
+        for id in self.resolved.get("members", {}):
+            member_info = self.resolved["members"][id]
+            member_info["user"] = self.resolved["users"][id]
             self.members[id] = Member.from_dict(member_info)
 
         self.channels = {id: Channel.from_dict(data)
-                         for id, data in data.get("channels", {}).items()}
+                         for id, data
+                         in self.resolved.get("channels", {}).items()}
 
         self.roles = {id: Role.from_dict(data)
-                      for id, data in data.get("roles", {}).items()}
+                      for id, data in self.resolved.get("roles", {}).items()}
 
     def create_args(self):
         """
