@@ -271,7 +271,8 @@ class SlashCommandGroup(SlashCommandSubgroup):
             The incoming interaction data.
         """
 
-        context = Context(discord, app, data)
+        context = Context.from_data(discord, app, data)
+
         subcommands, kwargs = context.create_args(
             data["data"], resolved=data["data"].get("resolved"))
 
