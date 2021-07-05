@@ -265,30 +265,6 @@ class SlashCommandSubgroup(SlashCommand):
 
 
 class SlashCommandGroup(SlashCommandSubgroup):
-    def make_context_and_run(self, discord, app, data):
-        """
-        Creates the :class:`Context` for an invocation of this slash command
-        group, then invokes itself.
-
-        Parameters
-        ----------
-        discord
-            The :class:`DiscordInteractions` object used to receive this
-            interaction.
-        app
-            The Flask app used to receive this interaction.
-        data
-            The incoming interaction data.
-        """
-
-        context = Context.from_data(discord, app, data)
-
-        subcommands, kwargs = context.create_args()
-
-        result = self.run(context, *subcommands, **kwargs)
-
-        return Response.from_return_value(result)
-
     def subgroup(self, name, description="No description"):
         """
         Create a new :class:`SlashCommandSubroup`
