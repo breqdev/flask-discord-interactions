@@ -1,5 +1,7 @@
 import os
 import sys
+import time
+import threading
 
 from flask import Flask
 
@@ -45,6 +47,33 @@ def name(ctx):
 @whatismy.command()
 def discriminator(ctx):
     return ctx.author.discriminator
+
+# Subcommands can send followup responses too
+delay = discord.command_group("delay")
+
+@delay.command()
+def seconds(ctx, seconds: int):
+    def do_delay():
+        time.sleep(seconds)
+
+        ctx.edit("Hiya!")
+
+    thread = threading.Thread(target=do_delay)
+    thread.start()
+
+    return Response(deferred=True)
+
+@delay.command()
+def minutes(ctx, minutes: str):
+    def do_delay():
+        time.sleep(float(minutes) * 60)
+
+        ctx.edit("Hiya!")
+
+    thread = threading.Thread(target=do_delay)
+    thread.start()
+
+    return Response(deferred=True)
 
 
 # Subcommand groups are also supported
