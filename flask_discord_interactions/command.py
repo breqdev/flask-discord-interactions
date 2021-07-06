@@ -202,6 +202,8 @@ class SlashCommandSubgroup(SlashCommand):
         self.description = description
         self.subcommands = {}
 
+        self.is_async = False
+
     def command(self, name=None, description=None,
                 options=None, annotations=None):
         """
