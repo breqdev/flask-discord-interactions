@@ -50,7 +50,6 @@ async def wait(ctx, seconds: int):
     async def do_followup():
         await asyncio.sleep(seconds)
         await ctx.edit("Done!")
-        await ctx.close()
 
     asyncio.create_task(do_followup())
     return Response(deferred=True)
@@ -77,7 +76,6 @@ def wait_partly_sync(ctx, seconds: int):
     async def do_followup():
         await asyncio.sleep(seconds)
         await ctx.edit("Done!")
-        await ctx.close()
 
     asyncio.create_task(do_followup())
     return Response(deferred=True)
@@ -93,7 +91,6 @@ async def thirdlevel(ctx):
         print(type(ctx))
         await asyncio.sleep(1)
         await ctx.edit(f"Hello, {ctx.author.display_name}!")
-        await ctx.close()
 
     asyncio.create_task(do_followup())
     return Response(deferred=True)
