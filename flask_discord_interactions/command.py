@@ -195,6 +195,9 @@ class SlashCommandSubgroup(SlashCommand):
         The name of this subgroup, shown in the Discord client.
     description
         The description of this subgroup, shown in the Discord client.
+    is_async
+        Whether the subgroup should be considered async (if subcommands
+        get an :class:`AsyncContext` instead of a :class:`Context`.)
     """
 
     def __init__(self, name, description, is_async=False):
@@ -278,6 +281,9 @@ class SlashCommandGroup(SlashCommandSubgroup):
             The name of the subgroup, as displayed in the Discord client.
         description
             The description of the subgroup. Defaults to "No description".
+        is_async
+            Whether the subgroup should be considered async (if subcommands
+            get an :class:`AsyncContext` instead of a :class:`Context`.)
         """
 
         group = SlashCommandSubgroup(name, description, is_async)

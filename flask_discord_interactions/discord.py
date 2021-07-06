@@ -92,7 +92,11 @@ class DiscordInteractionsBlueprint:
             The name of the command group, as displayed in the Discord client.
         description
             The description of the command group.
+        is_async
+            Whether the subgroup should be considered async (if subcommands
+            get an :class:`.AsyncContext` instead of a :class:`Context`.)
         """
+
         group = SlashCommandGroup(name, description, is_async)
         self.discord_commands[name] = group
         return group

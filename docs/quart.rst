@@ -81,6 +81,25 @@ This class makes :meth:`.AsyncContext.edit`, :meth:`.AsyncContext.send`, and
         threading.Thread(target=do_followup).start()
         return Response(deferred=True)
 
+When creating command groups and subgroups, you will only get an
+:class:`.AsyncContext` if you provide the ``is_async=True`` flag.
+
+.. code-block:: python
+
+    toplevel = discord.command_group("toplevel", is_async=True)
+    secondlevel = toplevel.subgroup("secondlevel", is_async=True)
+
+    @secondlevel.command()
+    async def thirdlevel(ctx):
+        async def do_followup():
+            print(type(ctx))
+            await asyncio.sleep(1)
+            await ctx.edit(f"Hello, {ctx.author.display_name}!")
+            await ctx.close()
+
+        asyncio.create_task(do_followup())
+        return Response(deferred=True)
+
 Full API
 --------
 
