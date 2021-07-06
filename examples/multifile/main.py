@@ -20,10 +20,12 @@ discord.update_slash_commands()
 
 from echo import bp as echo_bp  # noqa: E402
 from reverse import bp as reverse_bp  # noqa: E402
+from subcommands import bp as subcommands_bp # noqa: E402
 
 
 discord.register_blueprint(echo_bp)
 discord.register_blueprint(reverse_bp)
+discord.register_blueprint(subcommands_bp)
 
 
 discord.set_route("/interactions")
