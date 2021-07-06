@@ -1,20 +1,13 @@
 import asyncio
 
 import pytest
+from quart import Quart
+
+from flask_discord_interactions import DiscordInteractions, Client
+
 
 @pytest.fixture()
 def quart_discord():
-    import sys
-    if "flask" in sys.modules:
-        del sys.modules["flask"]
-
-    from quart import Quart
-    import quart.flask_patch
-
-
-    from flask_discord_interactions import DiscordInteractions, Client
-
-
     app = Quart(__name__)
     discord = DiscordInteractions(app)
     return discord, Client(discord)
