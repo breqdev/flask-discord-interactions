@@ -338,7 +338,7 @@ class Context(ContextObject):
         """
 
         def create_args_recursive(data, resolved):
-            if "options" not in data:
+            if not data.get("options"):
                 return [], {}
 
             args = []
