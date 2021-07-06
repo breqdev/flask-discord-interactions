@@ -84,8 +84,8 @@ def wait_partly_sync(ctx, seconds: int):
 
 
 # Async subcommands also work, and they can access context
-toplevel = discord.command_group("toplevel")
-secondlevel = toplevel.subgroup("secondlevel")
+toplevel = discord.command_group("toplevel", is_async=True)
+secondlevel = toplevel.subgroup("secondlevel", is_async=True)
 
 @secondlevel.command()
 async def thirdlevel(ctx):

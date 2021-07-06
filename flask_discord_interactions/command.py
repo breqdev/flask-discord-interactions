@@ -197,12 +197,12 @@ class SlashCommandSubgroup(SlashCommand):
         The description of this subgroup, shown in the Discord client.
     """
 
-    def __init__(self, name, description):
+    def __init__(self, name, description, is_async=False):
         self.name = name
         self.description = description
         self.subcommands = {}
 
-        self.is_async = False
+        self.is_async = is_async
 
     def command(self, name=None, description=None,
                 options=None, annotations=None):
@@ -267,7 +267,7 @@ class SlashCommandSubgroup(SlashCommand):
 
 
 class SlashCommandGroup(SlashCommandSubgroup):
-    def subgroup(self, name, description="No description"):
+    def subgroup(self, name, description="No description", is_async=False):
         """
         Create a new :class:`SlashCommandSubroup`
         (which can contain multiple subcommands)
@@ -280,6 +280,6 @@ class SlashCommandGroup(SlashCommandSubgroup):
             The description of the subgroup. Defaults to "No description".
         """
 
-        group = SlashCommandSubgroup(name, description)
+        group = SlashCommandSubgroup(name, description, is_async)
         self.subcommands[name] = group
         return group
