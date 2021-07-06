@@ -158,13 +158,6 @@ class SlashCommand:
 
         result = self.run(context, *args, **kwargs)
 
-        if self.is_async:
-            async def wrapper():
-                await context.close()
-                return await result
-
-            return Response.from_return_value(wrapper())
-
         return Response.from_return_value(result)
 
     def run(self, context, *args, **kwargs):
