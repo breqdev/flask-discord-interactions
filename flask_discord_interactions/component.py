@@ -65,5 +65,5 @@ class Button(Component):
                 or isinstance(self.custom_id, tuple)):
             self.custom_id = "\n".join(str(item) for item in self.custom_id)
 
-        if len(self.custom_id) > 100:
+        if self.custom_id and len(self.custom_id) > 100:
             raise ValueError("custom_id has maximum 100 characters")
