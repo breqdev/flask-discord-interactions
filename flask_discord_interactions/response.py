@@ -94,11 +94,7 @@ class Response:
             else:
                 self.response_type = ResponseType.UPDATE_MESSAGE
         else:
-            if (self.content is None and self.embeds is None
-                    and self.files is None):
-                # Special case: handler function returns nothing
-                self.response_type = ResponseType.DEFERRED_UPDATE_MESSAGE
-            elif self.deferred:
+            if self.deferred:
                 self.response_type = \
                     ResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
             else:
