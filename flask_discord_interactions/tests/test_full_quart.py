@@ -7,17 +7,28 @@ from quart import Quart
 
 @pytest.fixture
 def mock_flask():
+    # Some ugly hackery required to get Quart's Flask patching to play nice
+    # with the actual Flask tests
+
     del sys.modules["flask"]
+    del sys.modules["flask_discord_interactions"]
+    del sys.modules["flask_discord_interactions.discord"]
+
     import quart.flask_patch
     yield None
+
     del sys.modules["flask"]
+
+    for name in list(sys.modules.keys()):
+        if name.startswith("flask."):
+            del sys.modules[name]
+
+    del sys.modules["flask_discord_interactions"]
+    del sys.modules["flask_discord_interactions.discord"]
 
 
 @pytest.mark.asyncio
 async def test_full_server(mock_flask):
-    del sys.modules["flask_discord_interactions"]
-    del sys.modules["flask_discord_interactions.discord"]
-
     from flask_discord_interactions import (DiscordInteractions,
                                         InteractionType, ResponseType)
 
