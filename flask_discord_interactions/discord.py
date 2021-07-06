@@ -353,7 +353,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         handler = self.custom_id_handlers[context.primary_id]
 
-        args = context.create_handler_args(data, handler)
+        args = context.create_handler_args(handler)
 
         result = handler(context, *args)
 
