@@ -38,7 +38,7 @@ Advanced Usage
 If you use the ``options`` parameter of the
 :meth:`.DiscordInteractions.command` decorator to specify options manually,
 then it will override the options inferred from the function arguments
-and type annotation. You can use this to, for instance, route multiple 
+and type annotation. You can use this to, for instance, route multiple
 subcommands with different options to the same function. This isn't the
 recommended approach, but it is supported by the API.
 

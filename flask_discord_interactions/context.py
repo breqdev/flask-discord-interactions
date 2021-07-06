@@ -505,6 +505,11 @@ class AsyncContext(Context):
     """
 
     def __post_init__(self):
+        if aiohttp == None:
+            raise ImportError(
+                "The aiohttp module is required for async usage of this "
+                "library")
+
         self.session = aiohttp.ClientSession(
             headers=self.auth_headers,
             raise_for_status=True,

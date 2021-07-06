@@ -43,6 +43,9 @@ def pong(ctx):
 # You can use followups with asyncio
 @discord.command()
 async def wait(ctx, seconds: int):
+    """
+    Waits for a certain number of seconds using the event loop (asyncio.sleep).
+    """
 
     async def do_followup():
         await asyncio.sleep(seconds)
@@ -56,12 +59,43 @@ async def wait(ctx, seconds: int):
 # Normal followups work as well
 @discord.command()
 def wait_sync(ctx, seconds: int):
+    "Waits for a certain number of seconds synchronously (using time.sleep)."
 
     def do_followup():
         time.sleep(seconds)
         ctx.edit("Done!")
 
     threading.Thread(target=do_followup).start()
+    return Response(deferred=True)
+
+
+# You can use the thread loop even from non-async commands
+@discord.command()
+def wait_partly_sync(ctx, seconds: int):
+    "A synchronous command that uses the event loop for waiting."
+
+    async def do_followup():
+        await asyncio.sleep(seconds)
+        await ctx.edit("Done!")
+        await ctx.close()
+
+    asyncio.create_task(do_followup())
+    return Response(deferred=True)
+
+
+# Async subcommands also work, and they can access context
+toplevel = discord.command_group("toplevel", is_async=True)
+secondlevel = toplevel.subgroup("secondlevel", is_async=True)
+
+@secondlevel.command()
+async def thirdlevel(ctx):
+    async def do_followup():
+        print(type(ctx))
+        await asyncio.sleep(1)
+        await ctx.edit(f"Hello, {ctx.author.display_name}!")
+        await ctx.close()
+
+    asyncio.create_task(do_followup())
     return Response(deferred=True)
 
 
