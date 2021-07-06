@@ -87,3 +87,13 @@ def test_context_with_subcommand(discord, client):
 
     with client.context(context):
         assert client.run("group", "subcommand").content == "Bob"
+
+def test_followup_with_subcommand(discord, client):
+    group = discord.command_group("group")
+
+    @group.command()
+    def subcommand(ctx):
+        return ctx.base_url
+
+    assert client.run("group", "subcommand").content == \
+        "https://discord.com/api/v9"
