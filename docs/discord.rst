@@ -77,6 +77,9 @@ commands can take up to 1 hour.
 
     discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
 
+.. note::
+    If you'd like to deploy your bot in an environment with multiple workers, you might experience an issue where each worker tries to update your commands at the same time, causing you to be rate-limited. You should read the page on :ref:`workers` for information and advice relating to this issue.
+
 Now, like any other Flask app, all that's left to do is:
 
 .. code-block:: python

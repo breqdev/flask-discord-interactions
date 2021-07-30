@@ -6,3 +6,4 @@ Tutorials
 
     botsetup.rst
     debugging.rst
+    workers.rst

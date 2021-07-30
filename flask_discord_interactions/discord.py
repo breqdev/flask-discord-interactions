@@ -241,6 +241,11 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         Update the list of slash commands registered with Discord.
         This method will overwrite all existing slash commands.
 
+        Make sure you aren't calling this every time a new worker starts! You
+        will run into rate-limiting issues if multiple workers attempt to
+        register commands simultaneously. Read :ref:`workers` for more
+        info.
+
         Parameters
         ----------
         app

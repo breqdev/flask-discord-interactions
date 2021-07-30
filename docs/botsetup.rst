@@ -95,6 +95,10 @@ Deployment
 
 If you are using something like `Heroku <https://devcenter.heroku.com/articles/getting-started-with-python>`_ or `Dokku <http://dokku.viewdocs.io/dokku/>`_, your public URL should be visible when you deploy the app, something like ``https://serene-caverns-82714.herokuapp.com/``. If you are deploying directly to a cloud VPS with a public IP address, the steps are outlined in this `DigitalOcean <https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04>`_ tutorial (it should be similar for most providers). You could also deploy to a local machine and use a service like `No-IP <https://www.noip.com/support/knowledgebase/getting-started-with-no-ip-com/>`_ to expose it to the Internet.
 
+
+.. note::
+    If you'd like to deploy your bot in an environment with multiple workers, you might experience an issue where each worker tries to register your commands at the same time, causing you to be rate-limited. You should read the page on :ref:`workers` for information and advice relating to this issue.
+
 Tell Discord where to send interactions
 ---------------------------------------
 

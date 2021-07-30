@@ -46,8 +46,8 @@ multiple workers. Thus, this task left is up to you.**
 Here are some general approaches you can use to handle command registration for
 your app.
 
-1. Manual Command Update
-------------------------
+Approach 1: Manual Update
+-------------------------
 
 You can manually run ``discord.update_slash_commands`` before deploying your
 app. For convenience, you could put this behind a command line argument:
@@ -80,8 +80,8 @@ without doing command registration.
 This option is the most versatile, since it does not depend on any specific
 web server or hosting setup.
 
-2. Using Server Hooks
----------------------
+Approach 2: Server Hooks
+------------------------
 
 .. warning::
     *Note that if your application relies on parallelization beyond just one worker
