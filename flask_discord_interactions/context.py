@@ -23,6 +23,8 @@ class CommandOptionType:
     USER = 6
     CHANNEL = 7
     ROLE = 8
+    MENTIONABLE = 9
+    NUMBER = 10
 
 
 class ChannelType:
