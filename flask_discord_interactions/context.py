@@ -513,6 +513,16 @@ class Context(ContextObject):
         response.raise_for_status()
         return response.json()["id"]
 
+    def get_command(self, command_name=None):
+        "Get the ID of a command by name."
+        if command_name is None:
+            return self.command_id
+        else:
+            try:
+                return self.app.discord_commands[command_name].id
+            except KeyError:
+                raise ValueError(f"Unknown command: {command_name}")
+
     def overwrite_permissions(self, permissions, command=None):
         """
         Overwrite the permission overwrites for this command.
@@ -526,20 +536,11 @@ class Context(ContextObject):
             overwrites for the invoking command.
         """
 
-        if command is None:
-            command_id = self.command_id
-        else:
-            try:
-                command_id = self.app.discord_commands[command].id
-            except KeyError:
-                raise ValueError(f"Unknown command: {command}")
-
-
         url = (
             f"{self.app.config['DISCORD_BASE_URL']}/"
             f"applications/{self.app.config['DISCORD_CLIENT_ID']}/"
             f"guilds/{self.guild_id}/"
-            f"commands/{command_id}/permissions"
+            f"commands/{self.get_command(command)}/permissions"
         )
 
         data = [permission.dump() for permission in permissions]
@@ -621,6 +622,32 @@ class AsyncContext(Context):
             **response.dump_multipart()
         ) as response:
             return (await response.json())["id"]
+
+    async def overwrite_permissions(self, permissions, command=None):
+        """
+        Overwrite the permission overwrites for this command.
+
+        Parameters
+        ----------
+        permissions
+            The new list of permission overwrites.
+        command
+            The name of the command to overwrite permissions for. If omitted,
+            overwrites for the invoking command.
+        """
+
+        url = (
+            f"{self.app.config['DISCORD_BASE_URL']}/"
+            f"applications/{self.app.config['DISCORD_CLIENT_ID']}/"
+            f"guilds/{self.guild_id}/"
+            f"commands/{self.get_command(command)}/permissions"
+        )
+
+        data = [permission.dump() for permission in permissions]
+
+        await self.session.put(url, headers=self.auth_headers, json={
+            "permissions": data
+        })
 
     async def close(self):
         await self.session.close()
