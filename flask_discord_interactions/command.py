@@ -188,7 +188,8 @@ class SlashCommand:
         return {
             "name": self.name,
             "description": self.description,
-            "options": self.options
+            "options": self.options,
+            "default_permission": self.default_permission
         }
 
 

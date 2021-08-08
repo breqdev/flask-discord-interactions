@@ -36,6 +36,23 @@ class ChannelType:
     GUILD_STORE = 6
 
 
+class Permission:
+    def __init__(self, role=None, user=None, allow=True):
+        if bool(role) == bool(user):
+            raise ValueError("specify only one of role or user")
+
+        self.type = 1 if role else 2
+        self.id = role or user
+        self.permission = allow
+
+    def dump(self):
+        return {
+            "type": self.type,
+            "id": self.id,
+            "permission": self.permission
+        }
+
+
 class ContextObject:
     @classmethod
     def from_dict(cls, data):
