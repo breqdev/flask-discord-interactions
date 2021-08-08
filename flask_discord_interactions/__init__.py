@@ -29,7 +29,9 @@ from flask_discord_interactions.component import (
     ActionRow,
     Button,
     ButtonStyles,
-    ComponentType
+    ComponentType,
+    SelectMenu,
+    SelectMenuOption
 )
 from flask_discord_interactions.client import Client
 

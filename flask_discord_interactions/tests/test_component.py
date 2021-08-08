@@ -1,5 +1,6 @@
 from flask_discord_interactions import (Response, ResponseType, ActionRow,
-                                        Button, ComponentType, ButtonStyles)
+                                        Button, ComponentType, ButtonStyles,
+                                        SelectMenu, SelectMenuOption)
 
 
 def test_parse_arguments(discord, client):
@@ -76,3 +77,65 @@ def test_button(discord, client):
     }
 
     assert client.run("button").dump() == expected
+
+
+def test_select_menu(discord, client):
+    @discord.command()
+    def selectmenu(ctx):
+        return Response(
+            content="Hi!",
+            components=[
+                ActionRow(components=[
+                    SelectMenu(
+                        custom_id="my_menu",
+                        placeholder="Choose an option",
+                        options=[
+                            SelectMenuOption(
+                                label="Option 1",
+                                value="option1"
+                            ),
+                            SelectMenuOption(
+                                label="Option 2",
+                                value="option2"
+                            )
+                        ]
+                    )
+                ])
+            ]
+        )
+
+    expected = {
+        "type": ResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        "data": {
+            "content": "Hi!",
+            "embeds": None,
+            "flags": 0,
+            "tts": False,
+            "allowed_mentions": {"parse": ["roles", "users", "everyone"]},
+            "components": [{
+                "type": ComponentType.ACTION_ROW,
+                "components": [{
+                    "type": ComponentType.SELECT_MENU,
+                    "custom_id": "my_menu",
+                    "placeholder": "Choose an option",
+                    "disabled": False,
+                    "options": [
+                        {
+                            "label": "Option 1",
+                            "value": "option1",
+                            "default": False,
+                        },
+                        {
+                            "label": "Option 2",
+                            "value": "option2",
+                            "default": False,
+                        }
+                    ],
+                    "max_values": 1,
+                    "min_values": 1,
+                }]
+            }]
+        }
+    }
+
+    assert client.run("selectmenu").dump() == expected
