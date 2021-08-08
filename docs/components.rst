@@ -2,13 +2,13 @@ Message Components
 ==================
 
 
-Message components allow you to include clickable buttons in messages from your
-bot. The documentation on
+Message components allow you to include clickable buttons and dropdown menus
+in messages from your bot. The documentation on
 `Discord <https://discord.com/developers/docs/interactions/message-components>`_
 covers their general use.
 
 To use these components with Flask-Discord-Interactions, you can use the
-:class:`.ActionRow` and :class:`.Button` classes.
+:class:`.ActionRow`, :class:`.Button`, and :class:`.SelectMenu` classes.
 
 Link Buttons
 ------------
@@ -96,6 +96,22 @@ decorator, like so:
                 ])
             ]
         )
+
+Select Menus
+------------
+
+Select Menus will sent an Interaction when a user makes a selection. They function
+similarly to Buttons.
+
+The Context object passed to your custom ID handler function will receive an
+additional property: :attr:`.Context.values`. This property contains a list of
+the values that the user chose.
+
+Defining each individual option can get quite verbose, so an example of this
+component is not provided here. However, one is provided in the
+`Examples directory <https://github.com/Breq16/flask-discord-interactions/tree/main/examples/select_menus.py>`_.
+
+.. _storing-state-custom-id:
 
 Storing State
 -------------
@@ -194,6 +210,17 @@ parameter which will override the ID given. Alternatively, you can use the
 :meth:`.DiscordInteractions.add_custom_handler` function to avoid the decorator
 syntax entirely.
 
+
+.. warning::
+    This strategy works great for development, but can lead to some frustrating
+    behavior in production:
+
+    - Every time your app is restarted, old custom handlers will no longer function. This is likely desirable in development, but can cause issues in production.
+    - If you deploy multiple instances/workers of your application, then they will not share the same custom IDs. This can lead to many issues, such as failure for one worker to process Interactions related to messages sent on another worker.
+
+    To avoid these issues, it is recommended that you specify a specific custom ID in these scenarios.
+
+
 Additionally, Flask-Discord-Interactions needs to separate this handler ID
 from any additional state that needs to be preserved in the custom ID. To
 accomplish this, newlines are inserted into the custom ID string between
@@ -203,10 +230,17 @@ line is used as the ID, and any subsequent lines are taken as arguments to the
 handler function.
 
 
+
 Full API
 --------
 
 .. autoclass:: flask_discord_interactions.Component
+    :members:
+
+|
+
+.. autoclass:: flask_discord_interactions.CustomIdComponent
+    :show-inheritance:
     :members:
 
 |
@@ -236,3 +270,17 @@ Full API
     :members:
     :undoc-members:
     :member-order: bysource
+
+|
+
+.. autoclass:: flask_discord_interactions.SelectMenu(**kwargs)
+    :show-inheritance:
+    :members:
+    :undoc-members:
+
+|
+
+.. autoclass:: flask_discord_interactions.SelectMenuOption(**kwargs)
+    :show-inheritance:
+    :members:
+    :undoc-members:

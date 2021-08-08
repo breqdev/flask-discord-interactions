@@ -16,6 +16,11 @@ it?
         raise HTTPError(http_error_msg, response=self)
     requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://discord.com/api/v9/applications/[...]
 
+There are many potential pitfalls when using this library, where code can work fine
+with one worker process but crash when scaled horizontally.
+
+Rate Limiting
+-------------
 
 If you're deploying to an environment with multiple concurrent workers, you may
 run into a situation where each worker will independently attempt to register
@@ -23,14 +28,14 @@ your application's slash commands with Discord. When this happens, there's a
 good chance you'll get rate-limited!
 
 Issue Reproduction
-------------------
+^^^^^^^^^^^^^^^^^^
 
 You can see this issue by running an example with ``gunicorn -w 4`` or similar.
 This will run four workers, each one will send a separate request to the
 Discord API, and some of them will get rate-limited and crash.
 
 Background
-----------
+^^^^^^^^^^
 
 Most of the examples for this library will call
 ``discord.update_slash_commands`` when the Flask app initializes. This can be
@@ -47,7 +52,7 @@ Here are some general approaches you can use to handle command registration for
 your app.
 
 Approach 1: Manual Update
--------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can manually run ``discord.update_slash_commands`` before deploying your
 app. For convenience, you could put this behind a command line argument:
@@ -81,7 +86,7 @@ This option is the most versatile, since it does not depend on any specific
 web server or hosting setup.
 
 Approach 2: Server Hooks
-------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. warning::
     *Note that if your application relies on parallelization beyond just one worker
@@ -141,3 +146,38 @@ Finally, specify your configuration file when you run Gunicorn:
 
     $ gunicorn -c app_conf.py app:app
 
+Custom IDs
+----------
+
+When declaring a custom ID handler without specifying the custom ID,
+te :meth:`.DiscordInteractions.custom_handler` decorator will
+actually generate a custom ID string itself (a :py:func:`uuid.uuid4`). It will return
+this custom ID string in place of the function.
+
+This strategy works great for development, but can lead to some frustrating
+behavior in production:
+
+- Every time your app is restarted, old custom handlers will no longer function. This is likely desirable in development, but can cause issues in production.
+- If you deploy multiple instances/workers of your application, then they will not share the same custom IDs. This can lead to many issues, such as failure for one worker to process Interactions related to messages sent on another worker.
+
+To avoid these issues, it is recommended that you specify a specific custom ID in these scenarios.
+
+Instead of this:
+
+.. code-block:: python
+
+    @discord.custom_handler()
+    def handle_my_interaction(ctx, interaction_id, current_count: int):
+        ...
+
+
+Try this:
+
+.. code-block:: python
+
+    @discord.custom_handler("handle my cool interaction")
+    def handle_my_interaction(ctx, interaction_id, current_count: int):
+        ...
+
+But be mindful: your custom ID, plus whatever state you want to add
+(see :ref:`storing-state-custom-id`), must fit within 100 characters!
