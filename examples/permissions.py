@@ -19,7 +19,7 @@ discord.update_slash_commands()
 
 
 @discord.command(default_permission=False, permissions=[
-    Permission(user="386352037723635712")
+    Permission(role="786840072891662336")
 ])
 def command_with_perms(ctx):
     return "You have permissions!"

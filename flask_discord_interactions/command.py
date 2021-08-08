@@ -192,6 +192,9 @@ class SlashCommand:
             "default_permission": self.default_permission
         }
 
+    def dump_permissions(self):
+        return [permission.dump() for permission in self.permissions]
+
 
 class SlashCommandSubgroup(SlashCommand):
     """

@@ -296,6 +296,36 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 f"{response.status_code} {response.text}"
             )
 
+        for command in response.json():
+            if command["name"] in app.discord_commands:
+                app.discord_commands[command["name"]].id = command["id"]
+
+        url += "/permissions"
+
+        permissions_data = [
+            {
+                "id": command.id,
+                "permissions": command.dump_permissions()
+            }
+            for command in app.discord_commands.values()
+            if command.permissions
+        ]
+
+        if not permissions_data:
+            return
+
+        response = requests.put(
+            url, json=permissions_data, headers=self.auth_headers(app))
+        self.throttle(response)
+
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError:
+            raise ValueError(
+                f"Unable to register permissions:"
+                f"{response.status_code} {response.text}"
+            )
+
     def throttle(self, response):
         """
         Throttle the number of HTTP requests made to Discord
