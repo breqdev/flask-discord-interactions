@@ -36,16 +36,19 @@ class SlashCommand:
         "No description".
     default_permission
         Whether the command is enabled by default. Default is True.
+    permissions
+        List of permission overwrites.
     """
 
     def __init__(self, command, name, description, options, annotations,
-                 default_permission=True):
+                 default_permission=True, permissions=None):
         self.command = command
         self.name = name
         self.description = description
         self.options = options
         self.annotations = annotations or {}
         self.default_permission = default_permission
+        self.permissions = permissions or []
 
         if self.name is None:
             self.name = command.__name__

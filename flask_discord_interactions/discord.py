@@ -30,8 +30,9 @@ class DiscordInteractionsBlueprint:
         self.discord_commands = {}
         self.custom_id_handlers = {}
 
-    def add_slash_command(self, command, name=None,
-                          description=None, options=None, annotations=None):
+    def add_slash_command(self, command, name=None, description=None,
+                          options=None, annotations=None,
+                          default_permission=None, permissions=None):
         """
         Create and add a new :class:`SlashCommand`.
 
@@ -49,13 +50,18 @@ class DiscordInteractionsBlueprint:
         annotations
             If ``options`` is not provided, descriptions for each of the
             options defined in the function's keyword arguments.
+        default_permission
+            Whether the command is enabled by default. Default is True.
+        permissions
+            List of permission overwrites.
         """
         slash_command = SlashCommand(
-            command, name, description, options, annotations)
+            command, name, description, options, annotations,
+            default_permission, permissions)
         self.discord_commands[slash_command.name] = slash_command
 
-    def command(self, name=None, description=None,
-                options=None, annotations=None):
+    def command(self, name=None, description=None, options=None,
+                annotations=None, default_permission=None, permissions=None):
         """
         Decorator to create a new :class:`SlashCommand`.
 
@@ -71,12 +77,17 @@ class DiscordInteractionsBlueprint:
         annotations
             If ``options`` is not provided, descriptions for each of the
             options defined in the function's keyword arguments.
+        default_permission
+            Whether the command is enabled by default. Default is True.
+        permissions
+            List of permission overwrites.
         """
 
         def decorator(func):
             nonlocal name, description, options
             self.add_slash_command(
-                func, name, description, options, annotations)
+                func, name, description, options, annotations,
+                default_permission, permissions)
             return func
 
         return decorator
