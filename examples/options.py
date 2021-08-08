@@ -1,6 +1,7 @@
 import os
 import sys
 import enum
+import math
 
 from flask import Flask
 
@@ -41,6 +42,11 @@ def add_one(ctx, number: int):
 @discord.command()
 def and_gate(ctx, a: bool, b: bool):
     return f"{a} AND {b} is {a and b}"
+
+
+@discord.command()
+def sin(ctx, x: float):
+    return f"sin({x}) = {math.sin(x)}"
 
 
 # For using the "choices" field, you can use an Enum
