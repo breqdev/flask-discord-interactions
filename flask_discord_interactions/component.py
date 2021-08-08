@@ -48,6 +48,27 @@ class ActionRow(Component):
     type: int = ComponentType.ACTION_ROW
 
 
+    def __post_init__(self):
+        if self.components:
+            # Limited to any of the following:
+            # - 5 Buttons
+            # - 1 Select Menu
+
+            if len(self.components) > 5:
+                raise ValueError("ActionRow can have at most 5 components")
+
+            for component in self.components:
+                if component.type == ComponentType.ACTION_ROW:
+                    raise ValueError("nested action rows not allowed")
+                elif component.type == ComponentType.BUTTON:
+                    pass
+                elif component.type == ComponentType.SELECT_MENU:
+                    if len(self.components) > 1:
+                        raise ValueError(
+                            "select menu must be the only child of action row")
+
+
+
 class ButtonStyles:
     PRIMARY = 1
     SECONDARY = 2
