@@ -22,8 +22,26 @@ discord.update_slash_commands()
     Permission(role="786840072891662336")
 ])
 def command_with_perms(ctx):
+    "You need a certain role to access this command"
+
     return "You have permissions!"
 
+
+@discord.command(default_permission=False)
+def locked_command(ctx):
+    "Secret command that has to be unlocked"
+
+    return "You have unlocked the secret command!"
+
+
+@discord.command()
+def unlock_command(ctx):
+    "Unlock the secret command"
+
+    ctx.overwrite_permissions(
+        [Permission(user=ctx.author.id)], "locked_command")
+
+    return "Unlocked!"
 
 
 discord.set_route("/interactions")

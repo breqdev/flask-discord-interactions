@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import Any, List
 import inspect
 import itertools
 
@@ -283,9 +283,8 @@ class Context(ContextObject):
     channels: List[Channel] = None
     roles: List[Role] = None
 
-    client_id: str = ""
-    auth_headers: dict = None
-    base_url: str = ""
+    app: Any = None
+    discord: Any = None
 
     custom_id: str = None
     primary_id: str = None
@@ -297,9 +296,8 @@ class Context(ContextObject):
             data = {}
 
         result = cls(
-            client_id = app.config["DISCORD_CLIENT_ID"] if app else "",
-            auth_headers = discord.auth_headers(app) if discord else {},
-            base_url = app.config["DISCORD_BASE_URL"] if app else "",
+            app = app,
+            discord = discord,
             author = Member.from_dict(data.get("member", {})),
             id = data.get("id"),
             token = data.get("token"),
@@ -315,6 +313,10 @@ class Context(ContextObject):
         result.parse_custom_id()
         result.parse_resolved()
         return result
+
+    @property
+    def auth_headers(self):
+        return self.discord.auth_headers(self.app)
 
     def parse_custom_id(self):
         """
@@ -447,8 +449,8 @@ class Context(ContextObject):
             "@original", refers to the original message.
         """
 
-        url = (f"{self.base_url}/webhooks/"
-               f"{self.client_id}/{self.token}")
+        url = (f"{self.app.config['DISCORD_BASE_URL']}/webhooks/"
+               f"{self.app.config['DISCORD_CLIENT_ID']}/{self.token}")
         if message is not None:
             url += f"/messages/{message}"
 
@@ -510,6 +512,42 @@ class Context(ContextObject):
         )
         response.raise_for_status()
         return response.json()["id"]
+
+    def overwrite_permissions(self, permissions, command=None):
+        """
+        Overwrite the permission overwrites for this command.
+
+        Parameters
+        ----------
+        permissions
+            The new list of permission overwrites.
+        command
+            The name of the command to overwrite permissions for. If omitted,
+            overwrites for the invoking command.
+        """
+
+        if command is None:
+            command_id = self.command_id
+        else:
+            try:
+                command_id = self.app.discord_commands[command].id
+            except KeyError:
+                raise ValueError(f"Unknown command: {command}")
+
+
+        url = (
+            f"{self.app.config['DISCORD_BASE_URL']}/"
+            f"applications/{self.app.config['DISCORD_CLIENT_ID']}/"
+            f"guilds/{self.guild_id}/"
+            f"commands/{command_id}/permissions"
+        )
+
+        data = [permission.dump() for permission in permissions]
+
+        response = requests.put(url, headers=self.auth_headers, json={
+            "permissions": data
+        })
+        response.raise_for_status()
 
 
 @dataclass
