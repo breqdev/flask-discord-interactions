@@ -10,7 +10,8 @@ sys.path.insert(1, ".")
 
 from flask_discord_interactions import (DiscordInteractions,  # noqa: E402
                                         Response, ActionRow, Button,
-                                        ButtonStyles, Embed)
+                                        ButtonStyles, Embed, SelectMenu,
+                                        SelectMenuOption)
 
 
 app = Flask(__name__)

@@ -92,7 +92,7 @@ class SelectMenuOption():
     value: str
 
     description: str = None
-    emoji: str = None
+    emoji: dict = None
     default: bool = False
 
 
