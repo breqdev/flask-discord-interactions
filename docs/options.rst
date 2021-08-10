@@ -26,8 +26,8 @@ for more information about the decorator.
 Primitives
 ----------
 
-You can use ``str``, ``int``, or ``bool`` for string, integer, and boolean
-options.
+You can use ``str``, ``int``, ``float``, or ``bool`` for string, integer,
+number, and boolean options.
 
 .. code-block:: python
 
