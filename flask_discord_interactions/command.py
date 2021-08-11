@@ -34,14 +34,21 @@ class SlashCommand:
         annotations. Do not use with ``options``. If omitted, and if
         ``options`` is not provided, option descriptions default to
         "No description".
+    default_permission
+        Whether the command is enabled by default. Default is True.
+    permissions
+        List of permission overwrites.
     """
 
-    def __init__(self, command, name, description, options, annotations):
+    def __init__(self, command, name, description, options, annotations,
+                 default_permission=True, permissions=None):
         self.command = command
         self.name = name
         self.description = description
         self.options = options
         self.annotations = annotations or {}
+        self.default_permission = default_permission
+        self.permissions = permissions or []
 
         if self.name is None:
             self.name = command.__name__
@@ -181,8 +188,12 @@ class SlashCommand:
         return {
             "name": self.name,
             "description": self.description,
-            "options": self.options
+            "options": self.options,
+            "default_permission": self.default_permission
         }
+
+    def dump_permissions(self):
+        return [permission.dump() for permission in self.permissions]
 
 
 class SlashCommandSubgroup(SlashCommand):

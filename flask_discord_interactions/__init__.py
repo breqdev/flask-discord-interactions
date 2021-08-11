@@ -9,6 +9,7 @@ from flask_discord_interactions.context import (
     AsyncContext,
     CommandOptionType,
     ChannelType,
+    Permission,
     Member,
     User,
     Role,

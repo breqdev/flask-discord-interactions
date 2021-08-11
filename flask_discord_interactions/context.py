@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import Any, List
 import inspect
 import itertools
 
@@ -34,6 +34,36 @@ class ChannelType:
     GUILD_CATEGORY = 4
     GUILD_NEWS = 5
     GUILD_STORE = 6
+
+
+class Permission:
+    """
+    An object representing a single permission overwrite.
+
+    ``Permission(role='1234')`` allows users with role ID 1234 to use the
+    command
+
+    ``Permission(user='5678')`` allows user ID 5678 to use the command
+
+    ``Permission(role='9012', allow=False)`` denies users with role ID 9012
+    from using the command
+    """
+
+
+    def __init__(self, role=None, user=None, allow=True):
+        if bool(role) == bool(user):
+            raise ValueError("specify only one of role or user")
+
+        self.type = 1 if role else 2
+        self.id = role or user
+        self.permission = allow
+
+    def dump(self):
+        return {
+            "type": self.type,
+            "id": self.id,
+            "permission": self.permission
+        }
 
 
 class ContextObject:
@@ -269,9 +299,8 @@ class Context(ContextObject):
     channels: List[Channel] = None
     roles: List[Role] = None
 
-    client_id: str = ""
-    auth_headers: dict = None
-    base_url: str = ""
+    app: Any = None
+    discord: Any = None
 
     custom_id: str = None
     primary_id: str = None
@@ -283,9 +312,8 @@ class Context(ContextObject):
             data = {}
 
         result = cls(
-            client_id = app.config["DISCORD_CLIENT_ID"] if app else "",
-            auth_headers = discord.auth_headers(app) if discord else {},
-            base_url = app.config["DISCORD_BASE_URL"] if app else "",
+            app = app,
+            discord = discord,
             author = Member.from_dict(data.get("member", {})),
             id = data.get("id"),
             token = data.get("token"),
@@ -302,6 +330,10 @@ class Context(ContextObject):
         result.parse_custom_id()
         result.parse_resolved()
         return result
+
+    @property
+    def auth_headers(self):
+        return self.discord.auth_headers(self.app)
 
     def parse_custom_id(self):
         """
@@ -434,8 +466,8 @@ class Context(ContextObject):
             "@original", refers to the original message.
         """
 
-        url = (f"{self.base_url}/webhooks/"
-               f"{self.client_id}/{self.token}")
+        url = (f"{self.app.config['DISCORD_BASE_URL']}/webhooks/"
+               f"{self.app.config['DISCORD_CLIENT_ID']}/{self.token}")
         if message is not None:
             url += f"/messages/{message}"
 
@@ -497,6 +529,43 @@ class Context(ContextObject):
         )
         response.raise_for_status()
         return response.json()["id"]
+
+    def get_command(self, command_name=None):
+        "Get the ID of a command by name."
+        if command_name is None:
+            return self.command_id
+        else:
+            try:
+                return self.app.discord_commands[command_name].id
+            except KeyError:
+                raise ValueError(f"Unknown command: {command_name}")
+
+    def overwrite_permissions(self, permissions, command=None):
+        """
+        Overwrite the permission overwrites for this command.
+
+        Parameters
+        ----------
+        permissions
+            The new list of permission overwrites.
+        command
+            The name of the command to overwrite permissions for. If omitted,
+            overwrites for the invoking command.
+        """
+
+        url = (
+            f"{self.app.config['DISCORD_BASE_URL']}/"
+            f"applications/{self.app.config['DISCORD_CLIENT_ID']}/"
+            f"guilds/{self.guild_id}/"
+            f"commands/{self.get_command(command)}/permissions"
+        )
+
+        data = [permission.dump() for permission in permissions]
+
+        response = requests.put(url, headers=self.auth_headers, json={
+            "permissions": data
+        })
+        response.raise_for_status()
 
 
 @dataclass
@@ -570,6 +639,32 @@ class AsyncContext(Context):
             **response.dump_multipart()
         ) as response:
             return (await response.json())["id"]
+
+    async def overwrite_permissions(self, permissions, command=None):
+        """
+        Overwrite the permission overwrites for this command.
+
+        Parameters
+        ----------
+        permissions
+            The new list of permission overwrites.
+        command
+            The name of the command to overwrite permissions for. If omitted,
+            overwrites for the invoking command.
+        """
+
+        url = (
+            f"{self.app.config['DISCORD_BASE_URL']}/"
+            f"applications/{self.app.config['DISCORD_CLIENT_ID']}/"
+            f"guilds/{self.guild_id}/"
+            f"commands/{self.get_command(command)}/permissions"
+        )
+
+        data = [permission.dump() for permission in permissions]
+
+        await self.session.put(url, headers=self.auth_headers, json={
+            "permissions": data
+        })
 
     async def close(self):
         await self.session.close()
