@@ -239,7 +239,9 @@ class Context(ContextObject):
     guild_id
         The unique ID (snowflake) of the guild this command was invoked in.
     options
-        An array of the options passed to the command.
+        A list of the options passed to the command.
+    values
+        A list of the values selected, if this is a Select Menu handler.
     resolved
         Additional data ()
     command_name
@@ -259,6 +261,7 @@ class Context(ContextObject):
     channel_id: str = None
     guild_id: str = None
     options: list = None
+    values: list = None
     resolved: dict = None
     command_name: str = None
     command_id: str = None
@@ -289,6 +292,7 @@ class Context(ContextObject):
             channel_id = data.get("channel_id"),
             guild_id = data.get("guild_id"),
             options = data.get("data", {}).get("options"),
+            values = data.get("data", {}).get("values", []),
             resolved = data.get("resolved", {}),
             command_name = data.get("data", {}).get("name"),
             command_id = data.get("data", {}).get("id"),
