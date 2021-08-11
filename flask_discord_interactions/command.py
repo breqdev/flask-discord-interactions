@@ -92,6 +92,8 @@ class SlashCommand:
                     ptype = CommandOptionType.BOOLEAN
                 elif annotation == str:
                     ptype = CommandOptionType.STRING
+                elif annotation == float:
+                    ptype = CommandOptionType.NUMBER
 
                 # Discord Models
                 elif annotation in [User, Member]:

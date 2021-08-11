@@ -28,6 +28,15 @@ def test_bool(discord, client):
     assert client.run("and_gate", a=True, b=True).content == "True"
 
 
+def test_number(discord, client):
+    @discord.command()
+    def round_to_nearest(ctx, number: float):
+        return str(round(number))
+
+    assert client.run("round_to_nearest", number=1.5).content == "2"
+    assert client.run("round_to_nearest", number=1.25).content == "1"
+
+
 def test_default(discord, client):
     @discord.command()
     def square(ctx, number: int = 5):
