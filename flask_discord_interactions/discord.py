@@ -269,9 +269,6 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         if app is None:
             app = self.app
 
-        if app.config['DONT_REGISTER_WITH_DISCORD']:
-            return
-
         if guild_id:
             url = (f"{app.config['DISCORD_BASE_URL']}/applications/"
                    f"{app.config['DISCORD_CLIENT_ID']}/"
@@ -284,21 +281,26 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             command.dump() for command in app.discord_commands.values()
         ]
 
-        response = requests.put(
-            url, json=overwrite_data, headers=self.auth_headers(app))
-        self.throttle(response)
+        if not app.config['DONT_REGISTER_WITH_DISCORD']:
+            response = requests.put(
+                url, json=overwrite_data, headers=self.auth_headers(app))
+            self.throttle(response)
 
-        try:
-            response.raise_for_status()
-        except requests.exceptions.HTTPError:
-            raise ValueError(
-                f"Unable to register commands:"
-                f"{response.status_code} {response.text}"
-            )
+            try:
+                response.raise_for_status()
+            except requests.exceptions.HTTPError:
+                raise ValueError(
+                    f"Unable to register commands:"
+                    f"{response.status_code} {response.text}"
+                )
 
-        for command in response.json():
-            if command["name"] in app.discord_commands:
-                app.discord_commands[command["name"]].id = command["id"]
+            for command in response.json():
+                if command["name"] in app.discord_commands:
+                    app.discord_commands[command["name"]].id = command["id"]
+        else:
+            for command in app.discord_commands.values():
+                command.id = command.name
+
 
         url += "/permissions"
 
@@ -314,17 +316,18 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         if not permissions_data:
             return
 
-        response = requests.put(
-            url, json=permissions_data, headers=self.auth_headers(app))
-        self.throttle(response)
+        if not app.config['DONT_REGISTER_WITH_DISCORD']:
+            response = requests.put(
+                url, json=permissions_data, headers=self.auth_headers(app))
+            self.throttle(response)
 
-        try:
-            response.raise_for_status()
-        except requests.exceptions.HTTPError:
-            raise ValueError(
-                f"Unable to register permissions:"
-                f"{response.status_code} {response.text}"
-            )
+            try:
+                response.raise_for_status()
+            except requests.exceptions.HTTPError:
+                raise ValueError(
+                    f"Unable to register permissions:"
+                    f"{response.status_code} {response.text}"
+                )
 
     def throttle(self, response):
         """
