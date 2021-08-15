@@ -1,6 +1,8 @@
 import time
 import inspect
 import uuid
+import atexit
+import asyncio
 
 import requests
 
@@ -523,13 +525,23 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         # Set up the aiohttp ClientSession
 
-        @app.before_serving
         async def create_session():
             app.discord_client_session = aiohttp.ClientSession(
                 headers=self.auth_headers(app),
                 raise_for_status=True
             )
 
-        @app.after_serving
         async def close_session():
             await app.discord_client_session.close()
+
+        if hasattr(app, "before_serving"):
+            # Quart apps
+            app.before_serving(create_session)
+            app.after_serving(close_session)
+        else:
+            # Flask apps
+            app.before_first_request(create_session)
+            atexit.register(
+                lambda: asyncio.get_event_loop().run_until_complete(
+                    close_session())
+            )
