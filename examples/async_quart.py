@@ -96,7 +96,7 @@ def wait_partly_sync(ctx, seconds: int):
 
     async def do_followup():
         await asyncio.sleep(seconds)
-        await ctx.edit("Done!")
+        ctx.edit("Done!") # We are passed a Context, not an AsyncContext
 
     asyncio.create_task(do_followup())
     return Response(deferred=True)
