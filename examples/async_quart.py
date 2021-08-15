@@ -4,11 +4,9 @@ import time
 import asyncio
 import threading
 
+import aiohttp
 from quart import Quart
 
-# This is just here for the sake of examples testing
-# to make sure that the imports work
-# (you don't actually need it in your code)
 sys.path.insert(1, ".")
 
 import quart.flask_patch
@@ -38,6 +36,18 @@ async def ping(ctx):
 @discord.command()
 def pong(ctx):
     return "Ping!"
+
+
+# This is useful if you like working with asyncio libraries
+@discord.command()
+async def qotd(ctx):
+    "Quote of the day"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+                    "https://quotes.rest/qod",
+                    headers={"Content-Type": "application/json"}
+                ) as resp:
+            return (await resp.json())["contents"]["quotes"][0]["quote"]
 
 
 # You can use followups with asyncio
