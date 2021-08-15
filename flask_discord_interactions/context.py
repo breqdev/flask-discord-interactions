@@ -313,6 +313,11 @@ class Context(ContextObject):
         if data is None:
             data = {}
 
+        # If this is a proxy (e.g. flask.current_app), get the current object
+        # https://flask.palletsprojects.com/en/2.0.x/reqcontext/#notes-on-proxies
+        if hasattr(app, "_get_current_object"):
+            app = app._get_current_object()
+
         result = cls(
             app = app,
             discord = discord,
@@ -489,6 +494,9 @@ class Context(ContextObject):
 
         response = Response.from_return_value(response)
 
+        if self.app.config["DONT_REGISTER_WITH_DISCORD"]:
+            return
+
         response = requests.patch(
             self.followup_url(message),
             json=response.dump_followup(),
@@ -506,6 +514,9 @@ class Context(ContextObject):
             The message to delete. If omitted, deletes the original message.
         """
 
+        if self.app.config["DONT_REGISTER_WITH_DISCORD"]:
+            return
+
         response = requests.delete(
             self.followup_url(message),
             headers=self.auth_headers
@@ -521,6 +532,9 @@ class Context(ContextObject):
         response
             The response to send as a followup message.
         """
+
+        if self.app.config["DONT_REGISTER_WITH_DISCORD"]:
+            return
 
         response = Response.from_return_value(response)
 
@@ -563,6 +577,9 @@ class Context(ContextObject):
         )
 
         data = [permission.dump() for permission in permissions]
+
+        if self.app.config["DONT_REGISTER_WITH_DISCORD"]:
+            return
 
         response = requests.put(url, headers=self.auth_headers, json={
             "permissions": data
@@ -607,6 +624,9 @@ class AsyncContext(Context):
 
         response = Response.from_return_value(response)
 
+        if self.app.config["DONT_REGISTER_WITH_DISCORD"]:
+            return
+
         await self.session.patch(
             self.followup_url(message), json=response.dump_followup()
         )
@@ -621,6 +641,9 @@ class AsyncContext(Context):
             The message to delete. If omitted, deletes the original message.
         """
 
+        if self.app.config["DONT_REGISTER_WITH_DISCORD"]:
+            return
+
         await self.session.delete(self.followup_url(message))
 
     async def send(self, response):
@@ -634,6 +657,9 @@ class AsyncContext(Context):
         """
 
         response = Response.from_return_value(response)
+
+        if self.app.config["DONT_REGISTER_WITH_DISCORD"]:
+            return
 
         async with self.session.post(
             self.followup_url(),
@@ -663,6 +689,9 @@ class AsyncContext(Context):
         )
 
         data = [permission.dump() for permission in permissions]
+
+        if self.app.config["DONT_REGISTER_WITH_DISCORD"]:
+            return
 
         await self.session.put(url, headers=self.auth_headers, json={
             "permissions": data

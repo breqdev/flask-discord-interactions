@@ -1,6 +1,8 @@
+import threading
+
 from flask import Flask
 
-from flask_discord_interactions import DiscordInteractions, ResponseType, InteractionType
+from flask_discord_interactions import DiscordInteractions, ResponseType, InteractionType, Response
 
 
 def test_flask():
@@ -99,5 +101,42 @@ def test_app_factory():
 
         assert response.get_json()["data"]["content"] == "Ping Pong!"
 
+def test_followup():
+    app = Flask(__name__)
+    app.config["DONT_VALIDATE_SIGNATURE"] = True
+    app.config["DONT_REGISTER_WITH_DISCORD"] = True
+
+    discord = DiscordInteractions(app)
+
+    ref_to_thread = None
+
+    @discord.command()
+    def ping(ctx):
+        nonlocal ref_to_thread
+
+        def do_followup():
+            ctx.edit("hi")
+
+        ref_to_thread = thread = threading.Thread(target=do_followup)
+        thread.start()
+
+        return Response(deferred=True)
 
 
+    discord.set_route("/interactions")
+
+    with app.test_client() as client:
+        response = client.post("/interactions", json={
+            "type": InteractionType.APPLICATION_COMMAND,
+            "id": 1,
+            "channel_id": "",
+            "guild_id": "",
+            "token": "",
+            "data": {
+                "id": 1,
+                "name": "ping",
+            }
+        })
+
+    # Make sure we wait for the thread to complete
+    ref_to_thread.join()
