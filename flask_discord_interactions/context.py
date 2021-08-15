@@ -340,7 +340,8 @@ class Context(ContextObject):
 
     @property
     def auth_headers(self):
-        return self.discord.auth_headers(self.app)
+        if self.discord:
+            return self.discord.auth_headers(self.app)
 
     def parse_custom_id(self):
         """
@@ -494,7 +495,7 @@ class Context(ContextObject):
 
         response = Response.from_return_value(response)
 
-        if self.app.config["DONT_REGISTER_WITH_DISCORD"]:
+        if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
         response = requests.patch(
@@ -514,7 +515,7 @@ class Context(ContextObject):
             The message to delete. If omitted, deletes the original message.
         """
 
-        if self.app.config["DONT_REGISTER_WITH_DISCORD"]:
+        if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
         response = requests.delete(
@@ -533,7 +534,7 @@ class Context(ContextObject):
             The response to send as a followup message.
         """
 
-        if self.app.config["DONT_REGISTER_WITH_DISCORD"]:
+        if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
         response = Response.from_return_value(response)
@@ -597,18 +598,21 @@ class AsyncContext(Context):
     """
 
     def __post_init__(self):
+        if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
+            return
+
         if aiohttp == None:
             raise ImportError(
                 "The aiohttp module is required for async usage of this "
                 "library")
 
-        self.session = aiohttp.ClientSession(
-            headers=self.auth_headers,
-            raise_for_status=True,
-        )
+        if not hasattr(self.app, "discord_client_session"):
+            self.app.discord_client_session = aiohttp.ClientSession(
+                headers=self.auth_headers,
+                raise_for_status=True,
+            )
 
-        if aiohttp is None:
-            raise ValueError("aiohttp is required to create async contexts")
+        self.session = self.app.discord_client_session
 
     async def edit(self, response, message="@original"):
         """
@@ -624,7 +628,7 @@ class AsyncContext(Context):
 
         response = Response.from_return_value(response)
 
-        if self.app.config["DONT_REGISTER_WITH_DISCORD"]:
+        if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
         await self.session.patch(
@@ -641,7 +645,7 @@ class AsyncContext(Context):
             The message to delete. If omitted, deletes the original message.
         """
 
-        if self.app.config["DONT_REGISTER_WITH_DISCORD"]:
+        if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
         await self.session.delete(self.followup_url(message))
@@ -658,7 +662,7 @@ class AsyncContext(Context):
 
         response = Response.from_return_value(response)
 
-        if self.app.config["DONT_REGISTER_WITH_DISCORD"]:
+        if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
         async with self.session.post(
@@ -690,7 +694,7 @@ class AsyncContext(Context):
 
         data = [permission.dump() for permission in permissions]
 
-        if self.app.config["DONT_REGISTER_WITH_DISCORD"]:
+        if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
         await self.session.put(url, headers=self.auth_headers, json={
@@ -698,4 +702,5 @@ class AsyncContext(Context):
         })
 
     async def close(self):
-        await self.session.close()
+        pass
+        # await self.session.close()
