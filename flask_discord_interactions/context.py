@@ -6,11 +6,6 @@ import warnings
 
 import requests
 
-try:
-    import aiohttp
-except ImportError:
-    aiohttp = None
-
 from flask_discord_interactions.response import Response
 
 
@@ -601,17 +596,6 @@ class AsyncContext(Context):
     def __post_init__(self):
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
-
-        if aiohttp == None:
-            raise ImportError(
-                "The aiohttp module is required for async usage of this "
-                "library")
-
-        if not hasattr(self.app, "discord_client_session"):
-            self.app.discord_client_session = aiohttp.ClientSession(
-                headers=self.auth_headers,
-                raise_for_status=True,
-            )
 
         self.session = self.app.discord_client_session
 

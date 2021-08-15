@@ -9,6 +9,11 @@ from flask import current_app, request, jsonify, abort
 from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
 
+try:
+    import aiohttp
+except ImportError:
+    aiohttp = None
+
 from flask_discord_interactions.command import SlashCommand, SlashCommandGroup
 from flask_discord_interactions.context import Context
 from flask_discord_interactions.response import Response, ResponseType
@@ -479,6 +484,9 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         Add a route handler to a Quart app that handles incoming interaction
         data using asyncio.
 
+        This function also sets up the aiohttp ClientSession that is used
+        for sending followup messages, etc.
+
         Parameters
         ----------
         route
@@ -489,6 +497,11 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         if app is None:
             app = self.app
+
+        if aiohttp == None:
+            raise ImportError(
+                "The aiohttp module is required for async usage of this "
+                "library")
 
         @app.route(route, methods=["POST"])
         async def interactions():
@@ -507,3 +520,16 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 result = await result
 
             return jsonify(result.dump())
+
+        # Set up the aiohttp ClientSession
+
+        @app.before_serving
+        async def create_session():
+            app.discord_client_session = aiohttp.ClientSession(
+                headers=self.auth_headers(app),
+                raise_for_status=True
+            )
+
+        @app.after_serving
+        async def close_session():
+            await app.discord_client_session.close()
