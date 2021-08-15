@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Any, List
 import inspect
 import itertools
+import warnings
 
 import requests
 
@@ -702,5 +703,19 @@ class AsyncContext(Context):
         })
 
     async def close(self):
-        pass
-        # await self.session.close()
+        """
+        Deprecated as of v1.0.2.
+
+        Previously, this closed the AsyncContext's aiohttp ClientSession that
+        was used to send followup messages. This is no longer necessary, as
+        this library now maintains a single ClientSession for the entire
+        application.
+        """
+
+        warnings.warn(
+            "Deprecated! AsyncContext.close is a no-op. "
+            "Since v1.0.2, only one aiohttp ClientSession is created "
+            "for all requests to Discord for the app. "
+            "Thus, there is no need to close the AsyncContext. ",
+            DeprecationWarning
+        )

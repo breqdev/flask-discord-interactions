@@ -3,6 +3,7 @@ import sys
 import time
 import asyncio
 import threading
+import warnings
 
 import aiohttp
 from quart import Quart
@@ -12,6 +13,9 @@ sys.path.insert(1, ".")
 import quart.flask_patch
 from flask_discord_interactions import (DiscordInteractions, # noqa: E402
                                         Response)
+
+
+warnings.simplefilter("always", DeprecationWarning)
 
 
 app = Quart(__name__)
@@ -76,6 +80,13 @@ def wait_sync(ctx, seconds: int):
 
     threading.Thread(target=do_followup).start()
     return Response(deferred=True)
+
+
+# As of v1.0.2, you do not need to call `ctx.close()`
+@discord.command()
+async def close_not_required(ctx):
+    await ctx.close()
+    return "Check the server logs -- ctx.close is now deprecated."
 
 
 # You can use the thread loop even from non-async commands
