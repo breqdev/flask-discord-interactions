@@ -324,7 +324,7 @@ class Context(ContextObject):
             guild_id = data.get("guild_id"),
             options = data.get("data", {}).get("options"),
             values = data.get("data", {}).get("values", []),
-            resolved = data.get("resolved", {}),
+            resolved = data.get("data", {}).get("resolved", {}),
             command_name = data.get("data", {}).get("name"),
             command_id = data.get("data", {}).get("id"),
             custom_id = data.get("data", {}).get("custom_id") or ""
