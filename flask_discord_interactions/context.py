@@ -128,6 +128,7 @@ class User(ContextObject):
     @classmethod
     def from_dict(cls, data):
         data = {**data, **data.get("user", {})}
+        data["avatar_hash"] = data.get("avatar")
         return super().from_dict(data)
 
     @property
