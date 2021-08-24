@@ -16,7 +16,8 @@ def do_screenshot(ctx, url):
 
     response.raw.decode_content = True
 
-    ctx.edit(Response(
-        content="Your screenshot is ready!",
+    ctx.edit(Response(content="Your screenshot is ready!"))
+
+    ctx.send(Response(
         file=("screenshot.png", response.raw, "image/png")
     ))

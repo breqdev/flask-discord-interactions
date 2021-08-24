@@ -29,7 +29,7 @@ discord.update_slash_commands()
 @discord.command()
 def screenshot(ctx, url: str):
     "Take a screenshot of a URL."
-    queue.enqueue(do_screenshot, ctx, url)
+    queue.enqueue(do_screenshot, ctx.freeze(), url)
     return Response(deferred=True)
 
 

@@ -3,6 +3,7 @@ from typing import Any, List
 import inspect
 import itertools
 import warnings
+import types
 
 import requests
 
@@ -331,6 +332,8 @@ class Context(ContextObject):
             custom_id = data.get("data", {}).get("custom_id") or ""
         )
 
+        result.data = data
+
         result.parse_custom_id()
         result.parse_resolved()
         return result
@@ -339,6 +342,8 @@ class Context(ContextObject):
     def auth_headers(self):
         if self.discord:
             return self.discord.auth_headers(self.app)
+        else:
+            return self.frozen_auth_headers
 
     def parse_custom_id(self):
         """
@@ -583,6 +588,26 @@ class Context(ContextObject):
             "permissions": data
         })
         response.raise_for_status()
+
+    def freeze(self):
+        "Return a copy of this Context that can be pickled for RQ and Celery."
+
+        app = types.SimpleNamespace()
+
+        CONFIG_KEYS = [
+            "DISCORD_BASE_URL",
+            "DISCORD_CLIENT_ID",
+            "DONT_REGISTER_WITH_DISCORD",
+        ]
+
+        app.config = {
+            key: self.app.config[key] for key in CONFIG_KEYS
+        }
+
+        new_context = Context.from_data(app=app, data=self.data)
+        new_context.frozen_auth_headers = self.auth_headers
+
+        return new_context
 
 
 @dataclass
