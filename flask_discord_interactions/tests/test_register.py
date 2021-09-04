@@ -1,6 +1,7 @@
 from flask import Flask
 
 from flask_discord_interactions import DiscordInteractions, ResponseType, InteractionType
+from flask_discord_interactions.context import ApplicationCommandType
 
 def test_register_command():
     app = Flask(__name__)
@@ -10,6 +11,50 @@ def test_register_command():
     discord = DiscordInteractions(app)
 
     @discord.command()
+    def ping(ctx):
+        return "pong"
+
+    discord.update_slash_commands()
+
+
+def test_register_user_command():
+    app = Flask(__name__)
+    app.config["DONT_VALIDATE_SIGNATURE"] = True
+    app.config["DONT_REGISTER_WITH_DISCORD"] = True
+
+    discord = DiscordInteractions(app)
+
+    @discord.command(type=ApplicationCommandType.USER)
+    def ping(ctx):
+        return "pong"
+    
+    @discord.command(type=ApplicationCommandType.USER)
+    def PING(ctx):
+        return "pong"
+    
+    @discord.command(name="user test", type=ApplicationCommandType.USER)
+    def ping(ctx):
+        return "pong"
+
+    discord.update_slash_commands()
+
+
+def test_register_message_command():
+    app = Flask(__name__)
+    app.config["DONT_VALIDATE_SIGNATURE"] = True
+    app.config["DONT_REGISTER_WITH_DISCORD"] = True
+
+    discord = DiscordInteractions(app)
+
+    @discord.command(type=ApplicationCommandType.MESSAGE)
+    def ping(ctx):
+        return "pong"
+    
+    @discord.command(type=ApplicationCommandType.MESSAGE)
+    def PING(ctx):
+        return "pong"
+    
+    @discord.command(name="user test", type=ApplicationCommandType.MESSAGE)
     def ping(ctx):
         return "pong"
 
