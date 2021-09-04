@@ -17,7 +17,7 @@ except ImportError:
     aiohttp = None
 
 from flask_discord_interactions.command import SlashCommand, SlashCommandGroup
-from flask_discord_interactions.context import Context
+from flask_discord_interactions.context import Context, ApplicationCommandType
 from flask_discord_interactions.response import Response, ResponseType
 
 
@@ -38,7 +38,8 @@ class DiscordInteractionsBlueprint:
         self.custom_id_handlers = {}
 
     def add_slash_command(self, command, name=None, description=None,
-                          options=None, annotations=None,
+                          options=None, annotations=None, 
+                          type=ApplicationCommandType.CHAT_INPUT,
                           default_permission=None, permissions=None):
         """
         Create and add a new :class:`SlashCommand`.
@@ -57,6 +58,8 @@ class DiscordInteractionsBlueprint:
         annotations
             If ``options`` is not provided, descriptions for each of the
             options defined in the function's keyword arguments.
+        type
+            The ``ApplicationCommandType`` of the command.
         default_permission
             Whether the command is enabled by default. Default is True.
         permissions
@@ -64,11 +67,11 @@ class DiscordInteractionsBlueprint:
         """
         slash_command = SlashCommand(
             command, name, description, options, annotations,
-            default_permission, permissions)
+            type, default_permission, permissions)
         self.discord_commands[slash_command.name] = slash_command
 
-    def command(self, name=None, description=None, options=None,
-                annotations=None, default_permission=None, permissions=None):
+    def command(self, name=None, description=None, options=None, annotations=None, 
+                type=ApplicationCommandType.CHAT_INPUT, default_permission=None, permissions=None):
         """
         Decorator to create a new :class:`SlashCommand`.
 
@@ -84,6 +87,8 @@ class DiscordInteractionsBlueprint:
         annotations
             If ``options`` is not provided, descriptions for each of the
             options defined in the function's keyword arguments.
+        type
+            The ``ApplicationCommandType`` of the command.
         default_permission
             Whether the command is enabled by default. Default is True.
         permissions
@@ -91,10 +96,10 @@ class DiscordInteractionsBlueprint:
         """
 
         def decorator(func):
-            nonlocal name, description, options
+            nonlocal name, description, type, options
             self.add_slash_command(
                 func, name, description, options, annotations,
-                default_permission, permissions)
+                type, default_permission, permissions)
             return func
 
         return decorator

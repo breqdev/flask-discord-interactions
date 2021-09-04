@@ -4,6 +4,7 @@ import inspect
 import itertools
 
 from flask_discord_interactions.context import (Context, CommandOptionType,
+                                                ApplicationCommandType,
                                                 User, Member, Channel, Role,
                                                 AsyncContext)
 from flask_discord_interactions.response import Response
@@ -23,7 +24,8 @@ class SlashCommand:
     description
         Description for this command (appears in the Discord client). If
         omitted, infers the description based on the docstring of the function,
-        or sets the description to "No description".
+        or sets the description to "No description", if ``ApplicationCommandType``
+        is ``CHAT_INPUT``, else set description to ``None``.
     options
         Array of options that can be passed to this command. If omitted,
         infers the options based on the function parameters and type
@@ -34,6 +36,10 @@ class SlashCommand:
         annotations. Do not use with ``options``. If omitted, and if
         ``options`` is not provided, option descriptions default to
         "No description".
+    type
+        Type for this command (depend on the action in the Discord client).
+        The value is in ``ApplicationCommandType``. If omitted, set the default
+        value to ``ApplicationCommandType.CHAT_INPUT``.
     default_permission
         Whether the command is enabled by default. Default is True.
     permissions
@@ -41,42 +47,46 @@ class SlashCommand:
     """
 
     def __init__(self, command, name, description, options, annotations,
-                 default_permission=True, permissions=None):
+                 type=ApplicationCommandType.CHAT_INPUT, default_permission=True, permissions=None):
         self.command = command
         self.name = name
         self.description = description
         self.options = options
         self.annotations = annotations or {}
+        self.type = type
         self.default_permission = default_permission
         self.permissions = permissions or []
 
         if self.name is None:
             self.name = command.__name__
-        if self.description is None:
-            self.description = command.__doc__ or "No description"
 
         if not 1 <= len(self.name) <= 32:
             raise ValueError(
                 f"Error adding command {self.name}: "
                 "Command name must be between 1 and 32 characters.")
-        if self.name != self.name.lower():
-            raise ValueError(
-                f"Error adding command {self.name}: "
-                "Command name must be fully lowercase. "
-                "No UPPERCASE or CamelCase names are allowed.")
-        if not re.fullmatch(r"^[\w-]{1,32}$", self.name):
-            raise ValueError(
-                f"Error adding command {self.name}: "
-                "Command name does not match regex. "
-                "(Perhaps it contains an invalid character?)")
-        if not 1 <= len(self.description) <= 100:
-            raise ValueError(
-                f"Error adding command {self.name}: "
-                "Command description must be between 1 and 100 characters.")
+        if self.type is ApplicationCommandType.CHAT_INPUT:
+            if self.description is None:
+                self.description = command.__doc__ or "No description"
+            if self.name != self.name.lower():
+                raise ValueError(
+                    f"Error adding command {self.name}: "
+                    "Command name must be fully lowercase. "
+                    "No UPPERCASE or CamelCase names are allowed.")
+            if not re.fullmatch(r"^[\w-]{1,32}$", self.name):
+                raise ValueError(
+                    f"Error adding command {self.name}: "
+                    "Command name does not match regex. "
+                    "(Perhaps it contains an invalid character?)")
+            if not 1 <= len(self.description) <= 100:
+                raise ValueError(
+                    f"Error adding command {self.name}: "
+                    "Command description must be between 1 and 100 characters.")
+        else:
+            self.description = None
 
         self.is_async = inspect.iscoroutinefunction(self.command)
 
-        if self.options is None:
+        if self.type is ApplicationCommandType.CHAT_INPUT and self.options is None:
             sig = inspect.signature(self.command)
 
             self.options = []
@@ -187,12 +197,18 @@ class SlashCommand:
 
     def dump(self):
         "Returns this command as a dict for registration with the Discord API."
-        return {
+        data = {
             "name": self.name,
             "description": self.description,
             "options": self.options,
             "default_permission": self.default_permission
         }
+
+        if hasattr(self, 'type'):
+            data['type'] = self.type
+        
+        return data
+
 
     def dump_permissions(self):
         return [permission.dump() for permission in self.permissions]

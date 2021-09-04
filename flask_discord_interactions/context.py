@@ -10,6 +10,13 @@ import requests
 from flask_discord_interactions.response import Response
 
 
+class ApplicationCommandType:
+    "Represents the different application command types integers."
+    CHAT_INPUT = 1
+    USER = 2
+    MESSAGE = 3
+
+
 class CommandOptionType:
     "Represents the different option type integers."
     SUB_COMMAND = 1
