@@ -32,6 +32,40 @@ The function must return either a string or a
 more information about what kind of responses are valid, see
 :ref:`response-page`.
 
+User Commands
+-------------
+
+User Commands are created using the :meth:`.DiscordInteractions.command`
+decorator. The `type` needs to be specified using the 
+:class:`.ApplicationCommandType.USER`.
+
+Here is a basic command:
+
+.. code-block:: python
+
+    @discord.command(type=ApplicationCommandType.USER)
+    def userCmd(ctx):
+        return "something"
+
+Options and Description cannot be provided.
+
+Message Commands
+-------------
+
+User Commands are created using the :meth:`.DiscordInteractions.command`
+decorator. The `type` needs to be specified using the 
+:class:`.ApplicationCommandType.MESSAGE`.
+
+Here is a basic command:
+
+.. code-block:: python
+
+    @discord.command(type=ApplicationCommandType.MESSAGE)
+    def msgCmd(ctx):
+        return "something"
+
+Options and Description cannot be provided.
+
 Advanced Usage
 ^^^^^^^^^^^^^^
 
