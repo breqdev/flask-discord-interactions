@@ -16,7 +16,7 @@ try:
 except ImportError:
     aiohttp = None
 
-from flask_discord_interactions.command import SlashCommand, SlashCommandGroup
+from flask_discord_interactions.command import Command, SlashCommandGroup
 from flask_discord_interactions.context import Context, ApplicationCommandType
 from flask_discord_interactions.models import Message, InteractionResponseType
 
@@ -29,7 +29,7 @@ class InteractionType:
 
 class DiscordInteractionsBlueprint:
     """
-    Represents a collection of :class:`SlashCommand` s.
+    Represents a collection of :class:`ApplicationCommand` s.
 
     Useful for splitting a bot across multiple files.
     """
@@ -37,12 +37,12 @@ class DiscordInteractionsBlueprint:
         self.discord_commands = {}
         self.custom_id_handlers = {}
 
-    def add_slash_command(self, command, name=None, description=None,
+    def add_command(self, command, name=None, description=None,
                           options=None, annotations=None,
                           type=ApplicationCommandType.CHAT_INPUT,
                           default_permission=None, permissions=None):
         """
-        Create and add a new :class:`SlashCommand`.
+        Create and add a new :class:`ApplicationCommand`.
 
         Parameters
         ----------
@@ -65,15 +65,18 @@ class DiscordInteractionsBlueprint:
         permissions
             List of permission overwrites.
         """
-        slash_command = SlashCommand(
+        slash_command = Command(
             command, name, description, options, annotations,
             type, default_permission, permissions)
         self.discord_commands[slash_command.name] = slash_command
 
+    # Deprecated name
+    add_slash_command = add_command
+
     def command(self, name=None, description=None, options=None, annotations=None,
                 type=ApplicationCommandType.CHAT_INPUT, default_permission=None, permissions=None):
         """
-        Decorator to create a new :class:`SlashCommand`.
+        Decorator to create a new :class:`Command`.
 
         Parameters
         ----------
@@ -97,7 +100,7 @@ class DiscordInteractionsBlueprint:
 
         def decorator(func):
             nonlocal name, description, type, options
-            self.add_slash_command(
+            self.add_command(
                 func, name, description, options, annotations,
                 type, default_permission, permissions)
             return func
@@ -149,7 +152,7 @@ class DiscordInteractionsBlueprint:
 
     def custom_handler(self, custom_id=None):
         """
-        Retuens a decorator to register a handler for a custom ID.
+        Returns a decorator to register a handler for a custom ID.
 
         Parameters
         ----------
@@ -259,10 +262,10 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             self.fetch_token(app)
         return {"Authorization": f"Bearer {app.discord_token['access_token']}"}
 
-    def update_slash_commands(self, app=None, guild_id=None):
+    def update_commands(self, app=None, guild_id=None):
         """
-        Update the list of slash commands registered with Discord.
-        This method will overwrite all existing slash commands.
+        Update the list of commands registered with Discord.
+        This method will overwrite all existing commands.
 
         Make sure you aren't calling this every time a new worker starts! You
         will run into rate-limiting issues if multiple workers attempt to
@@ -341,6 +344,9 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                     f"{response.status_code} {response.text}"
                 )
 
+    # Deprecated name
+    update_slash_commands = update_commands
+
     def throttle(self, response):
         """
         Throttle the number of HTTP requests made to Discord
@@ -364,15 +370,15 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
     def register_blueprint(self, blueprint, app=None):
         """
         Register a :class:`DiscordInteractionsBlueprint` to this
-        iscordInteractions class. Updates this instance's list of
-        :class:`SlashCommand` s using the blueprint's list of
-        :class:`SlashCommand` s.
+        DiscordInteractions class. Updates this instance's list of
+        :class:`Command` s using the blueprint's list of
+        :class:`Command` s.
 
         Parameters
         ----------
         blueprint
             The :class:`DiscordInteractionsBlueprint` to add
-            :class:`SlashCommand` s from.
+            :class:`Command` s from.
         app
             The Flask app with the relevant Discord commands.
         """
@@ -385,7 +391,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
     def run_command(self, data):
         """
-        Run the corresponding :class:`SlashCommand` given incoming interaction
+        Run the corresponding :class:`Command` given incoming interaction
         data.
 
         Parameters
@@ -396,12 +402,12 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         command_name = data["data"]["name"]
 
-        slash_command = current_app.discord_commands.get(command_name)
+        command = current_app.discord_commands.get(command_name)
 
-        if slash_command is None:
+        if command is None:
             raise ValueError(f"Invalid command name: {command_name}")
 
-        return slash_command.make_context_and_run(self, current_app, data)
+        return command.make_context_and_run(self, current_app, data)
 
     def run_handler(self, data):
         """

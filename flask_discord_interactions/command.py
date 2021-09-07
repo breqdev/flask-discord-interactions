@@ -9,14 +9,14 @@ from flask_discord_interactions.models import (
 )
 
 
-class SlashCommand:
+class Command:
     """
-    Represents a Slash Command.
+    Represents an Application Command.
 
     Attributes
     ----------
     command
-        Function to call when the slash command is invoked.
+        Function to call when the command is invoked.
     name
         Name for this command (appears in the Discord client). If omitted,
         infers the name based on the name of the function.
@@ -149,7 +149,7 @@ class SlashCommand:
 
     def make_context_and_run(self, discord, app, data):
         """
-        Creates the :class:`Context` object for an invocation of this slash
+        Creates the :class:`Context` object for an invocation of this
         command, then invokes itself.
 
         Parameters
@@ -180,7 +180,7 @@ class SlashCommand:
 
     def run(self, context, *args, **kwargs):
         """
-        Invokes the function defining this slash command.
+        Invokes the function defining this command.
 
         Parameters
         ----------
@@ -213,9 +213,9 @@ class SlashCommand:
         return [permission.dump() for permission in self.permissions]
 
 
-class SlashCommandSubgroup(SlashCommand):
+class SlashCommandSubgroup(Command):
     """
-    Represents a Subgroup of :class:`SlashCommand` s.
+    Represents a Subgroup of slash commands.
 
     Attributes
     ----------
@@ -259,7 +259,7 @@ class SlashCommandSubgroup(SlashCommand):
 
         def decorator(func):
             nonlocal name, description, options, annotations
-            subcommand = SlashCommand(
+            subcommand = Command(
                 func, name, description, options, annotations)
             self.subcommands[subcommand.name] = subcommand
             return func

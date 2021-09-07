@@ -1,5 +1,5 @@
 from flask_discord_interactions.command import (
-    SlashCommand,
+    Command,
     SlashCommandSubgroup,
     SlashCommandGroup
 )
@@ -41,6 +41,7 @@ from flask_discord_interactions.client import Client
 # deprecated names
 Response = Message
 ResponseType = InteractionResponseType
+SlashCommand = Command
 
 
 InteractionResponse = Response
@@ -50,6 +51,7 @@ InteractionContext = Context
 __all__ = [
     "embed",
 
+    "Command",
     "SlashCommand",
     "SlashCommandSubgroup",
     "SlashCommandGroup",
@@ -77,6 +79,7 @@ __all__ = [
     "SelectMenu",
     "SelectMenuOption",
     "Client",
+    "Permission",
 
     "InteractionResponse",
     "InteractionContext"
