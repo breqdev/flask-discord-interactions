@@ -1,6 +1,6 @@
 from flask_discord_interactions.models.channel import Channel, ChannelType
 from flask_discord_interactions.models.user import User, Member
-from flask_discord_interactions.models.message import Message, InteractionResponseType
+from flask_discord_interactions.models.message import Message, ResponseType
 from flask_discord_interactions.models.embed import Embed
 from flask_discord_interactions.models.component import (
     ComponentType, ActionRow, Button, SelectMenu, SelectMenuOption, Component, ButtonStyles
@@ -16,7 +16,7 @@ __all__ = [
     "User",
     "Member",
     "Message",
-    "InteractionResponseType",
+    "ResponseType",
     "Embed",
     "ComponentType",
     "ActionRow",

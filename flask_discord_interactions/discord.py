@@ -18,7 +18,7 @@ except ImportError:
 
 from flask_discord_interactions.command import Command, SlashCommandGroup
 from flask_discord_interactions.context import Context, ApplicationCommandType
-from flask_discord_interactions.models import Message, InteractionResponseType
+from flask_discord_interactions.models import Message, ResponseType
 
 
 class InteractionType:
@@ -484,7 +484,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
             interaction_type = request.json.get("type")
             if interaction_type == InteractionType.PING:
-                return jsonify({"type": InteractionResponseType.PONG})
+                return jsonify({"type": ResponseType.PONG})
 
             elif interaction_type == InteractionType.APPLICATION_COMMAND:
                 return jsonify(self.run_command(request.json).dump())
@@ -522,7 +522,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
             interaction_type = request.json.get("type")
             if interaction_type == InteractionType.PING:
-                return jsonify({"type": InteractionResponseType.PONG})
+                return jsonify({"type": ResponseType.PONG})
 
             elif interaction_type == InteractionType.APPLICATION_COMMAND:
                 result = self.run_command(request.json)

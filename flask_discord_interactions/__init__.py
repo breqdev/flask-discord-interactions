@@ -16,7 +16,7 @@ from flask_discord_interactions.models import (
     Role,
     Channel,
     Message,
-    InteractionResponseType,
+    ResponseType,
     Component,
     ActionRow,
     Button,
@@ -40,7 +40,6 @@ from flask_discord_interactions.client import Client
 
 # deprecated names
 Response = Message
-ResponseType = InteractionResponseType
 SlashCommand = Command
 
 
@@ -68,7 +67,7 @@ __all__ = [
     "InteractionType",
     "DiscordInteractions",
     "DiscordInteractionsBlueprint",
-    "Response",
+    "Message",
     "ResponseType",
     "Embed",
     "Component",
@@ -81,6 +80,7 @@ __all__ = [
     "Client",
     "Permission",
 
+    "Response",
     "InteractionResponse",
     "InteractionContext"
 ]

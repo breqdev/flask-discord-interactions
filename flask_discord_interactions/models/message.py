@@ -8,7 +8,7 @@ from flask_discord_interactions.models.component import Component
 from flask_discord_interactions.models.embed import Embed
 
 
-class InteractionResponseType:
+class ResponseType:
     "Represents the different response type integers."
     PONG = 1
     CHANNEL_MESSAGE_WITH_SOURCE = 4
@@ -90,15 +90,15 @@ class Message(LoadableDataclass):
 
         if self.update:
             if self.deferred:
-                self.Message_type = InteractionResponseType.DEFERRED_UPDATE_MESSAGE
+                self.Message_type = ResponseType.DEFERRED_UPDATE_MESSAGE
             else:
-                self.Message_type = InteractionResponseType.UPDATE_MESSAGE
+                self.Message_type = ResponseType.UPDATE_MESSAGE
         else:
             if self.deferred:
                 self.Message_type = \
-                    InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
+                    ResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
             else:
-                self.Message_type = InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE
+                self.Message_type = ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
 
     @property
     def flags(self):
