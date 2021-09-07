@@ -86,7 +86,7 @@ class Message(LoadableDataclass):
         if self.embeds is not None:
             for i, embed in enumerate(self.embeds):
                 if not dataclasses.is_dataclass(embed):
-                    self.embeds[i] = Embed(**embed)
+                    self.embeds[i] = Embed.from_dict(embed)
 
         if self.update:
             if self.deferred:
