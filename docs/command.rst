@@ -36,7 +36,7 @@ User Commands
 -------------
 
 User Commands are created using the :meth:`.DiscordInteractions.command`
-decorator. The `type` needs to be specified using the 
+decorator. The ``type`` needs to be specified using the
 :class:`.ApplicationCommandType.USER`.
 
 Here is a basic command:
@@ -53,7 +53,7 @@ Message Commands
 -------------
 
 User Commands are created using the :meth:`.DiscordInteractions.command`
-decorator. The `type` needs to be specified using the 
+decorator. The ``type`` needs to be specified using the
 :class:`.ApplicationCommandType.MESSAGE`.
 
 Here is a basic command:
