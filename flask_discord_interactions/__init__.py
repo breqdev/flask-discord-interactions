@@ -4,9 +4,9 @@ from flask_discord_interactions.command import (
     SlashCommandGroup
 )
 
-from flask_discord_interactions.context import (
-    Context,
-    AsyncContext,
+from flask_discord_interactions.context import Context, AsyncContext
+
+from flask_discord_interactions.models import (
     ApplicationCommandType,
     CommandOptionType,
     ChannelType,
@@ -14,7 +14,16 @@ from flask_discord_interactions.context import (
     Member,
     User,
     Role,
-    Channel
+    Channel,
+    Message,
+    InteractionResponseType,
+    Component,
+    ActionRow,
+    Button,
+    ButtonStyles,
+    ComponentType,
+    SelectMenu,
+    SelectMenuOption,
 )
 
 from flask_discord_interactions.discord import (
@@ -23,22 +32,17 @@ from flask_discord_interactions.discord import (
     DiscordInteractionsBlueprint
 )
 
-from flask_discord_interactions.response import Response, ResponseType
-import flask_discord_interactions.embed as embed
-from flask_discord_interactions.embed import Embed
-from flask_discord_interactions.component import (
-    Component,
-    ActionRow,
-    Button,
-    ButtonStyles,
-    ComponentType,
-    SelectMenu,
-    SelectMenuOption
-)
+import flask_discord_interactions.models.embed as embed
+from flask_discord_interactions.models import Embed
+
 from flask_discord_interactions.client import Client
 
 
 # deprecated names
+Response = Message
+ResponseType = InteractionResponseType
+
+
 InteractionResponse = Response
 InteractionContext = Context
 
@@ -49,9 +53,11 @@ __all__ = [
     "SlashCommand",
     "SlashCommandSubgroup",
     "SlashCommandGroup",
+
     "Context",
     "AsyncContext",
     "CommandOptionType",
+    "ApplicationCommandType",
     "ChannelType",
     "Member",
     "User",
@@ -68,6 +74,8 @@ __all__ = [
     "ActionRow",
     "Button",
     "ButtonStyles",
+    "SelectMenu",
+    "SelectMenuOption",
     "Client",
 
     "InteractionResponse",

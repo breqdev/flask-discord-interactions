@@ -7,258 +7,13 @@ import types
 
 import requests
 
-from flask_discord_interactions.response import Response
-
-
-class ApplicationCommandType:
-    "Represents the different application command types integers."
-    CHAT_INPUT = 1
-    USER = 2
-    MESSAGE = 3
-
-
-class CommandOptionType:
-    "Represents the different option type integers."
-    SUB_COMMAND = 1
-    SUB_COMMAND_GROUP = 2
-    STRING = 3
-    INTEGER = 4
-    BOOLEAN = 5
-    USER = 6
-    CHANNEL = 7
-    ROLE = 8
-    MENTIONABLE = 9
-    NUMBER = 10
-
-
-class ChannelType:
-    "Represents the different :class:`Channel` type integers."
-    GUILD_TEXT = 0
-    DM = 1
-    GUILD_VOICE = 2
-    GROUP_DM = 3
-    GUILD_CATEGORY = 4
-    GUILD_NEWS = 5
-    GUILD_STORE = 6
-
-
-class Permission:
-    """
-    An object representing a single permission overwrite.
-
-    ``Permission(role='1234')`` allows users with role ID 1234 to use the
-    command
-
-    ``Permission(user='5678')`` allows user ID 5678 to use the command
-
-    ``Permission(role='9012', allow=False)`` denies users with role ID 9012
-    from using the command
-    """
-
-
-    def __init__(self, role=None, user=None, allow=True):
-        if bool(role) == bool(user):
-            raise ValueError("specify only one of role or user")
-
-        self.type = 1 if role else 2
-        self.id = role or user
-        self.permission = allow
-
-    def dump(self):
-        return {
-            "type": self.type,
-            "id": self.id,
-            "permission": self.permission
-        }
-
-
-class ContextObject:
-    @classmethod
-    def from_dict(cls, data):
-        """
-        Construct the Context object from a dictionary, skipping any keys
-        in the dictionary that do not correspond to fields of the class.
-
-        Parameters
-        ----------
-        data
-            A dictionary of fields to set on the Context object.
-        """
-        return cls(**{
-            k: v for k, v in data.items()
-            if k in inspect.signature(cls).parameters
-        })
+from flask_discord_interactions.models import (
+    LoadableDataclass, Member, Channel, Role, User, CommandOptionType, ApplicationCommandType, Message
+)
 
 
 @dataclass
-class User(ContextObject):
-    """
-    Represents a User (the identity of a Discord user, not tied to any
-    specific guild).
-
-    Attributes
-    ----------
-    id
-        The ID (snowflake) of the user.
-    username
-        The Discord username of the user.
-    discriminator
-        The code following the # after the username.
-    avatar_hash
-        The unique hash identifying the profile picture of the user.
-    bot
-        Whether the user is a bot account.
-    system
-        Whether the user is a Discord system account.
-    mfa_enabled
-        Whether the user has enabled Two-Factor Authentication.
-    locale
-        The locale of the user.
-    flags
-        Miscellaneous information about the user.
-    premium_type
-        The Nitro status of the user.
-    public_flags
-        Miscellaneous information about the user.
-    """
-    id: str = None
-    username: str = None
-    discriminator: str = None
-    avatar_hash: str = None
-    bot: bool = None
-    system: bool = None
-    mfa_enabled: bool = None
-    locale: str = None
-    flags: int = None
-    premium_type: int = None
-    public_flags: int = None
-
-    @classmethod
-    def from_dict(cls, data):
-        data = {**data, **data.get("user", {})}
-        data["avatar_hash"] = data.get("avatar")
-        return super().from_dict(data)
-
-    @property
-    def display_name(self):
-        "The displayed name of the user (the username)."
-        return self.username
-
-    @property
-    def avatar_url(self):
-        "The URL of the user's profile picture."
-        return ("https://cdn.discordapp.com/avatars/"
-                f"{self.id}/{self.avatar_hash}.png")
-
-
-@dataclass
-class Member(User):
-    """
-    Represents a Member (a specific Discord :class:`User` in one particular
-    guild.)
-
-    Attributes
-    ----------
-    nick
-        The guild nickname of the user.
-    roles
-        An array of role IDs that the user has.
-    joined_at
-        The timestamp that the user joined the guild at.
-    premium_since
-        The timestamp that the user started Nitro boosting the guild at.
-    permissions
-        The permissions integer of the user.
-    deaf
-        Whether the user has been server deafened.
-    mute
-        Whether the user has been server muted.
-    pending
-        Whether the user has passed the membership requirements of a guild.
-    """
-    nick: str = None
-    roles: list = None
-    joined_at: str = None
-    premium_since: str = None
-    permissions: int = None
-    deaf: bool = None
-    mute: bool = None
-    pending: bool = None
-
-    def __post_init__(self):
-        if isinstance(self.permissions, str):
-            self.permissions = int(self.permissions)
-
-    @property
-    def display_name(self):
-        """
-        The displayed name of the user (their nickname, or if none exists,
-        their username).
-        """
-        return self.nick or self.username
-
-
-@dataclass
-class Channel(ContextObject):
-    """
-    Represents a Channel in Discord. This includes voice channels, text
-    channels, and channel categories.
-
-    Attributes
-    ----------
-    id
-        The unique ID (snowflake) of the channel.
-    name
-        The name of the channel.
-    permissions
-        The permissions integer of the invoking user in that channel.
-    type
-        The type of channel.
-    """
-    id: str = None
-    name: str = None
-    permissions: int = None
-    type: int = None
-
-
-@dataclass
-class Role(ContextObject):
-    """
-    Represents a Role in Discord.
-
-    Attributes
-    ----------
-    id
-        The unique ID (snowflake) of the role.
-    name
-        The name of the role.
-    color
-        The color given to the role.
-    hoist
-        Whether the role is displayed separately in the member list.
-    position
-        The position of the role in the roles list.
-    permissions
-        The permissions integer of the role.
-    managed
-        Whether the role is managed by an integration (bot).
-    mentionable
-        Whether the role can be mentioned by all users.
-    tags
-        Miscellaneous information about the role.
-    """
-    id: str = None
-    name: str = None
-    color: str = None
-    hoist: bool = None
-    position: int = None
-    managed: bool = None
-    mentionable: bool = None
-    tags: dict = None
-
-
-@dataclass
-class Context(ContextObject):
+class Context(LoadableDataclass):
     """
     Represents the context in which a :class:`SlashCommand` or custom ID
     handler is invoked.
@@ -319,7 +74,7 @@ class Context(ContextObject):
     handler_state: list = None
 
     target_id: str = None
-    target: Union[User, Response] = None
+    target: Union[User, Message] = None
 
     @classmethod
     def from_data(cls, discord=None, app=None, data={}):
@@ -336,7 +91,7 @@ class Context(ContextObject):
             discord = discord,
             author = Member.from_dict(data.get("member", {})),
             id = data.get("id"),
-            type = data.get("data").get("type"),
+            type = data.get("data", {}).get("type") or ApplicationCommandType.CHAT_INPUT,
             token = data.get("token"),
             channel_id = data.get("channel_id"),
             guild_id = data.get("guild_id"),
@@ -396,7 +151,7 @@ class Context(ContextObject):
                       for id, data in self.resolved.get("roles", {}).items()}
 
         self.messages = {
-            id: Response.from_message_command(data)
+            id: Message.from_dict(data)
             for id, data in self.resolved.get("messages", {}).items()
         }
 
@@ -543,7 +298,7 @@ class Context(ContextObject):
             The message to edit. If omitted, edits the original message.
         """
 
-        response = Response.from_return_value(response)
+        response = Message.from_return_value(response)
 
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
@@ -587,7 +342,7 @@ class Context(ContextObject):
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
-        response = Response.from_return_value(response)
+        response = Message.from_return_value(response)
 
         response = requests.post(
             self.followup_url(),
@@ -685,7 +440,7 @@ class AsyncContext(Context):
             The message to edit. If omitted, edits the original message.
         """
 
-        response = Response.from_return_value(response)
+        response = Message.from_return_value(response)
 
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
@@ -719,7 +474,7 @@ class AsyncContext(Context):
             The response to send as a followup message.
         """
 
-        response = Response.from_return_value(response)
+        response = Message.from_return_value(response)
 
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return

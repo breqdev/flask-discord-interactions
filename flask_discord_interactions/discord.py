@@ -18,7 +18,7 @@ except ImportError:
 
 from flask_discord_interactions.command import SlashCommand, SlashCommandGroup
 from flask_discord_interactions.context import Context, ApplicationCommandType
-from flask_discord_interactions.response import Response, ResponseType
+from flask_discord_interactions.models import Message, InteractionResponseType
 
 
 class InteractionType:
@@ -38,7 +38,7 @@ class DiscordInteractionsBlueprint:
         self.custom_id_handlers = {}
 
     def add_slash_command(self, command, name=None, description=None,
-                          options=None, annotations=None, 
+                          options=None, annotations=None,
                           type=ApplicationCommandType.CHAT_INPUT,
                           default_permission=None, permissions=None):
         """
@@ -70,7 +70,7 @@ class DiscordInteractionsBlueprint:
             type, default_permission, permissions)
         self.discord_commands[slash_command.name] = slash_command
 
-    def command(self, name=None, description=None, options=None, annotations=None, 
+    def command(self, name=None, description=None, options=None, annotations=None,
                 type=ApplicationCommandType.CHAT_INPUT, default_permission=None, permissions=None):
         """
         Decorator to create a new :class:`SlashCommand`.
@@ -422,7 +422,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         result = handler(context, *args)
 
-        return Response.from_return_value(result)
+        return Message.from_return_value(result)
 
 
     def verify_signature(self, request):
@@ -478,7 +478,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
             interaction_type = request.json.get("type")
             if interaction_type == InteractionType.PING:
-                return jsonify({"type": ResponseType.PONG})
+                return jsonify({"type": InteractionResponseType.PONG})
 
             elif interaction_type == InteractionType.APPLICATION_COMMAND:
                 return jsonify(self.run_command(request.json).dump())
@@ -516,7 +516,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
             interaction_type = request.json.get("type")
             if interaction_type == InteractionType.PING:
-                return jsonify({"type": ResponseType.PONG})
+                return jsonify({"type": InteractionResponseType.PONG})
 
             elif interaction_type == InteractionType.APPLICATION_COMMAND:
                 result = self.run_command(request.json)

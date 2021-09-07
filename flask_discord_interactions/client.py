@@ -1,7 +1,7 @@
 import copy
 from contextlib import contextmanager
 
-from flask_discord_interactions.response import Response
+from flask_discord_interactions.models import Message
 from flask_discord_interactions.context import Context
 from flask_discord_interactions.command import SlashCommandSubgroup
 
@@ -68,7 +68,7 @@ class Client:
         else:
             i += 1
 
-        return Response.from_return_value(
+        return Message.from_return_value(
             command.run(self.current_context, *names[i:], **params))
 
     def run_handler(self, custom_id, *args):
@@ -93,4 +93,4 @@ class Client:
         args = new_context.create_handler_args(handler)
 
         response = handler(new_context, *args)
-        return Response.from_return_value(response)
+        return Message.from_return_value(response)

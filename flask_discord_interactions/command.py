@@ -3,11 +3,10 @@ import enum
 import inspect
 import itertools
 
-from flask_discord_interactions.context import (Context, CommandOptionType,
-                                                ApplicationCommandType,
-                                                User, Member, Channel, Role,
-                                                AsyncContext)
-from flask_discord_interactions.response import Response
+from flask_discord_interactions.context import Context, AsyncContext
+from flask_discord_interactions.models import (
+    Message, CommandOptionType, ApplicationCommandType, User, Member, Channel, Role
+)
 
 
 class SlashCommand:
@@ -165,8 +164,8 @@ class SlashCommand:
 
         Returns
         -------
-        Response
-            The response by the command, converted to a Response object.
+        Message
+            The response by the command, converted to a Message object.
         """
 
         if self.is_async:
@@ -177,7 +176,7 @@ class SlashCommand:
 
         result = self.run(context, *args, **kwargs)
 
-        return Response.from_return_value(result)
+        return Message.from_return_value(result)
 
     def run(self, context, *args, **kwargs):
         """
@@ -206,7 +205,7 @@ class SlashCommand:
 
         if hasattr(self, 'type'):
             data['type'] = self.type
-        
+
         return data
 
 
