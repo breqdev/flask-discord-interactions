@@ -141,6 +141,17 @@ class Response:
         else:
             return cls(str(result))
 
+    @classmethod
+    def from_message_command(cls, data):
+        """
+        Construct a Response object from an incoming Message Command
+        Interaction.
+        """
+
+        return cls(
+            content=data["content"],
+        )
+
     def dump(self):
         """
         Return this ``Response`` as a dict to be sent in response to an

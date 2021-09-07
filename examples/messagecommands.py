@@ -29,8 +29,8 @@ discord.update_slash_commands()
 
 # Simple command to change a message
 @discord.command(name="Make it bold", type=ApplicationCommandType.MESSAGE)
-def boldMessage(ctx):
-    return f"**{json.loads(json.dumps(next(iter(next(iter(ctx.resolved.values())).values()))))['content']}**"
+def boldMessage(ctx, message):
+    return f"**{message.content}**"
 
 
 # This is the URL that your app will listen for Discord Interactions on

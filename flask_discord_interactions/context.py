@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, List
+from typing import Any, List, Union
 import inspect
 import itertools
 import warnings
@@ -319,6 +319,7 @@ class Context(ContextObject):
     handler_state: list = None
 
     target_id: str = None
+    target: Union[User, Response] = None
 
     @classmethod
     def from_data(cls, discord=None, app=None, data={}):
@@ -335,7 +336,7 @@ class Context(ContextObject):
             discord = discord,
             author = Member.from_dict(data.get("member", {})),
             id = data.get("id"),
-            type = data.get("type"),
+            type = data.get("data").get("type"),
             token = data.get("token"),
             channel_id = data.get("channel_id"),
             guild_id = data.get("guild_id"),
@@ -394,6 +395,11 @@ class Context(ContextObject):
         self.roles = {id: Role.from_dict(data)
                       for id, data in self.resolved.get("roles", {}).items()}
 
+        self.messages = {
+            id: Response.from_message_command(data)
+            for id, data in self.resolved.get("messages", {}).items()
+        }
+
     def parse_target(self):
         """
         Parse the target of the incoming interaction.
@@ -404,7 +410,7 @@ class Context(ContextObject):
         if self.type == ApplicationCommandType.USER:
             self.target = self.members[self.target_id]
         elif self.type == ApplicationCommandType.MESSAGE:
-            self.target = None  # we don't have a good message class
+            self.target = self.messages[self.target_id]
         else:
             self.target = None
 
