@@ -26,9 +26,11 @@ discord.update_slash_commands()
 
 
 # Simple command to mention a friend
+# The target user is passed as an argument
 @discord.command(name="High Five", type=ApplicationCommandType.USER)
-def highFive(ctx):
-    return f"<@{ctx.author.id}> wants to say hello to <@{next(iter(ctx.members))}>"
+def highFive(ctx, target):
+    # we can also pull from ctx.target.id
+    return f"<@{ctx.author.id}> wants to say hello to <@{target.id}>"
 
 
 # This is the URL that your app will listen for Discord Interactions on

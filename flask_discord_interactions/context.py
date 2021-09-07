@@ -269,6 +269,8 @@ class Context(ContextObject):
         A :class:`Member` object representing the invoking user.
     id
         The unique ID (snowflake) of this interaction.
+    type
+        The :class:`ApplicationCommandType` of this interaction.
     token
         The token to use when sending followup messages.
     channel_id
@@ -291,9 +293,12 @@ class Context(ContextObject):
         :class:`Channel` objects for each channel specified as an option.
     roles
         :class:`Role` object for each role specified as an option.
+    target
+        The targeted :class:`User` or message.
     """
     author: Member = None
     id: str = None
+    type: int = None
     token: str = None
     channel_id: str = None
     guild_id: str = None
@@ -313,6 +318,8 @@ class Context(ContextObject):
     primary_id: str = None
     handler_state: list = None
 
+    target_id: str = None
+
     @classmethod
     def from_data(cls, discord=None, app=None, data={}):
         if data is None:
@@ -328,6 +335,7 @@ class Context(ContextObject):
             discord = discord,
             author = Member.from_dict(data.get("member", {})),
             id = data.get("id"),
+            type = data.get("type"),
             token = data.get("token"),
             channel_id = data.get("channel_id"),
             guild_id = data.get("guild_id"),
@@ -336,13 +344,15 @@ class Context(ContextObject):
             resolved = data.get("data", {}).get("resolved", {}),
             command_name = data.get("data", {}).get("name"),
             command_id = data.get("data", {}).get("id"),
-            custom_id = data.get("data", {}).get("custom_id") or ""
+            custom_id = data.get("data", {}).get("custom_id") or "",
+            target_id = data.get("data", {}).get("target_id"),
         )
 
         result.data = data
 
         result.parse_custom_id()
         result.parse_resolved()
+        result.parse_target()
         return result
 
     @property
@@ -384,12 +394,37 @@ class Context(ContextObject):
         self.roles = {id: Role.from_dict(data)
                       for id, data in self.resolved.get("roles", {}).items()}
 
+    def parse_target(self):
+        """
+        Parse the target of the incoming interaction.
+
+        For User and Message commands, the target is the relevant user or
+        message. This method sets the `ctx.target` field.
+        """
+        if self.type == ApplicationCommandType.USER:
+            self.target = self.members[self.target_id]
+        elif self.type == ApplicationCommandType.MESSAGE:
+            self.target = None  # we don't have a good message class
+        else:
+            self.target = None
+
     def create_args(self):
         """
         Create the arguments which will be passed to the function when the
         :class:`SlashCommand` is invoked.
         """
+        if self.type == ApplicationCommandType.CHAT_INPUT:
+            return self.create_args_chat_input()
+        elif self.type == ApplicationCommandType.USER:
+            return [self.target], {}
+        elif self.type == ApplicationCommandType.MESSAGE:
+            return [self.target], {}
 
+    def create_args_chat_input(self):
+        """
+        Create the arguments for this command, assuming it is a ``CHAT_INPUT``
+        command.
+        """
         def create_args_recursive(data, resolved):
             if not data.get("options"):
                 return [], {}
