@@ -1,6 +1,6 @@
 import enum
 
-from flask_discord_interactions import Context, Member, Channel, Role
+from flask_discord_interactions import Member, Channel, Role
 
 
 def test_str(discord, client):

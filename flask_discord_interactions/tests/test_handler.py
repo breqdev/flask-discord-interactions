@@ -1,5 +1,4 @@
-from flask_discord_interactions import (Response, ActionRow, Button,
-                                        ButtonStyles)
+from flask_discord_interactions import Message, ActionRow, Button, ButtonStyles
 
 
 def test_basic_handler(discord, client):
@@ -10,7 +9,7 @@ def test_basic_handler(discord, client):
         nonlocal click_count
         click_count += 1
 
-        return Response(
+        return Message(
             content=f"The button has been clicked {click_count} times",
             components=[
                 ActionRow(components=[
@@ -30,7 +29,7 @@ def test_basic_handler(discord, client):
     def click_counter(ctx):
         "Count the number of button clicks"
 
-        return Response(
+        return Message(
             content=f"The button has been clicked {click_count} times",
             components=[
                 ActionRow(components=[
@@ -54,7 +53,7 @@ def test_stateful_handler(discord, client):
         click_count = int(click_count)
         click_count += 1
 
-        return Response(
+        return Message(
             content=f"{click_count} clicks",
             components=[
                 ActionRow(components=[
@@ -74,7 +73,7 @@ def test_stateful_handler(discord, client):
     def click_counter(ctx):
         "Count the number of button clicks"
 
-        return Response(
+        return Message(
             content=f"The button has been clicked 0 times",
             components=[
                 ActionRow(components=[

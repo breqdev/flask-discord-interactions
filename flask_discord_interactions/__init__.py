@@ -40,7 +40,7 @@ from flask_discord_interactions.client import Client
 
 
 # deprecated names
-class Response(Message):
+class Message(Message):
     def __init_subclass__(self):
         warnings.warn(
             "Deprecated! Response has been renamed to Message, "
@@ -57,7 +57,7 @@ class SlashCommand(Command):
         )
 
 
-InteractionResponse = Response
+InteractionResponse = Message
 InteractionContext = Context
 
 

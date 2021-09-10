@@ -1,6 +1,6 @@
 from flask import Flask
 
-from flask_discord_interactions import DiscordInteractions, ResponseType, InteractionType
+from flask_discord_interactions import DiscordInteractions
 from flask_discord_interactions.context import ApplicationCommandType
 
 def test_register_command():
@@ -14,7 +14,7 @@ def test_register_command():
     def ping(ctx):
         return "pong"
 
-    discord.update_slash_commands()
+    discord.update_commands()
 
 
 def test_register_user_command():
@@ -27,16 +27,16 @@ def test_register_user_command():
     @discord.command(type=ApplicationCommandType.USER)
     def ping(ctx):
         return "pong"
-    
+
     @discord.command(type=ApplicationCommandType.USER)
     def PING(ctx):
         return "pong"
-    
+
     @discord.command(name="user test", type=ApplicationCommandType.USER)
     def ping(ctx):
         return "pong"
 
-    discord.update_slash_commands()
+    discord.update_commands()
 
 
 def test_register_message_command():
@@ -49,16 +49,16 @@ def test_register_message_command():
     @discord.command(type=ApplicationCommandType.MESSAGE)
     def ping(ctx):
         return "pong"
-    
+
     @discord.command(type=ApplicationCommandType.MESSAGE)
     def PING(ctx):
         return "pong"
-    
+
     @discord.command(name="user test", type=ApplicationCommandType.MESSAGE)
     def ping(ctx):
         return "pong"
 
-    discord.update_slash_commands()
+    discord.update_commands()
 
 
 def test_register_subcommand():
@@ -74,7 +74,7 @@ def test_register_subcommand():
     def subcommand(ctx):
         return "pong"
 
-    discord.update_slash_commands()
+    discord.update_commands()
 
 
 def test_register_options():
@@ -88,7 +88,7 @@ def test_register_options():
     def ping(ctx, option1: str, option2: float, option3: str = ""):
         return f"pong"
 
-    discord.update_slash_commands()
+    discord.update_commands()
 
 
 def test_register_subcommand_options():
@@ -104,4 +104,4 @@ def test_register_subcommand_options():
     def subcommand(ctx, option1: str, option2: float, option3: str = ""):
         return "pong"
 
-    discord.update_slash_commands()
+    discord.update_commands()
