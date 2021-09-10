@@ -1,5 +1,4 @@
 import json
-from datetime import datetime
 
 from flask_discord_interactions import Context, Member
 
