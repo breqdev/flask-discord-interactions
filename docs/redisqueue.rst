@@ -33,7 +33,7 @@ reason, it is best if you define your tasks in a separate file, say ``tasks.py``
     :caption: tasks.py
 
     import requests
-    from flask_discord_interactions import Response
+    from flask_discord_interactions import Message
 
 
     def do_screenshot(ctx, url):
@@ -50,9 +50,9 @@ reason, it is best if you define your tasks in a separate file, say ``tasks.py``
 
         response.raw.decode_content = True
 
-        ctx.edit(Response(content="Your screenshot is ready!"))
+        ctx.edit(Message(content="Your screenshot is ready!"))
 
-        ctx.send(Response(
+        ctx.send(Message(
             file=("screenshot.png", response.raw, "image/png")
         ))
 
@@ -69,7 +69,7 @@ in your commands:
     from redis import Redis
     from rq import Queue
 
-    from flask_discord_interactions import DiscordInteractions, Response
+    from flask_discord_interactions import DiscordInteractions, Message
 
     from tasks import do_screenshot
 
@@ -86,7 +86,7 @@ in your commands:
     def screenshot(ctx, url: str):
         "Take a screenshot of a URL."
         queue.enqueue(do_screenshot, ctx.freeze(), url)
-        return Response(deferred=True)
+        return Message(deferred=True)
 
     discord.set_route("/interactions")
     discord.update_commands(guild_id=os.environ["TESTING_GUILD"])

@@ -7,7 +7,7 @@ from rq import Queue
 
 sys.path.insert(1, ".")
 
-from flask_discord_interactions import DiscordInteractions, Response
+from flask_discord_interactions import DiscordInteractions, Message
 
 from tasks import do_screenshot
 
@@ -30,7 +30,7 @@ discord.update_commands()
 def screenshot(ctx, url: str):
     "Take a screenshot of a URL."
     queue.enqueue(do_screenshot, ctx.freeze(), url)
-    return Response(deferred=True)
+    return Message(deferred=True)
 
 
 discord.set_route("/interactions")

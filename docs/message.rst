@@ -1,17 +1,17 @@
 .. _response-page:
 
-Responses
-=========
+Message Models
+==============
 
-Response objects
-----------------
+Message object
+--------------
 
-Response objects are used whenever your bot responds to an Interaction or sends
+Message objects are used whenever your bot responds to an Interaction or sends
 or edits a followup message. They can contain content, embeds, files, and
 other parameters depending on the situation.
 
 In most cases, you can return a string and it will be converted into a
-:class:`.Response` object:
+:class:`.Message` object:
 
 .. code-block:: python
 
@@ -26,16 +26,18 @@ In most cases, you can return a string and it will be converted into a
         "Fancy markdown tricks"
         return "All *the* **typical** ~~discord~~ _markdown_ `works` ***too.***"
 
-Alternatively, you can create a Response object yourself:
+Alternatively, you can create a Message object yourself:
 
 .. code-block:: python
 
-    @discord.command()
-    def response_object(ctx):
-        "Just normal string content"
-        return Response("Return a Response object with the content")
+    from flask_discord_interactions import Message
 
-You can also pass more options to the Response object, such as making the
+    @discord.command()
+    def message_object(ctx):
+        "Just normal string content"
+        return Message("Return a Message object with the content")
+
+You can also pass more options to the Message object, such as making the
 response ephemeral:
 
 .. code-block:: python
@@ -44,7 +46,7 @@ response ephemeral:
     def ephemeral(ctx):
         "Ephemeral Message"
 
-        return Response(
+        return Message(
             "Ephemeral messages are only sent to the user who ran the command, "
             "and they go away after a short while.\n\n"
             "Note that they cannot include embeds or files, "
@@ -65,7 +67,7 @@ For followup messages (*not* the initial response), you can also attach files:
             time.sleep(5)
 
             print("Sending a file")
-            ctx.send(Response(
+            ctx.send(Message(
                 content="Sending a file",
                 file=("README.md", open("README.md", "r"), "text/markdown")))
 
@@ -82,7 +84,7 @@ bot is echoing user input. You can read more about this parameter on the
 Full API
 ^^^^^^^^
 
-.. autoclass:: flask_discord_interactions.Response(**kwargs)
+.. autoclass:: flask_discord_interactions.Message(**kwargs)
     :members:
 
 |
@@ -96,7 +98,7 @@ Embeds
 ------
 
 Embed objects let you represent Embeds which you can return as part of
-responses.
+messages.
 
 .. code-block:: python
 
@@ -106,7 +108,7 @@ responses.
     def my_embed(ctx):
         "Embeds!"
 
-        return Response(embed=Embed(
+        return Message(embed=Embed(
             title="Embeds!",
             description="Embeds can be specified as Embed objects.",
             fields=[

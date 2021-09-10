@@ -8,8 +8,8 @@ from flask import Flask
 # (you don't actually need it in your code)
 sys.path.insert(1, ".")
 
-from flask_discord_interactions import (DiscordInteractions,  # noqa: E402
-                                        Response, ActionRow, Button,
+from flask_discord_interactions import (DiscordInteractions,
+                                        Message, ActionRow, Button,
                                         ButtonStyles, Embed, SelectMenu,
                                         SelectMenuOption)
 
@@ -32,14 +32,14 @@ discord.update_commands()
 click_count = 0
 
 
-# The handler edits the original response by setting update=True
+# The handler edits the original message by setting update=True
 # It sets the action for the button with custom_id
 @discord.custom_handler()
 def handle_click(ctx):
     global click_count
     click_count += 1
 
-    return Response(
+    return Message(
         content=f"The button has been clicked {click_count} times",
         components=[
             ActionRow(components=[
@@ -54,12 +54,12 @@ def handle_click(ctx):
     )
 
 
-# The main command sends the initial Response
+# The main command sends the initial message
 @discord.command()
 def click_counter(ctx):
     "Count the number of button clicks"
 
-    return Response(
+    return Message(
         content=f"The button has been clicked {click_count} times",
         components=[
             ActionRow(components=[
@@ -87,7 +87,7 @@ def handle_downvote(ctx):
 def voting(ctx, question: str):
     "Vote on something!"
 
-    return Response(
+    return Message(
         content=f"The question is: {question}",
         components=[
             ActionRow(components=[
@@ -113,7 +113,7 @@ def voting(ctx, question: str):
 # Ephemeral messages and embeds work
 @discord.custom_handler()
 def handle_avatar_view(ctx):
-    return Response(
+    return Message(
         embed=Embed(
             title=f"{ctx.author.display_name}",
             description=f"{ctx.author.username}#{ctx.author.discriminator}"
@@ -125,7 +125,7 @@ def handle_avatar_view(ctx):
 def username(ctx):
     "Show your username and discriminator"
 
-    return Response(
+    return Message(
         content="Show user info!",
         components=[
             ActionRow(components=[
@@ -146,7 +146,7 @@ def handle_do_nothing(ctx):
 
 @discord.command()
 def do_nothing(ctx):
-    return Response(
+    return Message(
         content="Do nothing",
         components=[
             ActionRow(components=[
@@ -163,7 +163,7 @@ def do_nothing(ctx):
 # Link buttons don't need a handler
 @discord.command()
 def google(ctx):
-    return Response(
+    return Message(
         content="search engine",
         components=[
             ActionRow(components=[
@@ -183,7 +183,7 @@ def google(ctx):
 def handle_stateful(ctx, interaction_id, current_count: int):
     current_count += 1
 
-    return Response(
+    return Message(
         content=(f"This button has been clicked {current_count} times. "
                  "Try calling this command multiple times to see--each button "
                  "count is tracked separately!"),
@@ -203,7 +203,7 @@ def handle_stateful(ctx, interaction_id, current_count: int):
 def stateful_click_counter(ctx):
     "Count the number of button clicks for this specific button."
 
-    return Response(
+    return Message(
         content=f"Click the button!",
         components=[
             ActionRow(components=[

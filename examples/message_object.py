@@ -6,7 +6,7 @@ from flask import Flask
 sys.path.insert(1, ".")
 
 from flask_discord_interactions import (DiscordInteractions,  # noqa: E402
-                                        Response, Embed, embed)
+                                        Message, Embed, embed)
 
 
 app = Flask(__name__)
@@ -35,7 +35,7 @@ def markdown(ctx):
 def embed_(ctx):
     "Embeds!"
 
-    return Response(embed=Embed(
+    return Message(embed=Embed(
         title="Embeds!",
         description="Embeds can be specified as Embed objects.",
         fields=[
@@ -56,7 +56,7 @@ def embed_(ctx):
 def dict_embed(ctx):
     "Embeds as dict objects!"
 
-    return Response(embed={
+    return Message(embed={
         "title": "Embeds!",
         "description": "Embeds can also be specified as JSON objects.",
         "fields": [
@@ -77,7 +77,7 @@ def dict_embed(ctx):
 def ephemeral(ctx):
     "Ephemeral Message"
 
-    return Response(
+    return Message(
         "Ephemeral messages are only sent to the user who ran the command, "
         "and they go away after a short while.\n\n"
         "Note that they cannot include embeds or files, "

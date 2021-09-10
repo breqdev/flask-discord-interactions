@@ -8,7 +8,7 @@ API Reference
     command.rst
     context.rst
     options.rst
-    response.rst
+    message.rst
     client.rst
     components.rst
     quart.rst

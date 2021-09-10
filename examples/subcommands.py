@@ -7,8 +7,7 @@ from flask import Flask
 
 sys.path.insert(1, ".")
 
-from flask_discord_interactions import (DiscordInteractions,  # noqa: E402
-                                        Response)
+from flask_discord_interactions import DiscordInteractions, Message
 
 
 app = Flask(__name__)
@@ -46,25 +45,25 @@ base_from = base.subgroup("from", "Convert a number out of a certian base")
 @base_to.command(name="bin")
 def base_to_bin(ctx, number: int):
     "Convert a number into binary"
-    return Response(bin(number), ephemeral=True)
+    return Message(bin(number), ephemeral=True)
 
 
 @base_to.command(name="hex")
 def base_to_hex(ctx, number: int):
     "Convert a number into hexadecimal"
-    return Response(hex(number), ephemeral=True)
+    return Message(hex(number), ephemeral=True)
 
 
 @base_from.command(name="bin")
 def base_from_bin(ctx, number: str):
     "Convert a number out of binary"
-    return Response(int(number, base=2), ephemeral=True)
+    return Message(int(number, base=2), ephemeral=True)
 
 
 @base_from.command(name="hex")
 def base_from_hex(ctx, number: str):
     "Convert a number out of hexadecimal"
-    return Response(int(number, base=16), ephemeral=True)
+    return Message(int(number, base=16), ephemeral=True)
 
 
 # Subcommands have the same access to context
@@ -94,10 +93,10 @@ def thirdlevel(ctx):
     thread = threading.Thread(target=do_delay)
     thread.start()
 
-    return Response(deferred=True)
+    return Message(deferred=True)
 
 
-# Subcommands can send followup responses too
+# Subcommands can send followup messages too
 delay = discord.command_group("delay")
 
 @delay.command()
@@ -110,7 +109,7 @@ def seconds(ctx, seconds: int):
     thread = threading.Thread(target=do_delay)
     thread.start()
 
-    return Response(deferred=True)
+    return Message(deferred=True)
 
 @delay.command()
 def minutes(ctx, minutes: str):
@@ -122,7 +121,7 @@ def minutes(ctx, minutes: str):
     thread = threading.Thread(target=do_delay)
     thread.start()
 
-    return Response(deferred=True)
+    return Message(deferred=True)
 
 
 discord.set_route("/interactions")

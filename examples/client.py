@@ -7,8 +7,8 @@ from flask import Flask
 # (you don't actually need it in your code)
 sys.path.insert(1, ".")
 
-from flask_discord_interactions import (DiscordInteractions,  # noqa: E402
-                                        Client, Response,
+from flask_discord_interactions import (DiscordInteractions,
+                                        Client, Message,
                                         CommandOptionType,
                                         Context, Member)
 
@@ -36,7 +36,7 @@ groupy = discord.command_group("groupy")
 @groupy.command()
 def group(ctx, embed: bool):
     if embed:
-        return Response(embed={"title": "Groupy group"})
+        return Message(embed={"title": "Groupy group"})
     else:
         return "Groupy group"
 

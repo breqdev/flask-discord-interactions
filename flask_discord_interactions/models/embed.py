@@ -42,7 +42,7 @@ class Author(LoadableDataclass):
 @dataclass
 class Embed(LoadableDataclass):
     """
-    Represents an Embed to be sent as part of a Response.
+    Represents an Embed to be sent as part of a Message.
 
     Attributes
     ----------

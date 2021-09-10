@@ -275,8 +275,9 @@ class Context(LoadableDataclass):
         Parameters
         ----------
         message
-            The message to edit or delete. If None, sends a new message. If
-            "@original", refers to the original message.
+            The ID of the message to edit or delete.
+            If None, sends a new message.
+            If "@original", refers to the original message.
         """
 
         url = (f"{self.app.config['DISCORD_BASE_URL']}/webhooks/"
@@ -286,29 +287,30 @@ class Context(LoadableDataclass):
 
         return url
 
-    def edit(self, response, message="@original"):
+    def edit(self, updated, message="@original"):
         """
         Edit an existing message.
 
         Parameters
         ----------
-        response
-            The new response to edit the message to.
+        updated
+            The updated Message to edit the message to.
         message
-            The message to edit. If omitted, edits the original message.
+            The ID of the message to edit.
+            If omitted, edits the original message.
         """
 
-        response = Message.from_return_value(response)
+        updated = Message.from_return_value(updated)
 
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
-        response = requests.patch(
+        updated = requests.patch(
             self.followup_url(message),
-            json=response.dump_followup(),
+            json=updated.dump_followup(),
             headers=self.auth_headers
         )
-        response.raise_for_status()
+        updated.raise_for_status()
 
     def delete(self, message="@original"):
         """
@@ -317,7 +319,8 @@ class Context(LoadableDataclass):
         Parameters
         ----------
         message
-            The message to delete. If omitted, deletes the original message.
+            The ID of the message to delete.
+            If omitted, deletes the original message.
         """
 
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
@@ -329,28 +332,28 @@ class Context(LoadableDataclass):
         )
         response.raise_for_status()
 
-    def send(self, response):
+    def send(self, message):
         """
         Send a new followup message.
 
         Parameters
         ----------
-        response
-            The response to send as a followup message.
+        message
+            The :class:`Message` to send as a followup message.
         """
 
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
-        response = Message.from_return_value(response)
+        message = Message.from_return_value(message)
 
-        response = requests.post(
+        message = requests.post(
             self.followup_url(),
             headers=self.auth_headers,
-            **response.dump_multipart()
+            **message.dump_multipart()
         )
-        response.raise_for_status()
-        return response.json()["id"]
+        message.raise_for_status()
+        return message.json()["id"]
 
     def get_command(self, command_name=None):
         "Get the ID of a command by name."
@@ -428,25 +431,26 @@ class AsyncContext(Context):
 
         self.session = self.app.discord_client_session
 
-    async def edit(self, response, message="@original"):
+    async def edit(self, updated, message="@original"):
         """
         Edit an existing message.
 
         Parameters
         ----------
-        response
-            The new response to edit the message to.
+        updated
+            The updated Message to edit the message to.
         message
-            The message to edit. If omitted, edits the original message.
+            The ID of the message to edit.
+            If omitted, edits the original message.
         """
 
-        response = Message.from_return_value(response)
+        updated = Message.from_return_value(updated)
 
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
         await self.session.patch(
-            self.followup_url(message), json=response.dump_followup()
+            self.followup_url(message), json=updated.dump_followup()
         )
 
     async def delete(self, message="@original"):
@@ -456,7 +460,8 @@ class AsyncContext(Context):
         Parameters
         ----------
         message
-            The message to delete. If omitted, deletes the original message.
+            The ID of the message to delete.
+            If omitted, deletes the original message.
         """
 
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
@@ -464,17 +469,17 @@ class AsyncContext(Context):
 
         await self.session.delete(self.followup_url(message))
 
-    async def send(self, response):
+    async def send(self, message):
         """
         Send a new followup message.
 
         Parameters
         ----------
-        response
-            The response to send as a followup message.
+        message
+            The Message object to send as a followup message.
         """
 
-        response = Message.from_return_value(response)
+        message = Message.from_return_value(message)
 
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
@@ -482,9 +487,9 @@ class AsyncContext(Context):
         async with self.session.post(
             self.followup_url(),
             headers=self.auth_headers,
-            **response.dump_multipart()
-        ) as response:
-            return (await response.json())["id"]
+            **message.dump_multipart()
+        ) as message:
+            return (await message.json())["id"]
 
     async def overwrite_permissions(self, permissions, command=None):
         """

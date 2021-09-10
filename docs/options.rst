@@ -14,7 +14,7 @@ annotations. This syntax should feel familiar to users of Discord.py.
     @discord.command(annotations={"message": "The message to repeat"})
     def repeat(ctx, message: str = "Hello!"):
         "Repeat the message (and escape mentions)"
-        return Response(
+        return Message(
             f"{ctx.author.display_name} says {message}!",
             allowed_mentions={"parse": []},
         )
@@ -33,7 +33,7 @@ number, and boolean options.
 
     @discord.command()
     def add_one(ctx, number: int):
-        return Response(str(number + 1), ephemeral=True)
+        return Message(str(number + 1), ephemeral=True)
 
 
     @discord.command()

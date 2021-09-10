@@ -11,8 +11,7 @@ from quart import Quart
 sys.path.insert(1, ".")
 
 import quart.flask_patch
-from flask_discord_interactions import (DiscordInteractions, # noqa: E402
-                                        Response)
+from flask_discord_interactions import DiscordInteractions, Message
 
 
 warnings.simplefilter("always", DeprecationWarning)
@@ -66,7 +65,7 @@ async def wait(ctx, seconds: int):
         await ctx.edit("Done!")
 
     asyncio.create_task(do_followup())
-    return Response(deferred=True)
+    return Message(deferred=True)
 
 
 # Normal followups work as well
@@ -79,7 +78,7 @@ def wait_sync(ctx, seconds: int):
         ctx.edit("Done!")
 
     threading.Thread(target=do_followup).start()
-    return Response(deferred=True)
+    return Message(deferred=True)
 
 
 # As of v1.0.2, you do not need to call `ctx.close()`
@@ -99,7 +98,7 @@ def wait_partly_sync(ctx, seconds: int):
         ctx.edit("Done!") # We are passed a Context, not an AsyncContext
 
     asyncio.create_task(do_followup())
-    return Response(deferred=True)
+    return Message(deferred=True)
 
 
 # Async subcommands also work, and they can access context
@@ -114,7 +113,7 @@ async def thirdlevel(ctx):
         await ctx.edit(f"Hello, {ctx.author.display_name}!")
 
     asyncio.create_task(do_followup())
-    return Response(deferred=True)
+    return Message(deferred=True)
 
 
 # Use set_route_async if you want to use Quart

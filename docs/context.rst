@@ -34,10 +34,10 @@ delete messages:
         thread = threading.Thread(target=do_delay)
         thread.start()
 
-        return Response(deferred=True)
+        return Message(deferred=True)
 
-Pass in either a :class:`.Response` object or a string (which will be converted
-into a :class:`.Response` object. See :ref:`response-page` for more details.
+Pass in either a :class:`.Message` object or a string (which will be converted
+into a :class:`.Message` object. See :ref:`response-page` for more details.
 
 Full API
 --------

@@ -42,7 +42,7 @@ Groups can be called by specifying additional positional arguments.
     @groupy.command()
     def group(ctx, embed: bool):
         if embed:
-            return Response(embed={"title": "Groupy group"})
+            return Message(embed={"title": "Groupy group"})
         else:
             return "Groupy group"
 
