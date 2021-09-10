@@ -3,6 +3,7 @@ import inspect
 import uuid
 import atexit
 import asyncio
+import warnings
 
 import requests
 
@@ -76,6 +77,12 @@ class DiscordInteractionsBlueprint:
         Deprecated! ``add_slash_command`` has been renamed to
         :meth:`add_command`, as it can now add User and Message commands.
         """
+        warnings.warn(
+            "Deprecated! add_slash_command has been renamed to "
+            "add_command, as it can now add User and Message commands.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         return self.add_command(*args, **kwargs)
 
 
@@ -355,6 +362,13 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         Deprecated! ``update_slash_commands`` has been renamed to
         ``update_commands``, as it updates User and Message commands as well.
         """
+        warnings.warn(
+            "Deprecated! update_slash_commands has been renamed to "
+            "update_commands, as it updates User and Message commands too.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+
         return self.update_commands(*args, **kwargs)
 
     def throttle(self, response):

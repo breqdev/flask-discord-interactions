@@ -40,25 +40,40 @@ from flask_discord_interactions.client import Client
 
 
 # deprecated names
-class Message(Message):
-    def __init_subclass__(self):
+class Response(Message):
+    def __init__(self, *args, **kwargs):
         warnings.warn(
             "Deprecated! Response has been renamed to Message, "
-            "as it can now represent the argument to a Message Command."
+            "as it can now represent the argument to a Message Command.",
+            DeprecationWarning,
+            stacklevel=2
         )
+        return super().__init__(*args, **kwargs)
+
+
+InteractionResponse = Response
 
 
 class SlashCommand(Command):
-    def __init_subclass__(self):
+    def __init__(self, *args, **kwargs):
         warnings.warn(
             "Deprecated! SlashCommand has been renamed to Command, "
             "as it can represent ChatInput (\"slash\") commands, "
-            "user commands, and message commands."
+            "user commands, and message commands.",
+            DeprecationWarning,
+            stacklevel=2
         )
+        return super().__init__(*args, **kwargs)
 
 
-InteractionResponse = Message
-InteractionContext = Context
+class InteractionContext(Context):
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "Deprecated! InteractionContext has been renamed to Context.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return super().__init__(*args, **kwargs)
 
 
 __all__ = [
