@@ -1,5 +1,6 @@
 import copy
 from contextlib import contextmanager
+from flask_discord_interactions.models.command import ApplicationCommandType
 
 from flask_discord_interactions.models import Message
 from flask_discord_interactions.context import Context
@@ -60,16 +61,20 @@ class Client:
         """
         command = self.discord.discord_commands[names[0]]
 
-        i = 1
-        for i in range(1, len(names)):
-            if not isinstance(command, SlashCommandSubgroup):
-                break
-            command = command.subcommands[names[i]]
-        else:
-            i += 1
+        if command.type == ApplicationCommandType.CHAT_INPUT:
+            i = 1
+            for i in range(1, len(names)):
+                if not isinstance(command, SlashCommandSubgroup):
+                    break
+                command = command.subcommands[names[i]]
+            else:
+                i += 1
+
+            return Message.from_return_value(
+                command.run(self.current_context, *names[i:], **params))
 
         return Message.from_return_value(
-            command.run(self.current_context, *names[i:], **params))
+            command.run(self.current_context, self.current_context.target))
 
     def run_handler(self, custom_id, *args):
         """

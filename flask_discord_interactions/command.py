@@ -232,6 +232,7 @@ class SlashCommandSubgroup(Command):
         self.name = name
         self.description = description
         self.subcommands = {}
+        self.type = ApplicationCommandType.CHAT_INPUT
 
         self.default_permission = None
         self.permissions = []

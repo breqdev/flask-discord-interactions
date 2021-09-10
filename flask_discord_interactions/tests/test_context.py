@@ -1,6 +1,6 @@
 import json
 
-from flask_discord_interactions import Context, Member
+from flask_discord_interactions import Context, Member, Message, ApplicationCommandType
 
 def test_context_parsing():
     # Test data taken from
@@ -238,3 +238,21 @@ def test_message_command_context_parsing():
     assert context.target.content == "some message"
     assert context.target.timestamp.day == 22
     assert context.target.author.display_name == "ian"
+
+
+def test_user_command_argument(discord, client):
+    @discord.command(type=ApplicationCommandType.MESSAGE)
+    def greet(ctx, target):
+        return f"Hello, {target.display_name}!"
+
+    with client.context(Context(target=Member(username="Test User"))):
+        assert client.run("greet").content == "Hello, Test User!"
+
+
+def test_message_command_argument(discord, client):
+    @discord.command(type=ApplicationCommandType.MESSAGE)
+    def repeat(ctx, target):
+        return f"I repeat, {target.content.lower()}"
+
+    with client.context(Context(target=Message(content="This is a test."))):
+        assert client.run("repeat").content == "I repeat, this is a test."
