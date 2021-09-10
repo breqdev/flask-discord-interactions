@@ -1,7 +1,9 @@
 import dataclasses
+from flask_discord_interactions.models.user import Member
 import inspect
 from typing import List, Union
 import json
+from datetime import datetime
 
 from flask_discord_interactions.models.utils import LoadableDataclass
 from flask_discord_interactions.models.component import Component
@@ -69,6 +71,13 @@ class Message(LoadableDataclass):
     files: List[tuple] = None
     components: List[Component] = None
 
+    # These fields are only set on incoming messages
+    id: str = None
+    channel_id: str = None
+    timestamp: datetime = None
+    edited_timestamp: datetime = None
+    author: Member = None
+
     def __post_init__(self):
         if self.embed is not None and self.embeds is not None:
             raise ValueError("Specify only one of embed or embeds")
@@ -99,6 +108,17 @@ class Message(LoadableDataclass):
                     ResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
             else:
                 self.Message_type = ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
+
+        if isinstance(self.timestamp, str):
+            self.timestamp = datetime.strptime(
+                self.timestamp, "%Y-%m-%dT%H:%M:%S.%f%z")
+
+        if isinstance(self.edited_timestamp, str):
+            self.edited_timestamp = datetime.strptime(
+                self.edited_timestamp, "%Y-%m-%dT%H:%M:%S.%f%z")
+
+        if isinstance(self.author, dict):
+            self.author = Member.from_dict(self.author)
 
     @property
     def flags(self):
