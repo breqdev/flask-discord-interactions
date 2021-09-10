@@ -5,8 +5,7 @@ from flask import Flask
 
 sys.path.insert(1, ".")
 
-from flask_discord_interactions import (DiscordInteractions,  # noqa: E402
-                                        Response)
+from flask_discord_interactions import DiscordInteractions, Message
 
 
 app = Flask(__name__)
@@ -16,7 +15,7 @@ app.config["DISCORD_CLIENT_ID"] = os.environ["DISCORD_CLIENT_ID"]
 app.config["DISCORD_PUBLIC_KEY"] = os.environ["DISCORD_PUBLIC_KEY"]
 app.config["DISCORD_CLIENT_SECRET"] = os.environ["DISCORD_CLIENT_SECRET"]
 
-discord.update_slash_commands()
+discord.update_commands()
 
 
 # The "ctx" parameter is an Context object
@@ -26,7 +25,7 @@ def avatar(ctx):
     "Show your user info"
 
     # You have to define the embed JSON manually for now (see API docs)
-    return Response(embed={
+    return Message(embed={
         "title": ctx.author.display_name,
         "description": "Avatar Info",
         "fields": [
@@ -60,7 +59,7 @@ def avatar(ctx):
 @discord.command()
 def admin_only(ctx):
     if not ctx.author.permissions & 8:
-        return Response(
+        return Message(
             content="Only administrators are allowed to use this command",
             ephemeral=True
         )
@@ -83,7 +82,7 @@ def restricted(ctx, special_option: str = None):
 
 
 discord.set_route("/interactions")
-discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
+discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
 if __name__ == '__main__':

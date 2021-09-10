@@ -2,7 +2,7 @@ import threading
 
 from flask import Flask
 
-from flask_discord_interactions import DiscordInteractions, ResponseType, InteractionType, Response
+from flask_discord_interactions import DiscordInteractions, ResponseType, InteractionType, Message
 
 
 def test_flask():
@@ -120,7 +120,7 @@ def test_followup():
         ref_to_thread = thread = threading.Thread(target=do_followup)
         thread.start()
 
-        return Response(deferred=True)
+        return Message(deferred=True)
 
 
     discord.set_route("/interactions")

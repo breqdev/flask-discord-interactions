@@ -1,10 +1,8 @@
 import pytest
-import asyncio
 
 from flask import Flask
 
-from flask_discord_interactions import (DiscordInteractions,
-                                        Client)
+from flask_discord_interactions import DiscordInteractions, Client
 
 @pytest.fixture(scope="module")
 def discord():

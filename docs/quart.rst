@@ -41,7 +41,7 @@ commands, and to allow awaiting when handling followup messages.
     app = Quart(__name__)
     discord = DiscordInteractions(app)
 
-    discord.update_slash_commands()
+    discord.update_commands()
 
     @discord.command()
     async def ping(ctx):
@@ -67,7 +67,7 @@ This class makes :meth:`.AsyncContext.edit`, :meth:`.AsyncContext.send`, and
             await ctx.edit("Done!")
 
         asyncio.create_task(do_followup())
-        return Response(deferred=True)
+        return Message(deferred=True)
 
     # Normal followups use the normal Context
     @discord.command()
@@ -78,7 +78,7 @@ This class makes :meth:`.AsyncContext.edit`, :meth:`.AsyncContext.send`, and
             ctx.edit("Done!")
 
         threading.Thread(target=do_followup).start()
-        return Response(deferred=True)
+        return Message(deferred=True)
 
 When creating command groups and subgroups, you will only get an
 :class:`.AsyncContext` if you provide the ``is_async=True`` flag.
@@ -96,7 +96,7 @@ When creating command groups and subgroups, you will only get an
             await ctx.edit(f"Hello, {ctx.author.display_name}!")
 
         asyncio.create_task(do_followup())
-        return Response(deferred=True)
+        return Message(deferred=True)
 
 Full API
 --------

@@ -1,11 +1,13 @@
-import json
-import inspect
 import dataclasses
+from flask_discord_interactions.models.user import Member
+import inspect
 from typing import List, Union
+import json
+from datetime import datetime
 
-
-from flask_discord_interactions.embed import Embed
-from flask_discord_interactions.component import Component
+from flask_discord_interactions.models.utils import LoadableDataclass
+from flask_discord_interactions.models.component import Component
+from flask_discord_interactions.models.embed import Embed
 
 
 class ResponseType:
@@ -18,10 +20,10 @@ class ResponseType:
 
 
 @dataclasses.dataclass
-class Response:
+class Message(LoadableDataclass):
     """
-    Represents a response to a Discord interaction (incoming webhook)
-    or a followup message (outgoing webhook).
+    Represents a Message, often a response to a Discord interaction (incoming
+    webhook) or a followup message (outgoing webhook).
 
     Attributes
     ----------
@@ -42,7 +44,7 @@ class Response:
         to the user temporarily). Only valid for incoming webhooks.
     ephemeral
         Whether the message should be ephemeral (only displayed temporarily
-        to only the user who used the slash command). Only valid for incoming
+        to only the user who used the command). Only valid for incoming
         webhooks.
     update
         Whether to update the initial message. Only valid for Message Component
@@ -50,7 +52,7 @@ class Response:
     file
         The file to attach to the message. Only valid for outgoing webhooks.
     files
-        An array of files to attach to the message. Speficy just one of
+        An array of files to attach to the message. Specify just one of
         ``file`` or ``files``. Only valid for outgoing webhooks.
     components
         An array of :class:`.Component` objects representing message
@@ -69,6 +71,13 @@ class Response:
     files: List[tuple] = None
     components: List[Component] = None
 
+    # These fields are only set on incoming messages
+    id: str = None
+    channel_id: str = None
+    timestamp: datetime = None
+    edited_timestamp: datetime = None
+    author: Member = None
+
     def __post_init__(self):
         if self.embed is not None and self.embeds is not None:
             raise ValueError("Specify only one of embed or embeds")
@@ -81,35 +90,46 @@ class Response:
             self.files = [self.file]
 
         if self.ephemeral and self.files is not None:
-            raise ValueError("Ephemeral responses cannot include files.")
+            raise ValueError("Ephemeral Messages cannot include files.")
 
         if self.embeds is not None:
             for i, embed in enumerate(self.embeds):
                 if not dataclasses.is_dataclass(embed):
-                    self.embeds[i] = Embed(**embed)
+                    self.embeds[i] = Embed.from_dict(embed)
 
         if self.update:
             if self.deferred:
-                self.response_type = ResponseType.DEFERRED_UPDATE_MESSAGE
+                self.Message_type = ResponseType.DEFERRED_UPDATE_MESSAGE
             else:
-                self.response_type = ResponseType.UPDATE_MESSAGE
+                self.Message_type = ResponseType.UPDATE_MESSAGE
         else:
             if self.deferred:
-                self.response_type = \
+                self.Message_type = \
                     ResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
             else:
-                self.response_type = ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
+                self.Message_type = ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
+
+        if isinstance(self.timestamp, str):
+            self.timestamp = datetime.strptime(
+                self.timestamp, "%Y-%m-%dT%H:%M:%S.%f%z")
+
+        if isinstance(self.edited_timestamp, str):
+            self.edited_timestamp = datetime.strptime(
+                self.edited_timestamp, "%Y-%m-%dT%H:%M:%S.%f%z")
+
+        if isinstance(self.author, dict):
+            self.author = Member.from_dict(self.author)
 
     @property
     def flags(self):
         """
-        The flags sent with this response, determined by whether it is
+        The flags sent with this Message, determined by whether it is
         ephemeral.
         """
         return 64 if self.ephemeral else 0
 
     def dump_embeds(self):
-        "Returns the embeds of this Response as a list of dicts."
+        "Returns the embeds of this Message as a list of dicts."
         return [embed.dump() for embed in self.embeds] if self.embeds else None
 
     def dump_components(self):
@@ -119,14 +139,14 @@ class Response:
     @classmethod
     def from_return_value(cls, result):
         """
-        Convert a function return value into a Response object.
-        Converts ``None`` to an empty response, or any other type to ``str``
+        Convert a function return value into a Message object.
+        Converts ``None`` to an empty Message, or any other type to ``str``
         as message content.
 
         Parameters
         ----------
         result
-            The function return value to convert into a ``Response`` object.
+            The function return value to convert into a ``Message`` object.
         """
 
         async def construct_async(result):
@@ -143,7 +163,7 @@ class Response:
 
     def dump(self):
         """
-        Return this ``Response`` as a dict to be sent in response to an
+        Return this ``Message`` as a dict to be sent in Message to an
         incoming webhook.
         """
 
@@ -154,13 +174,13 @@ class Response:
 
         if self.files:
             raise ValueError(
-                "files are not allowed in an initial Interaction response")
+                "files are not allowed in an initial Interaction Message")
 
         if self.update:
             raise ValueError("update is only valid for custom ID handlers")
 
         return {
-            "type": self.response_type,
+            "type": self.Message_type,
             "data": {
                 "content": self.content,
                 "tts": self.tts,
@@ -173,16 +193,16 @@ class Response:
 
     def dump_handler(self):
         """
-        Return this ``Response`` as a dict to be sent in reply to a Message
+        Return this ``Message`` as a dict to be sent in reply to a Message
         Component interaction.
         """
 
         if self.files:
             raise ValueError(
-                "files are not allowed in a custom handler response")
+                "files are not allowed in a custom handler Message")
 
         return {
-            "type": self.response_type,
+            "type": self.Message_type,
             "data": {
                 "content": self.content,
                 "tts": self.tts,
@@ -196,7 +216,7 @@ class Response:
 
     def dump_followup(self):
         """
-        Return this ``Response`` as a dict to be sent to an outgoing webhook.
+        Return this ``Message`` as a dict to be sent to an outgoing webhook.
         """
 
         if (self.content is None and self.embeds is None
@@ -206,7 +226,7 @@ class Response:
 
         if self.ephemeral or self.deferred or self.update:
             raise ValueError(
-                "ephemeral and deferred are not valid in followup responses")
+                "ephemeral and deferred are not valid in followup Messages")
 
         return {
             "content": self.content,
@@ -218,7 +238,7 @@ class Response:
 
     def dump_multipart(self):
         """
-        Return this ``Response`` to be sent to an outgoing webhook.
+        Return this ``Message`` to be sent to an outgoing webhook.
         Handles multipart encoding for file attachments.
 
         Returns an object that may have ``data``, ``files``, or ``json``

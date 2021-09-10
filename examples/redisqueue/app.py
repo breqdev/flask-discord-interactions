@@ -7,7 +7,7 @@ from rq import Queue
 
 sys.path.insert(1, ".")
 
-from flask_discord_interactions import DiscordInteractions, Response
+from flask_discord_interactions import DiscordInteractions, Message
 
 from tasks import do_screenshot
 
@@ -23,18 +23,18 @@ app.config["DISCORD_CLIENT_ID"] = os.environ["DISCORD_CLIENT_ID"]
 app.config["DISCORD_PUBLIC_KEY"] = os.environ["DISCORD_PUBLIC_KEY"]
 app.config["DISCORD_CLIENT_SECRET"] = os.environ["DISCORD_CLIENT_SECRET"]
 
-discord.update_slash_commands()
+discord.update_commands()
 
 
 @discord.command()
 def screenshot(ctx, url: str):
     "Take a screenshot of a URL."
     queue.enqueue(do_screenshot, ctx.freeze(), url)
-    return Response(deferred=True)
+    return Message(deferred=True)
 
 
 discord.set_route("/interactions")
-discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
+discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
 if __name__ == '__main__':

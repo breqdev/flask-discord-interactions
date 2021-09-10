@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, List
+from typing import Any, List, Union
 import inspect
 import itertools
 import warnings
@@ -7,253 +7,15 @@ import types
 
 import requests
 
-from flask_discord_interactions.response import Response
-
-
-class CommandOptionType:
-    "Represents the different option type integers."
-    SUB_COMMAND = 1
-    SUB_COMMAND_GROUP = 2
-    STRING = 3
-    INTEGER = 4
-    BOOLEAN = 5
-    USER = 6
-    CHANNEL = 7
-    ROLE = 8
-    MENTIONABLE = 9
-    NUMBER = 10
-
-
-class ChannelType:
-    "Represents the different :class:`Channel` type integers."
-    GUILD_TEXT = 0
-    DM = 1
-    GUILD_VOICE = 2
-    GROUP_DM = 3
-    GUILD_CATEGORY = 4
-    GUILD_NEWS = 5
-    GUILD_STORE = 6
-
-
-class Permission:
-    """
-    An object representing a single permission overwrite.
-
-    ``Permission(role='1234')`` allows users with role ID 1234 to use the
-    command
-
-    ``Permission(user='5678')`` allows user ID 5678 to use the command
-
-    ``Permission(role='9012', allow=False)`` denies users with role ID 9012
-    from using the command
-    """
-
-
-    def __init__(self, role=None, user=None, allow=True):
-        if bool(role) == bool(user):
-            raise ValueError("specify only one of role or user")
-
-        self.type = 1 if role else 2
-        self.id = role or user
-        self.permission = allow
-
-    def dump(self):
-        return {
-            "type": self.type,
-            "id": self.id,
-            "permission": self.permission
-        }
-
-
-class ContextObject:
-    @classmethod
-    def from_dict(cls, data):
-        """
-        Construct the Context object from a dictionary, skipping any keys
-        in the dictionary that do not correspond to fields of the class.
-
-        Parameters
-        ----------
-        data
-            A dictionary of fields to set on the Context object.
-        """
-        return cls(**{
-            k: v for k, v in data.items()
-            if k in inspect.signature(cls).parameters
-        })
+from flask_discord_interactions.models import (
+    LoadableDataclass, Member, Channel, Role, User, CommandOptionType, ApplicationCommandType, Message
+)
 
 
 @dataclass
-class User(ContextObject):
+class Context(LoadableDataclass):
     """
-    Represents a User (the identity of a Discord user, not tied to any
-    specific guild).
-
-    Attributes
-    ----------
-    id
-        The ID (snowflake) of the user.
-    username
-        The Discord username of the user.
-    discriminator
-        The code following the # after the username.
-    avatar_hash
-        The unique hash identifying the profile picture of the user.
-    bot
-        Whether the user is a bot account.
-    system
-        Whether the user is a Discord system account.
-    mfa_enabled
-        Whether the user has enabled Two-Factor Authentication.
-    locale
-        The locale of the user.
-    flags
-        Miscellaneous information about the user.
-    premium_type
-        The Nitro status of the user.
-    public_flags
-        Miscellaneous information about the user.
-    """
-    id: str = None
-    username: str = None
-    discriminator: str = None
-    avatar_hash: str = None
-    bot: bool = None
-    system: bool = None
-    mfa_enabled: bool = None
-    locale: str = None
-    flags: int = None
-    premium_type: int = None
-    public_flags: int = None
-
-    @classmethod
-    def from_dict(cls, data):
-        data = {**data, **data.get("user", {})}
-        data["avatar_hash"] = data.get("avatar")
-        return super().from_dict(data)
-
-    @property
-    def display_name(self):
-        "The displayed name of the user (the username)."
-        return self.username
-
-    @property
-    def avatar_url(self):
-        "The URL of the user's profile picture."
-        return ("https://cdn.discordapp.com/avatars/"
-                f"{self.id}/{self.avatar_hash}.png")
-
-
-@dataclass
-class Member(User):
-    """
-    Represents a Member (a specific Discord :class:`User` in one particular
-    guild.)
-
-    Attributes
-    ----------
-    nick
-        The guild nickname of the user.
-    roles
-        An array of role IDs that the user has.
-    joined_at
-        The timestamp that the user joined the guild at.
-    premium_since
-        The timestamp that the user started Nitro boosting the guild at.
-    permissions
-        The permissions integer of the user.
-    deaf
-        Whether the user has been server deafened.
-    mute
-        Whether the user has been server muted.
-    pending
-        Whether the user has passed the membership requirements of a guild.
-    """
-    nick: str = None
-    roles: list = None
-    joined_at: str = None
-    premium_since: str = None
-    permissions: int = None
-    deaf: bool = None
-    mute: bool = None
-    pending: bool = None
-
-    def __post_init__(self):
-        if isinstance(self.permissions, str):
-            self.permissions = int(self.permissions)
-
-    @property
-    def display_name(self):
-        """
-        The displayed name of the user (their nickname, or if none exists,
-        their username).
-        """
-        return self.nick or self.username
-
-
-@dataclass
-class Channel(ContextObject):
-    """
-    Represents a Channel in Discord. This includes voice channels, text
-    channels, and channel categories.
-
-    Attributes
-    ----------
-    id
-        The unique ID (snowflake) of the channel.
-    name
-        The name of the channel.
-    permissions
-        The permissions integer of the invoking user in that channel.
-    type
-        The type of channel.
-    """
-    id: str = None
-    name: str = None
-    permissions: int = None
-    type: int = None
-
-
-@dataclass
-class Role(ContextObject):
-    """
-    Represents a Role in Discord.
-
-    Attributes
-    ----------
-    id
-        The unique ID (snowflake) of the role.
-    name
-        The name of the role.
-    color
-        The color given to the role.
-    hoist
-        Whether the role is displayed separately in the member list.
-    position
-        The position of the role in the roles list.
-    permissions
-        The permissions integer of the role.
-    managed
-        Whether the role is managed by an integration (bot).
-    mentionable
-        Whether the role can be mentioned by all users.
-    tags
-        Miscellaneous information about the role.
-    """
-    id: str = None
-    name: str = None
-    color: str = None
-    hoist: bool = None
-    position: int = None
-    managed: bool = None
-    mentionable: bool = None
-    tags: dict = None
-
-
-@dataclass
-class Context(ContextObject):
-    """
-    Represents the context in which a :class:`SlashCommand` or custom ID
+    Represents the context in which a :class:`Command` or custom ID
     handler is invoked.
 
     Attributes
@@ -262,6 +24,8 @@ class Context(ContextObject):
         A :class:`Member` object representing the invoking user.
     id
         The unique ID (snowflake) of this interaction.
+    type
+        The :class:`ApplicationCommandType` of this interaction.
     token
         The token to use when sending followup messages.
     channel_id
@@ -284,9 +48,12 @@ class Context(ContextObject):
         :class:`Channel` objects for each channel specified as an option.
     roles
         :class:`Role` object for each role specified as an option.
+    target
+        The targeted :class:`User` or message.
     """
     author: Member = None
     id: str = None
+    type: int = None
     token: str = None
     channel_id: str = None
     guild_id: str = None
@@ -306,6 +73,9 @@ class Context(ContextObject):
     primary_id: str = None
     handler_state: list = None
 
+    target_id: str = None
+    target: Union[User, Message] = None
+
     @classmethod
     def from_data(cls, discord=None, app=None, data={}):
         if data is None:
@@ -321,6 +91,7 @@ class Context(ContextObject):
             discord = discord,
             author = Member.from_dict(data.get("member", {})),
             id = data.get("id"),
+            type = data.get("data", {}).get("type") or ApplicationCommandType.CHAT_INPUT,
             token = data.get("token"),
             channel_id = data.get("channel_id"),
             guild_id = data.get("guild_id"),
@@ -329,13 +100,15 @@ class Context(ContextObject):
             resolved = data.get("data", {}).get("resolved", {}),
             command_name = data.get("data", {}).get("name"),
             command_id = data.get("data", {}).get("id"),
-            custom_id = data.get("data", {}).get("custom_id") or ""
+            custom_id = data.get("data", {}).get("custom_id") or "",
+            target_id = data.get("data", {}).get("target_id"),
         )
 
         result.data = data
 
         result.parse_custom_id()
         result.parse_resolved()
+        result.parse_target()
         return result
 
     @property
@@ -377,12 +150,42 @@ class Context(ContextObject):
         self.roles = {id: Role.from_dict(data)
                       for id, data in self.resolved.get("roles", {}).items()}
 
+        self.messages = {
+            id: Message.from_dict(data)
+            for id, data in self.resolved.get("messages", {}).items()
+        }
+
+    def parse_target(self):
+        """
+        Parse the target of the incoming interaction.
+
+        For User and Message commands, the target is the relevant user or
+        message. This method sets the `ctx.target` field.
+        """
+        if self.type == ApplicationCommandType.USER:
+            self.target = self.members[self.target_id]
+        elif self.type == ApplicationCommandType.MESSAGE:
+            self.target = self.messages[self.target_id]
+        else:
+            self.target = None
+
     def create_args(self):
         """
         Create the arguments which will be passed to the function when the
-        :class:`SlashCommand` is invoked.
+        :class:`Command` is invoked.
         """
+        if self.type == ApplicationCommandType.CHAT_INPUT:
+            return self.create_args_chat_input()
+        elif self.type == ApplicationCommandType.USER:
+            return [self.target], {}
+        elif self.type == ApplicationCommandType.MESSAGE:
+            return [self.target], {}
 
+    def create_args_chat_input(self):
+        """
+        Create the arguments for this command, assuming it is a ``CHAT_INPUT``
+        command.
+        """
         def create_args_recursive(data, resolved):
             if not data.get("options"):
                 return [], {}
@@ -472,8 +275,9 @@ class Context(ContextObject):
         Parameters
         ----------
         message
-            The message to edit or delete. If None, sends a new message. If
-            "@original", refers to the original message.
+            The ID of the message to edit or delete.
+            If None, sends a new message.
+            If "@original", refers to the original message.
         """
 
         url = (f"{self.app.config['DISCORD_BASE_URL']}/webhooks/"
@@ -483,29 +287,30 @@ class Context(ContextObject):
 
         return url
 
-    def edit(self, response, message="@original"):
+    def edit(self, updated, message="@original"):
         """
         Edit an existing message.
 
         Parameters
         ----------
-        response
-            The new response to edit the message to.
+        updated
+            The updated Message to edit the message to.
         message
-            The message to edit. If omitted, edits the original message.
+            The ID of the message to edit.
+            If omitted, edits the original message.
         """
 
-        response = Response.from_return_value(response)
+        updated = Message.from_return_value(updated)
 
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
-        response = requests.patch(
+        updated = requests.patch(
             self.followup_url(message),
-            json=response.dump_followup(),
+            json=updated.dump_followup(),
             headers=self.auth_headers
         )
-        response.raise_for_status()
+        updated.raise_for_status()
 
     def delete(self, message="@original"):
         """
@@ -514,7 +319,8 @@ class Context(ContextObject):
         Parameters
         ----------
         message
-            The message to delete. If omitted, deletes the original message.
+            The ID of the message to delete.
+            If omitted, deletes the original message.
         """
 
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
@@ -526,28 +332,28 @@ class Context(ContextObject):
         )
         response.raise_for_status()
 
-    def send(self, response):
+    def send(self, message):
         """
         Send a new followup message.
 
         Parameters
         ----------
-        response
-            The response to send as a followup message.
+        message
+            The :class:`Message` to send as a followup message.
         """
 
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
-        response = Response.from_return_value(response)
+        message = Message.from_return_value(message)
 
-        response = requests.post(
+        message = requests.post(
             self.followup_url(),
             headers=self.auth_headers,
-            **response.dump_multipart()
+            **message.dump_multipart()
         )
-        response.raise_for_status()
-        return response.json()["id"]
+        message.raise_for_status()
+        return message.json()["id"]
 
     def get_command(self, command_name=None):
         "Get the ID of a command by name."
@@ -613,7 +419,7 @@ class Context(ContextObject):
 @dataclass
 class AsyncContext(Context):
     """
-    Represents the context in which an asynchronous :class:`SlashCommand` is
+    Represents the context in which an asynchronous :class:`Command` is
     invoked. Also provides coroutine functions to handle followup messages.
 
     Users should not need to instantiate this class manually.
@@ -625,25 +431,26 @@ class AsyncContext(Context):
 
         self.session = self.app.discord_client_session
 
-    async def edit(self, response, message="@original"):
+    async def edit(self, updated, message="@original"):
         """
         Edit an existing message.
 
         Parameters
         ----------
-        response
-            The new response to edit the message to.
+        updated
+            The updated Message to edit the message to.
         message
-            The message to edit. If omitted, edits the original message.
+            The ID of the message to edit.
+            If omitted, edits the original message.
         """
 
-        response = Response.from_return_value(response)
+        updated = Message.from_return_value(updated)
 
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
         await self.session.patch(
-            self.followup_url(message), json=response.dump_followup()
+            self.followup_url(message), json=updated.dump_followup()
         )
 
     async def delete(self, message="@original"):
@@ -653,7 +460,8 @@ class AsyncContext(Context):
         Parameters
         ----------
         message
-            The message to delete. If omitted, deletes the original message.
+            The ID of the message to delete.
+            If omitted, deletes the original message.
         """
 
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
@@ -661,17 +469,17 @@ class AsyncContext(Context):
 
         await self.session.delete(self.followup_url(message))
 
-    async def send(self, response):
+    async def send(self, message):
         """
         Send a new followup message.
 
         Parameters
         ----------
-        response
-            The response to send as a followup message.
+        message
+            The Message object to send as a followup message.
         """
 
-        response = Response.from_return_value(response)
+        message = Message.from_return_value(message)
 
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
@@ -679,9 +487,9 @@ class AsyncContext(Context):
         async with self.session.post(
             self.followup_url(),
             headers=self.auth_headers,
-            **response.dump_multipart()
-        ) as response:
-            return (await response.json())["id"]
+            **message.dump_multipart()
+        ) as message:
+            return (await message.json())["id"]
 
     async def overwrite_permissions(self, permissions, command=None):
         """

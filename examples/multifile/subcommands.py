@@ -1,6 +1,6 @@
 import threading
 
-from flask_discord_interactions import DiscordInteractionsBlueprint, Response
+from flask_discord_interactions import DiscordInteractionsBlueprint, Message
 
 
 bp = DiscordInteractionsBlueprint()
@@ -12,9 +12,9 @@ def echo_delay(ctx, text: str):
     "Repeat a string on a delay"
 
     def do_searchData():
-        ctx.send(Response(f"*Echooo 2!!!* {text}"))
+        ctx.send(Message(f"*Echooo 2!!!* {text}"))
 
     thread = threading.Thread(target=do_searchData)
     thread.start()
 
-    return Response(f"*Echooo 1!!!* {text}")
+    return Message(f"*Echooo 1!!!* {text}")

@@ -1,7 +1,7 @@
 Client
 ======
 
-The :class:`.Client` class can simulate calling a :class:`.SlashCommand`
+The :class:`.Client` class can simulate calling a :class:`.Command`
 without connecting to Discord. This is useful for unit testing.
 
 The :class:`.Client` must be initialized by passing a
@@ -42,7 +42,7 @@ Groups can be called by specifying additional positional arguments.
     @groupy.command()
     def group(ctx, embed: bool):
         if embed:
-            return Response(embed={"title": "Groupy group"})
+            return Message(embed={"title": "Groupy group"})
         else:
             return "Groupy group"
 

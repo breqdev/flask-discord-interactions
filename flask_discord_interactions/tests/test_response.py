@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from flask_discord_interactions import Response, ResponseType, Embed, embed
+from flask_discord_interactions import Message, ResponseType, Embed, embed
 
 
 def test_content(discord, client):
@@ -20,13 +20,13 @@ def test_dict_embed(discord, client):
 
     @discord.command()
     def embeddy(ctx):
-        return Response(embed=my_embed)
+        return Message(embed=my_embed)
 
     assert client.run("embeddy").dump_embeds() == [my_embed]
 
     @discord.command()
     def multiple(ctx):
-        return Response(embeds=[my_embed, my_embed])
+        return Message(embeds=[my_embed, my_embed])
 
     assert client.run("multiple").dump_embeds() == [my_embed, my_embed]
 
@@ -46,13 +46,13 @@ def test_class_embed(discord, client):
 
     @discord.command()
     def embeddy(ctx):
-        return Response(embed=my_embed)
+        return Message(embed=my_embed)
 
     assert client.run("embeddy").dump_embeds() == [output]
 
     @discord.command()
     def multiple(ctx):
-        return Response(embeds=[my_embed, my_embed])
+        return Message(embeds=[my_embed, my_embed])
 
     assert client.run("multiple").dump_embeds() == [output, output]
 
@@ -62,7 +62,7 @@ def test_improper_immediate(discord, client):
 
     @discord.command()
     def improper_immediate(ctx):
-        return Response(
+        return Message(
             file=("README.md", fp, "text/markdown")
         )
 
@@ -77,7 +77,7 @@ def test_improper_immediate(discord, client):
 def test_improper_followup(discord, client):
     @discord.command()
     def improper_followup(ctx):
-        return Response("hi", ephemeral=True)
+        return Message("hi", ephemeral=True)
 
     result = client.run("improper_followup")
 
@@ -88,7 +88,7 @@ def test_improper_followup(discord, client):
 def test_ephemeral(discord, client):
     @discord.command()
     def ephemeral(ctx):
-        return Response("hi", ephemeral=True)
+        return Message("hi", ephemeral=True)
 
     assert client.run("ephemeral").content == "hi"
     assert client.run("ephemeral").flags == 64
@@ -97,7 +97,7 @@ def test_ephemeral(discord, client):
 def test_dump_immediate(discord, client):
     @discord.command()
     def use_response(ctx):
-        return Response("hi", tts=True, embed=Embed(title="hello!"))
+        return Message("hi", tts=True, embed=Embed(title="hello!"))
 
     expected = {
         "type": ResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -117,7 +117,7 @@ def test_dump_immediate(discord, client):
 
 
 def test_dump_followup():
-    resp = Response(
+    resp = Message(
         content="Followup",
         embed=Embed(title="hello!"),
     )
@@ -137,7 +137,7 @@ def test_dump_followup():
 
 def test_dump_multipart():
     fp = open("README.md", "r")
-    resp = Response(
+    resp = Message(
         content="Followup",
         embed=Embed(title="hello!"),
         file=("README.md", fp, "text/markdown")

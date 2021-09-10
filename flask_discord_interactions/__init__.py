@@ -1,19 +1,30 @@
+import warnings
 from flask_discord_interactions.command import (
-    SlashCommand,
+    Command,
     SlashCommandSubgroup,
     SlashCommandGroup
 )
 
-from flask_discord_interactions.context import (
-    Context,
-    AsyncContext,
+from flask_discord_interactions.context import Context, AsyncContext
+
+from flask_discord_interactions.models import (
+    ApplicationCommandType,
     CommandOptionType,
     ChannelType,
     Permission,
     Member,
     User,
     Role,
-    Channel
+    Channel,
+    Message,
+    ResponseType,
+    Component,
+    ActionRow,
+    Button,
+    ButtonStyles,
+    ComponentType,
+    SelectMenu,
+    SelectMenuOption,
 )
 
 from flask_discord_interactions.discord import (
@@ -22,35 +33,61 @@ from flask_discord_interactions.discord import (
     DiscordInteractionsBlueprint
 )
 
-from flask_discord_interactions.response import Response, ResponseType
-import flask_discord_interactions.embed as embed
-from flask_discord_interactions.embed import Embed
-from flask_discord_interactions.component import (
-    Component,
-    ActionRow,
-    Button,
-    ButtonStyles,
-    ComponentType,
-    SelectMenu,
-    SelectMenuOption
-)
+import flask_discord_interactions.models.embed as embed
+from flask_discord_interactions.models import Embed
+
 from flask_discord_interactions.client import Client
 
 
 # deprecated names
+class Response(Message):
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "Deprecated! Response has been renamed to Message, "
+            "as it can now represent the argument to a Message Command.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return super().__init__(*args, **kwargs)
+
+
 InteractionResponse = Response
-InteractionContext = Context
+
+
+class SlashCommand(Command):
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "Deprecated! SlashCommand has been renamed to Command, "
+            "as it can represent ChatInput (\"slash\") commands, "
+            "user commands, and message commands.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return super().__init__(*args, **kwargs)
+
+
+class InteractionContext(Context):
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "Deprecated! InteractionContext has been renamed to Context.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return super().__init__(*args, **kwargs)
 
 
 __all__ = [
     "embed",
 
+    "Command",
     "SlashCommand",
     "SlashCommandSubgroup",
     "SlashCommandGroup",
+
     "Context",
     "AsyncContext",
     "CommandOptionType",
+    "ApplicationCommandType",
     "ChannelType",
     "Member",
     "User",
@@ -59,7 +96,7 @@ __all__ = [
     "InteractionType",
     "DiscordInteractions",
     "DiscordInteractionsBlueprint",
-    "Response",
+    "Message",
     "ResponseType",
     "Embed",
     "Component",
@@ -67,8 +104,12 @@ __all__ = [
     "ActionRow",
     "Button",
     "ButtonStyles",
+    "SelectMenu",
+    "SelectMenuOption",
     "Client",
+    "Permission",
 
+    "Response",
     "InteractionResponse",
     "InteractionContext"
 ]

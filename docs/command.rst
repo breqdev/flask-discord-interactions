@@ -28,9 +28,43 @@ Options can be provided as parameters to this command. See
 :ref:`options-page` for details.
 
 The function must return either a string or a
-:class:`.Response` object. For
+:class:`.Message` object. For
 more information about what kind of responses are valid, see
 :ref:`response-page`.
+
+User Commands
+-------------
+
+User Commands are created using the :meth:`.DiscordInteractions.command`
+decorator. The ``type`` needs to be specified using the
+:class:`.ApplicationCommandType.USER`.
+
+Here is a basic command:
+
+.. code-block:: python
+
+    @discord.command(type=ApplicationCommandType.USER)
+    def userCmd(ctx):
+        return "something"
+
+Options and Description cannot be provided.
+
+Message Commands
+-------------
+
+User Commands are created using the :meth:`.DiscordInteractions.command`
+decorator. The ``type`` needs to be specified using the
+:class:`.ApplicationCommandType.MESSAGE`.
+
+Here is a basic command:
+
+.. code-block:: python
+
+    @discord.command(type=ApplicationCommandType.MESSAGE)
+    def msgCmd(ctx):
+        return "something"
+
+Options and Description cannot be provided.
 
 Advanced Usage
 ^^^^^^^^^^^^^^
@@ -100,7 +134,7 @@ The arguments passed to the function are:
 Full API
 ^^^^^^^^
 
-.. autoclass:: flask_discord_interactions.SlashCommand
+.. autoclass:: flask_discord_interactions.Command
     :members:
 
 Slash Command Groups
@@ -151,31 +185,31 @@ You can also create subgroups that sit "in between" a
     base = discord.command_group("base", "Convert a number between bases")
 
     base_to = base.subgroup("to", "Convert a number into a certain base")
-    base_from = base.subgroup("from", "Convert a number out of a certian base")
+    base_from = base.subgroup("from", "Convert a number out of a certain base")
 
 
     @base_to.command(name="bin")
     def base_to_bin(ctx, number: int):
         "Convert a number into binary"
-        return Response(bin(number), ephemeral=True)
+        return Message(bin(number), ephemeral=True)
 
 
     @base_to.command(name="hex")
     def base_to_hex(ctx, number: int):
         "Convert a number into hexadecimal"
-        return Response(hex(number), ephemeral=True)
+        return Message(hex(number), ephemeral=True)
 
 
     @base_from.command(name="bin")
     def base_from_bin(ctx, number: str):
         "Convert a number out of binary"
-        return Response(int(number, base=2), ephemeral=True)
+        return Message(int(number, base=2), ephemeral=True)
 
 
     @base_from.command(name="hex")
     def base_from_hex(ctx, number: str):
         "Convert a number out of hexadecimal"
-        return Response(int(number, base=16), ephemeral=True)
+        return Message(int(number, base=16), ephemeral=True)
 
 Full API
 ^^^^^^^^

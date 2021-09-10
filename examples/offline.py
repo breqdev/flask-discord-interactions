@@ -25,8 +25,8 @@ app.config["DONT_VALIDATE_SIGNATURE"] = True
 app.config["DONT_REGISTER_WITH_DISCORD"] = True
 
 
-# Clear any existing global slash commands
-discord.update_slash_commands()
+# Clear any existing global application commands
+discord.update_commands()
 
 
 # Simplest type of command: respond with a string
@@ -43,7 +43,7 @@ discord.set_route("/interactions")
 
 # Note that with DONT_REGISTER_WITH_DISCORD set this method
 # will return without registering with the Discord API
-discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
+discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
 if __name__ == '__main__':

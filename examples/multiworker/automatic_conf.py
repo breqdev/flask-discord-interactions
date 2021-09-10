@@ -7,4 +7,4 @@ from automatic import discord
 
 def on_starting(server):
     print("registering commands!")
-    discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
+    discord.update_commands(guild_id=os.environ["TESTING_GUILD"])

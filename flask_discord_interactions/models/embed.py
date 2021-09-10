@@ -1,22 +1,24 @@
 from dataclasses import dataclass, asdict
 from typing import List
 
+from flask_discord_interactions.models.utils import LoadableDataclass
+
 @dataclass
-class Footer:
+class Footer(LoadableDataclass):
     "Represents the footer of an Embed."
     text: str
     icon_url: str = None
     proxy_icon_url: str = None
 
 @dataclass
-class Field:
+class Field(LoadableDataclass):
     "Represents a field on an Embed."
     name: str
     value: str
     inline: bool = False
 
 @dataclass
-class Media:
+class Media(LoadableDataclass):
     "Represents a thumbnail, image, or video on an Embed."
     url: str = None
     proxy_url: str = None
@@ -24,13 +26,13 @@ class Media:
     width: int = None
 
 @dataclass
-class Provider:
+class Provider(LoadableDataclass):
     "Represents a provider of an Embed."
     name: str = None
     url: str = None
 
 @dataclass
-class Author:
+class Author(LoadableDataclass):
     "Represents an author of an embed."
     name: str = None
     url: str = None
@@ -38,9 +40,9 @@ class Author:
     proxy_icon_url: str = None
 
 @dataclass
-class Embed:
+class Embed(LoadableDataclass):
     """
-    Represents an Embed to be sent as part of a Response.
+    Represents an Embed to be sent as part of a Message.
 
     Attributes
     ----------

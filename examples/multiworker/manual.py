@@ -41,13 +41,13 @@ discord.set_route("/interactions")
 # it will attempt to register the commands at each worker thread
 # and will fail due to rate limiting
 # print("registering commands!")
-# discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
+# discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
 # TRY THIS INSTEAD
 if "register" in sys.argv:
     print("registering commands!")
-    discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
+    discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
     sys.exit()
 
 

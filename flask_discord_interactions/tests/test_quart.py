@@ -3,7 +3,7 @@ import asyncio
 import pytest
 from quart import Quart
 
-from flask_discord_interactions import DiscordInteractions, Client, Response, AsyncContext
+from flask_discord_interactions import DiscordInteractions, Client, Message, AsyncContext
 
 
 @pytest.fixture()
@@ -69,7 +69,7 @@ async def test_followup(quart_discord):
             await ctx.edit(f"Hello!")
 
         followup_task = asyncio.create_task(do_followup())
-        return Response(deferred=True)
+        return Message(deferred=True)
 
     with client.context(AsyncContext()):
         await client.run("followup")

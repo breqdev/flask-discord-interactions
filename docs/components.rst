@@ -18,11 +18,11 @@ handling. When the button is clicked, the user is sent to the link.
 
 .. code-block:: python
 
-    from flask_discord_interactions import Response, ActionRow, Button, ButtonStyles
+    from flask_discord_interactions import Message, ActionRow, Button, ButtonStyles
 
     @discord.command()
     def google(ctx):
-        return Response(
+        return Message(
             content="search engine",
             components=[
                 ActionRow(components=[
@@ -44,8 +44,8 @@ Buttons can also send out additional Interactions when clicked. To handle these
 additional interactions, Flask-Discord-Interactions requires defining handler
 functions.
 
-These handler functions return a :class:`.Response`, but this response can also
-have the ``update`` parameter set. With ``update=True``, the new Response will
+These handler functions return a :class:`.Message`, but this Message can also
+have the ``update`` parameter set. With ``update=True``, the new Message will
 replace the original message (the one with the button that triggered the
 handler).
 
@@ -66,7 +66,7 @@ decorator, like so:
         global click_count
         click_count += 1
 
-        return Response(
+        return Message(
             content=f"The button has been clicked {click_count} times",
             components=[
                 ActionRow(components=[
@@ -84,7 +84,7 @@ decorator, like so:
     def click_counter(ctx):
         "Count the number of button clicks"
 
-        return Response(
+        return Message(
             content=f"The button has been clicked {click_count} times",
             components=[
                 ActionRow(components=[
@@ -139,7 +139,7 @@ ride." Simply pass a list in for the ``custom_id`` field on the button object.
     def handle_stateful(ctx, interaction_id, current_count: int):
         current_count += 1
 
-        return Response(
+        return Message(
             content=(f"This button has been clicked {current_count} times. "
                     "Try calling this command multiple times to see--each button "
                     "count is tracked separately!"),
@@ -159,7 +159,7 @@ ride." Simply pass a list in for the ``custom_id`` field on the button object.
     def stateful_click_counter(ctx):
         "Count the number of button clicks for this specific button."
 
-        return Response(
+        return Message(
             content=f"Click the button!",
             components=[
                 ActionRow(components=[

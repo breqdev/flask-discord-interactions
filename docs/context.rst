@@ -7,7 +7,7 @@ This class provides context information about the incoming interaction as a
 whole.
 
 You normally would receive this as a ``ctx`` parameter to your
-:class:`.SlashCommand` function, similar to in Discord.py.
+:class:`.Command` function, similar to in Discord.py.
 
 .. code-block:: python
 
@@ -34,10 +34,10 @@ delete messages:
         thread = threading.Thread(target=do_delay)
         thread.start()
 
-        return Response(deferred=True)
+        return Message(deferred=True)
 
-Pass in either a :class:`.Response` object or a string (which will be converted
-into a :class:`.Response` object. See :ref:`response-page` for more details.
+Pass in either a :class:`.Message` object or a string (which will be converted
+into a :class:`.Message` object. See :ref:`response-page` for more details.
 
 Full API
 --------

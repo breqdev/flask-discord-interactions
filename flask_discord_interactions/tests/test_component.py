@@ -1,4 +1,4 @@
-from flask_discord_interactions import (Response, ResponseType, ActionRow,
+from flask_discord_interactions import (Message, ResponseType, ActionRow,
                                         Button, ComponentType, ButtonStyles,
                                         SelectMenu, SelectMenuOption)
 
@@ -15,7 +15,7 @@ def test_parse_arguments(discord, client):
 def test_action_row(discord, client):
     @discord.command()
     def action_row(ctx):
-        return Response(
+        return Message(
             content="Hi!",
             components=[
                 ActionRow()
@@ -42,7 +42,7 @@ def test_action_row(discord, client):
 def test_button(discord, client):
     @discord.command()
     def button(ctx):
-        return Response(
+        return Message(
             content="Hi!",
             components=[
                 ActionRow(components=[
@@ -82,7 +82,7 @@ def test_button(discord, client):
 def test_select_menu(discord, client):
     @discord.command()
     def selectmenu(ctx):
-        return Response(
+        return Message(
             content="Hi!",
             components=[
                 ActionRow(components=[

@@ -1,5 +1,5 @@
 import requests
-from flask_discord_interactions import Response
+from flask_discord_interactions import Message
 
 
 def do_screenshot(ctx, url):
@@ -16,8 +16,8 @@ def do_screenshot(ctx, url):
 
     response.raw.decode_content = True
 
-    ctx.edit(Response(content="Your screenshot is ready!"))
+    ctx.edit(Message(content="Your screenshot is ready!"))
 
-    ctx.send(Response(
+    ctx.send(Message(
         file=("screenshot.png", response.raw, "image/png")
     ))

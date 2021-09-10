@@ -7,8 +7,8 @@ from flask import Flask
 
 sys.path.insert(1, ".")
 
-from flask_discord_interactions import (DiscordInteractions,  # noqa: E402
-                                        Response, Member, Channel, Role)
+from flask_discord_interactions import (DiscordInteractions,
+                                        Message, Member, Channel, Role)
 
 
 app = Flask(__name__)
@@ -18,7 +18,7 @@ app.config["DISCORD_CLIENT_ID"] = os.environ["DISCORD_CLIENT_ID"]
 app.config["DISCORD_PUBLIC_KEY"] = os.environ["DISCORD_PUBLIC_KEY"]
 app.config["DISCORD_CLIENT_SECRET"] = os.environ["DISCORD_CLIENT_SECRET"]
 
-discord.update_slash_commands()
+discord.update_commands()
 
 
 # To specify options, include them with type annotations, just like Discord.py
@@ -27,7 +27,7 @@ discord.update_slash_commands()
 @discord.command(annotations={"message": "The message to repeat"})
 def repeat(ctx, message: str = "Hello!"):
     "Repeat the message (and escape mentions)"
-    return Response(
+    return Message(
         f"{ctx.author.display_name} says {message}!",
         allowed_mentions={"parse": []},
     )
@@ -36,7 +36,7 @@ def repeat(ctx, message: str = "Hello!"):
 # You can use str, int, or bool
 @discord.command()
 def add_one(ctx, number: int):
-    return Response(str(number + 1), ephemeral=True)
+    return Message(str(number + 1), ephemeral=True)
 
 
 @discord.command()
@@ -89,7 +89,7 @@ def big_number(ctx, number: BigNumber):
 @discord.command(annotations={"user": "The user to show information about"})
 def avatar_of(ctx, user: Member):
     "Show someone else's user info"
-    return Response(embed={
+    return Message(embed={
         "title": user.display_name,
         "description": "Avatar Info",
         "fields": [
@@ -117,7 +117,7 @@ def has_role(ctx, user: Member, role: Role):
 
 @discord.command()
 def channel_info(ctx, channel: Channel):
-    return Response(embed={
+    return Message(embed={
         "title": channel.name,
         "fields": [
             {
@@ -129,7 +129,7 @@ def channel_info(ctx, channel: Channel):
 
 
 discord.set_route("/interactions")
-discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
+discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
 if __name__ == '__main__':
