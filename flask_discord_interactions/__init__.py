@@ -39,11 +39,10 @@ from flask_discord_interactions.models import Embed
 from flask_discord_interactions.client import Client
 
 
-# deprecated names
 class Response(Message):
     def __init__(self, *args, **kwargs):
         warnings.warn(
-            "Deprecated! Response has been renamed to Message, "
+            "Deprecated! As of v1.1.0, Response has been renamed to Message, "
             "as it can now represent the argument to a Message Command.",
             DeprecationWarning,
             stacklevel=2
@@ -57,7 +56,7 @@ InteractionResponse = Response
 class SlashCommand(Command):
     def __init__(self, *args, **kwargs):
         warnings.warn(
-            "Deprecated! SlashCommand has been renamed to Command, "
+            "Deprecated! As of v1.1.0, SlashCommand has been renamed to Command, "
             "as it can represent ChatInput (\"slash\") commands, "
             "user commands, and message commands.",
             DeprecationWarning,
@@ -69,7 +68,8 @@ class SlashCommand(Command):
 class InteractionContext(Context):
     def __init__(self, *args, **kwargs):
         warnings.warn(
-            "Deprecated! InteractionContext has been renamed to Context.",
+            "Deprecated! As of v0.1.5, "
+            "InteractionContext has been renamed to Context.",
             DeprecationWarning,
             stacklevel=2
         )

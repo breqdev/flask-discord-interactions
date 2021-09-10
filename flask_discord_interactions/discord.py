@@ -74,11 +74,11 @@ class DiscordInteractionsBlueprint:
 
     def add_slash_command(self, *args, **kwargs):
         """
-        Deprecated! ``add_slash_command`` has been renamed to
+        Deprecated! As of v1.1.0, ``add_slash_command`` has been renamed to
         :meth:`add_command`, as it can now add User and Message commands.
         """
         warnings.warn(
-            "Deprecated! add_slash_command has been renamed to "
+            "Deprecated! As of v1.1.0, add_slash_command has been renamed to "
             "add_command, as it can now add User and Message commands.",
             DeprecationWarning,
             stacklevel=2
@@ -359,12 +359,12 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
     def update_slash_commands(self, *args, **kwargs):
         """
-        Deprecated! ``update_slash_commands`` has been renamed to
+        Deprecated! As of v1.1.0, ``update_slash_commands`` has been renamed to
         ``update_commands``, as it updates User and Message commands as well.
         """
         warnings.warn(
-            "Deprecated! update_slash_commands has been renamed to "
-            "update_commands, as it updates User and Message commands too.",
+            "Deprecated! As of v1.1.0, update_slash_commands has been renamed "
+            "to update_commands, as it updates User and Message commands too.",
             DeprecationWarning,
             stacklevel=2
         )
