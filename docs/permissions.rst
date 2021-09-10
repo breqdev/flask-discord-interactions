@@ -1,7 +1,7 @@
 Permissions
 ===========
 
-Discord allows defining permissions for each slash command in a specific guild
+Discord allows defining permissions for each application command in a specific guild
 or at the global level. Flask-Discord-Interactions provides a Permission class
 and two major ways of setting the permissions of a command.
 
@@ -14,11 +14,11 @@ The :class:`.Permission` class accepts either a role ID or a user ID.
     :members:
 
 
-Slash Command constructor
--------------------------
+Command constructor
+-------------------
 
-You can define permissions when defining a Slash Command. These will be
-registered immediately after your Slash Command is registered.
+You can define permissions when defining a command. These will be
+registered immediately after your command is registered.
 
 You can set the ``default_permission``, then use the ``permissions`` parameter
 to specify any overwrites.

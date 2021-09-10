@@ -7,7 +7,7 @@ This class provides context information about the incoming interaction as a
 whole.
 
 You normally would receive this as a ``ctx`` parameter to your
-:class:`.SlashCommand` function, similar to in Discord.py.
+:class:`.Command` function, similar to in Discord.py.
 
 .. code-block:: python
 

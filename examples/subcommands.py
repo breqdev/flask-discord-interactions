@@ -18,7 +18,7 @@ app.config["DISCORD_CLIENT_ID"] = os.environ["DISCORD_CLIENT_ID"]
 app.config["DISCORD_PUBLIC_KEY"] = os.environ["DISCORD_PUBLIC_KEY"]
 app.config["DISCORD_CLIENT_SECRET"] = os.environ["DISCORD_CLIENT_SECRET"]
 
-discord.update_slash_commands()
+discord.update_commands()
 
 
 # You can use a decorator syntax to define subcommands
@@ -126,7 +126,7 @@ def minutes(ctx, minutes: str):
 
 
 discord.set_route("/interactions")
-discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
+discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
 if __name__ == '__main__':

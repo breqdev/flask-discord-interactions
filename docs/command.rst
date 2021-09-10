@@ -134,7 +134,7 @@ The arguments passed to the function are:
 Full API
 ^^^^^^^^
 
-.. autoclass:: flask_discord_interactions.SlashCommand
+.. autoclass:: flask_discord_interactions.Command
     :members:
 
 Slash Command Groups

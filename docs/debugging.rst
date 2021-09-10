@@ -18,7 +18,7 @@ A config parameter ``DONT_VALIDATE_SIGNATURE`` is provided which when set to ``T
 signature verification. This should only be set in debug mode and never in production.
 
 Another config parameter ``DONT_REGISTER_WITH_DISCORD`` may be set to ``True`` to bypass registering
-your slash commands with Discord when launched. Registering too many times in succession may result
+your commands with Discord when launched. Registering too many times in succession may result
 in being temporarily limited by Discord. For local debugging it is not needed.
 
 Example
@@ -49,7 +49,7 @@ It exposes one command ``/ping`` with an optional ``pong`` parameter.
     app.config["DONT_VALIDATE_SIGNATURE"] = True
     app.config["DONT_REGISTER_WITH_DISCORD"] = True
 
-    discord.update_slash_commands()
+    discord.update_commands()
 
     @discord.command()
     def ping(ctx, pong: str = 'pong'):
@@ -57,7 +57,7 @@ It exposes one command ``/ping`` with an optional ``pong`` parameter.
         return f"{pong} with no signature verification!"
 
     discord.set_route("/interactions")
-    discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
+    discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
     if __name__ == '__main__':
         app.run()

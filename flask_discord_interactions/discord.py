@@ -65,10 +65,10 @@ class DiscordInteractionsBlueprint:
         permissions
             List of permission overwrites.
         """
-        slash_command = Command(
+        command = Command(
             command, name, description, options, annotations,
             type, default_permission, permissions)
-        self.discord_commands[slash_command.name] = slash_command
+        self.discord_commands[command.name] = command
 
     # Deprecated name
     add_slash_command = add_command
@@ -170,7 +170,7 @@ class DiscordInteractionsBlueprint:
 
 class DiscordInteractions(DiscordInteractionsBlueprint):
     """
-    Handles registering a collection of :class:`SlashCommand` s, receiving
+    Handles registering a collection of :class:`Command` s, receiving
     incoming interaction data, and sending/editing/deleting messages via
     webhook.
     """
@@ -206,7 +206,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         """
         Fetch an OAuth2 token from Discord using the ``CLIENT_ID`` and
         ``CLIENT_SECRET`` with the ``applications.commands.update`` scope. This
-        can be used to register new slash commands.
+        can be used to register new application commands.
 
         Parameters
         ----------

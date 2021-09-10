@@ -41,7 +41,7 @@ commands, and to allow awaiting when handling followup messages.
     app = Quart(__name__)
     discord = DiscordInteractions(app)
 
-    discord.update_slash_commands()
+    discord.update_commands()
 
     @discord.command()
     async def ping(ctx):

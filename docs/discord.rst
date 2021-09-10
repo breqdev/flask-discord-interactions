@@ -4,7 +4,7 @@ Discord
 =======
 
 The :class:`.DiscordInteractions` and :class:`.DiscordInteractionsBlueprint`
-classes manage a collection of :class:`.SlashCommand` s for you.
+classes manage a collection of :class:`.Command` s for you.
 
 DiscordInteractions
 -------------------
@@ -27,9 +27,9 @@ must provide:
 
 * Client ID of your application
 * Public Key assigned to your application (used to authenticate incoming webhooks from Discord)
-* Client Secret of your application (used to request an OAuth2 token and register slash commands)
+* Client Secret of your application (used to request an OAuth2 token and register application commands)
 
-For a more tutorial-style explaination of this, see :ref:`tutorial-page`.
+For a more tutorial-style explanation of this, see :ref:`tutorial-page`.
 
 .. code-block:: python
 
@@ -61,9 +61,9 @@ from the same Flask app.
 
     discord.set_route("/interactions")
 
-Finally, you need to register the slash commands with Discord.
-:meth:`.DiscordInteractions.update_slash_commands` will automatically get
-the list of currently registered slash commands, delete any that are no longer
+Finally, you need to register the commands with Discord.
+:meth:`.DiscordInteractions.update_commands` will automatically get
+the list of currently registered commands, delete any that are no longer
 defined, update any that have changed, and register any newly-defined ones.
 *Note that this may take a while due to Discord rate-limiting, especially
 if you are running your bot for the first time.*
@@ -75,7 +75,7 @@ commands can take up to 1 hour.
 
 .. code-block:: python
 
-    discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
+    discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 .. note::
     If you'd like to deploy your bot in an environment with multiple workers, you might experience an issue where each worker tries to update your commands at the same time, causing you to be rate-limited. You should read the page on :ref:`workers` for information and advice relating to this issue.
@@ -143,7 +143,7 @@ Here's an example of a simple echo bot split into two files.
 
 
     discord.set_route("/interactions")
-    discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
+    discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
     if __name__ == '__main__':
         app.run()

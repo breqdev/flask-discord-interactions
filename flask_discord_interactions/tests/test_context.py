@@ -4,7 +4,7 @@ from flask_discord_interactions import Context, Member
 
 def test_context_parsing(discord):
     # Test data taken from
-    # https://discord.com/developers/docs/interactions/slash-commands#receiving-an-interaction
+    # https://discord.com/developers/docs/interactions/receiving-and-responding#receiving-an-interaction
 
     data = json.loads("""
         {

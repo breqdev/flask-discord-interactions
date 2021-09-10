@@ -9,7 +9,7 @@ from flask_discord_interactions.command import SlashCommandSubgroup
 class Client:
     """
     A class to represent a mock client that can be used to execute
-    Slash Commands programatically without connecting to Discord.
+    Application Commands programatically without connecting to Discord.
 
     Attributes
     ----------
@@ -46,7 +46,7 @@ class Client:
 
     def run(self, *names, **params):
         """
-        Run a specified Slash Command.
+        Run a specified Application Command.
 
         Parameters
         ----------

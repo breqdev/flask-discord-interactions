@@ -11,7 +11,7 @@ Create an application in the `Discord Developer Portal <https://discord.com/deve
 Authorize the application
 ----------------------------
 
-Authorize the application to create slash commands in one of your servers. In the Developer Portal, go to the OAuth2 tab, click the "applications.commands" checkbox, and copy the URL. (You don't need the "bot" scope--that one is for traditional WebSocket-based Discord bots.)
+Authorize the application to create application commands in one of your servers. In the Developer Portal, go to the OAuth2 tab, click the "applications.commands" checkbox, and copy the URL. (You don't need the "bot" scope--that one is for traditional WebSocket-based Discord bots.)
 
 .. image:: images/oauth.png
 
@@ -73,7 +73,7 @@ Here's a quick "hello world" program:
     discord.set_route("/interactions")
 
 
-    discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
+    discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
     if __name__ == '__main__':

@@ -22,7 +22,7 @@ app.config["DISCORD_PUBLIC_KEY"] = os.environ["DISCORD_PUBLIC_KEY"]
 app.config["DISCORD_CLIENT_SECRET"] = os.environ["DISCORD_CLIENT_SECRET"]
 
 
-discord.update_slash_commands()
+discord.update_commands()
 
 
 # In reality, you'd store these values in a database
@@ -218,7 +218,7 @@ def stateful_click_counter(ctx):
 
 
 discord.set_route("/interactions")
-discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
+discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
 if __name__ == '__main__':

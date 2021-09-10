@@ -42,7 +42,7 @@ class Message(LoadableDataclass):
         to the user temporarily). Only valid for incoming webhooks.
     ephemeral
         Whether the message should be ephemeral (only displayed temporarily
-        to only the user who used the slash command). Only valid for incoming
+        to only the user who used the command). Only valid for incoming
         webhooks.
     update
         Whether to update the initial message. Only valid for Message Component

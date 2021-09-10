@@ -20,8 +20,8 @@ app.config["DISCORD_PUBLIC_KEY"] = os.environ["DISCORD_PUBLIC_KEY"]
 app.config["DISCORD_CLIENT_SECRET"] = os.environ["DISCORD_CLIENT_SECRET"]
 
 
-# Clear any existing global slash commands
-discord.update_slash_commands()
+# Clear any existing global application commands
+discord.update_commands()
 
 
 # Simplest type of command: respond with a string
@@ -36,11 +36,11 @@ def ping(ctx):
 discord.set_route("/interactions")
 
 
-# Register slash commands with this
+# Register application commands with this
 # (omit guild_id parameter to register global commands,
 # but note that these can take up to 1 hour to be registered)
-# This also removes old/unused slash commands
-discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
+# This also removes old/unused commands
+discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
 if __name__ == '__main__':

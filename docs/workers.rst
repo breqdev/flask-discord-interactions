@@ -10,7 +10,7 @@ it?
 
     [2021-07-29 14:00:00 +0000] [12] [ERROR] Exception in worker process
     Traceback (most recent call last):
-    File "/usr/local/lib/python3.9/site-packages/flask_discord_interactions/discord.py", line 273, in update_slash_commands
+    File "/usr/local/lib/python3.9/site-packages/flask_discord_interactions/discord.py", line 273, in update_commands
         response.raise_for_status()
     File "/usr/local/lib/python3.9/site-packages/requests/models.py", line 953, in raise_for_status
         raise HTTPError(http_error_msg, response=self)
@@ -24,7 +24,7 @@ Rate Limiting
 
 If you're deploying to an environment with multiple concurrent workers, you may
 run into a situation where each worker will independently attempt to register
-your application's slash commands with Discord. When this happens, there's a
+your application's commands with Discord. When this happens, there's a
 good chance you'll get rate-limited!
 
 Issue Reproduction
@@ -38,7 +38,7 @@ Background
 ^^^^^^^^^^
 
 Most of the examples for this library will call
-``discord.update_slash_commands`` when the Flask app initializes. This can be
+``discord.update_commands`` when the Flask app initializes. This can be
 useful in a development environment: every time you restart your Flask app,
 it will ensure that any changes in your commands are sent to Discord.
 
@@ -54,7 +54,7 @@ your app.
 Approach 1: Manual Update
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can manually run ``discord.update_slash_commands`` before deploying your
+You can manually run ``discord.update_commands`` before deploying your
 app. For convenience, you could put this behind a command line argument:
 
 .. code-block:: python
@@ -70,7 +70,7 @@ app. For convenience, you could put this behind a command line argument:
     # ... configure your app and define your commands here ...
 
     if "register" in sys.argv:
-        discord.update_slash_commands()
+        discord.update_commands()
         sys.exit()
 
 
@@ -78,7 +78,7 @@ app. For convenience, you could put this behind a command line argument:
         app.run()
 
 You can run ``python3 app.py register`` (or similar) on your development
-machine once to register the slash commands with Discord, then
+machine once to register the commands with Discord, then
 ``gunicorn app:app`` (or similar) on your production server to serve your app
 without doing command registration.
 
@@ -109,7 +109,7 @@ will be executed exactly once when the server starts. This is where you can
 register your commands with Discord.
 
 You will need to make sure that your application module does not call
-``discord.update_slash_commands`` when it is invoked:
+``discord.update_commands`` when it is invoked:
 
 .. code-block:: python
 
@@ -122,7 +122,7 @@ You will need to make sure that your application module does not call
     discord = DiscordInteractions(app)
 
     # ... configure your app and define your commands here ...
-    # but do NOT call `discord.update_slash_commands`
+    # but do NOT call `discord.update_commands`
 
     if __name__ == '__main__':
         app.run()
@@ -135,7 +135,7 @@ Then, you will need to create a configuration file for Gunicorn:
     from app import discord
 
     def on_starting(server):
-        discord.update_slash_commands()
+        discord.update_commands()
 
 (Note that your import structure may vary depending on your application
 structure.)

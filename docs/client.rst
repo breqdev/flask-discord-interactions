@@ -1,7 +1,7 @@
 Client
 ======
 
-The :class:`.Client` class can simulate calling a :class:`.SlashCommand`
+The :class:`.Client` class can simulate calling a :class:`.Command`
 without connecting to Discord. This is useful for unit testing.
 
 The :class:`.Client` must be initialized by passing a

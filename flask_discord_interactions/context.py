@@ -15,7 +15,7 @@ from flask_discord_interactions.models import (
 @dataclass
 class Context(LoadableDataclass):
     """
-    Represents the context in which a :class:`SlashCommand` or custom ID
+    Represents the context in which a :class:`Command` or custom ID
     handler is invoked.
 
     Attributes
@@ -172,7 +172,7 @@ class Context(LoadableDataclass):
     def create_args(self):
         """
         Create the arguments which will be passed to the function when the
-        :class:`SlashCommand` is invoked.
+        :class:`Command` is invoked.
         """
         if self.type == ApplicationCommandType.CHAT_INPUT:
             return self.create_args_chat_input()
@@ -416,7 +416,7 @@ class Context(LoadableDataclass):
 @dataclass
 class AsyncContext(Context):
     """
-    Represents the context in which an asynchronous :class:`SlashCommand` is
+    Represents the context in which an asynchronous :class:`Command` is
     invoked. Also provides coroutine functions to handle followup messages.
 
     Users should not need to instantiate this class manually.

@@ -89,7 +89,7 @@ in your commands:
         return Response(deferred=True)
 
     discord.set_route("/interactions")
-    discord.update_slash_commands(guild_id=os.environ["TESTING_GUILD"])
+    discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
     if __name__ == '__main__':
