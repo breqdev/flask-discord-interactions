@@ -1,3 +1,4 @@
+import warnings
 from flask_discord_interactions.command import (
     Command,
     SlashCommandSubgroup,
@@ -39,8 +40,21 @@ from flask_discord_interactions.client import Client
 
 
 # deprecated names
-Response = Message
-SlashCommand = Command
+class Response(Message):
+    def __init_subclass__(self):
+        warnings.warn(
+            "Deprecated! Response has been renamed to Message, "
+            "as it can now represent the argument to a Message Command."
+        )
+
+
+class SlashCommand(Command):
+    def __init_subclass__(self):
+        warnings.warn(
+            "Deprecated! SlashCommand has been renamed to Command, "
+            "as it can represent ChatInput (\"slash\") commands, "
+            "user commands, and message commands."
+        )
 
 
 InteractionResponse = Response

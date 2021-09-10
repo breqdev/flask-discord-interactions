@@ -70,8 +70,14 @@ class DiscordInteractionsBlueprint:
             type, default_permission, permissions)
         self.discord_commands[command.name] = command
 
-    # Deprecated name
-    add_slash_command = add_command
+
+    def add_slash_command(self, *args, **kwargs):
+        """
+        Deprecated! ``add_slash_command`` has been renamed to
+        :meth:`add_command`, as it can now add User and Message commands.
+        """
+        return self.add_command(*args, **kwargs)
+
 
     def command(self, name=None, description=None, options=None, annotations=None,
                 type=ApplicationCommandType.CHAT_INPUT, default_permission=None, permissions=None):
@@ -344,8 +350,12 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                     f"{response.status_code} {response.text}"
                 )
 
-    # Deprecated name
-    update_slash_commands = update_commands
+    def update_slash_commands(self, *args, **kwargs):
+        """
+        Deprecated! ``update_slash_commands`` has been renamed to
+        ``update_commands``, as it updates User and Message commands as well.
+        """
+        return self.update_commands(*args, **kwargs)
 
     def throttle(self, response):
         """
