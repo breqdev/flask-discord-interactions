@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 with open("README.md") as file:
@@ -14,7 +14,7 @@ setup(
     description='A Flask extension for Discord slash commands.',
     long_description=readme,
     long_description_content_type="text/markdown",
-    packages=['flask_discord_interactions'],
+    packages=find_packages(),
     zip_safe=False,
     include_package_data=True,
     platforms='any',
