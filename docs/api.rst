@@ -12,3 +12,4 @@ API Reference
     client.rst
     components.rst
     quart.rst
+    permissions.rst
