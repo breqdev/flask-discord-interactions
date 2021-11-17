@@ -61,6 +61,13 @@ from the same Flask app.
 
     discord.set_route("/interactions")
 
+.. note::
+    If you want to use Flask-Discord-Interactions with Quart instead,
+    you should use :meth:`.DiscordInteractions.set_route_async`. This
+    functions similarly, but it registers the route handler
+    as an async function, allowing it to ``await`` your function handlers.
+    For details, see :ref:`quart-page`.
+
 Finally, you need to register the commands with Discord.
 :meth:`.DiscordInteractions.update_commands` will automatically get
 the list of currently registered commands, delete any that are no longer

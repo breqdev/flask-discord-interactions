@@ -1,3 +1,5 @@
+.. _quart-page:
+
 Using Asyncio with Quart
 ========================
 
