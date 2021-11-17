@@ -491,6 +491,9 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         Add a route handler to the Flask app that handles incoming
         interaction data.
 
+        If you are using Quart, you should use
+        :meth:`.DiscordInteractions.set_route_async` instead.
+
         Parameters
         ----------
         route

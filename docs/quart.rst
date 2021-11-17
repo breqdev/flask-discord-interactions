@@ -1,3 +1,5 @@
+.. _quart-page:
+
 Using Asyncio with Quart
 ========================
 
@@ -15,6 +17,9 @@ to have a similar API to Flask, but using :py:mod:`asyncio`.
         return 'hello'
 
     app.run()
+
+Monkey Patching
+---------------
 
 Flask-Discord-Interactions supports using Quart. This can provide a more
 familiar development experience to those used to ``discord.py``'s
@@ -52,6 +57,25 @@ commands, and to allow awaiting when handling followup messages.
     @discord.command()
     def pong(ctx):
         return "Ping!"
+
+Use an Async Route Handler
+--------------------------
+
+If you want to use async commands in Flask-Discord-Interactions, then the
+library needs to register an asynchronous handler for the interactions
+endpoint. This is what allows Flask-Discord-Interactions to ``await``
+your function handler.
+
+If you are using Flask-Discord-Interactions with Quart, you need to call
+:meth:`.DiscordInteractions.set_route_async` instead of
+:meth:`.DiscordInteractions.set_route`.
+
+.. code-block:: python
+
+    discord.set_route_async("/interactions")
+
+Context in Async Commands
+-------------------------
 
 A special :class:`.AsyncContext` class is exposed to asynchronous commands.
 This class makes :meth:`.AsyncContext.edit`, :meth:`.AsyncContext.send`, and
