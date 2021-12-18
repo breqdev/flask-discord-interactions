@@ -8,3 +8,4 @@ Tutorials
     debugging.rst
     workers.rst
     redisqueue.rst
+    dm.rst
