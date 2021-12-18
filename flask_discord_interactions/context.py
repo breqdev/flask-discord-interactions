@@ -43,8 +43,11 @@ class Context(LoadableDataclass):
         The name of the command that was invoked.
     command_id
         The unique ID (snowflake) of the command that was invoked.
+    users
+        :class:`User` objects for each user specified as an option.
     members
-        :class:`Member` objects for each user specified as an option.
+        :class:`Member` objects for each user specified as an option, if this
+        command was invoked in a guild.
     channels
         :class:`Channel` objects for each channel specified as an option.
     roles
@@ -164,6 +167,10 @@ class Context(LoadableDataclass):
             member_info["user"] = self.resolved["users"][id]
             self.members[id] = Member.from_dict(member_info)
 
+        self.users = {id: User.from_dict(data)
+                      for id, data
+                      in self.resolved.get("users", {}).items()}
+
         self.channels = {id: Channel.from_dict(data)
                          for id, data
                          in self.resolved.get("channels", {}).items()}
@@ -228,10 +235,13 @@ class Context(LoadableDataclass):
                     kwargs.update(sub_kwargs)
 
                 elif option["type"] == CommandOptionType.USER:
-                    member_data = resolved["members"][option["value"]]
-                    member_data["user"] = resolved["users"][option["value"]]
+                    if "members" in resolved:
+                        member_data = resolved["members"][option["value"]]
+                        member_data["user"] = resolved["users"][option["value"]]
 
-                    kwargs[option["name"]] = Member.from_dict(member_data)
+                        kwargs[option["name"]] = Member.from_dict(member_data)
+                    else:
+                        kwargs[option["name"]] = User.from_dict(resolved["users"][option["value"]])
 
                 elif option["type"] == CommandOptionType.CHANNEL:
                     kwargs[option["name"]] = Channel.from_dict(

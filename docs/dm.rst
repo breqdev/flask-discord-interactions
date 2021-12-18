@@ -34,9 +34,22 @@ No ``guild_id`` field
 
 :attr:`.Context.guild_id` will be ``None``.
 
-:attr:`.Context.author` is a :class:`.User`, not a :class:`.Member`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:attr:`.Context.author` is a :class:`.User`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The invoking user will be represented by a :class:`.User` class, not a :class:`.Member` class. These classes are similar, but the :class:`.User` class has fewer attributes: you will not receive any guild-specific information about the user (join timestamp, nitro boost status, permissions integer, nickname, etc).
 
-You will still have access to a user's avatar URL, username, discriminator, ID, etc. Additionally, you can still use :meth:`.User.display_name` to get the username.
+You will still have access to a user's avatar URL, username, discriminator, ID, etc. Additionally, you can still use :attr:`.User.display_name` to get the username.
+
+:attr:`.Context.members` is empty
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The invoking user will not appear in the :attr:`.Context.members` list, nor
+will any users specified as options. Use :attr:`.Context.users` instead.
+
+:attr:`.CommandOptionType.USER` gives a :class:`.User`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Any command with a :attr:`.CommandOptionType.USER` option will give a
+:class:`.User` object, not a :class:`.Member`.
+
