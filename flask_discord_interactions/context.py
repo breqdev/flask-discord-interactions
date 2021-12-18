@@ -21,7 +21,8 @@ class Context(LoadableDataclass):
     Attributes
     ----------
     author
-        A :class:`Member` object representing the invoking user.
+        A :class:`User` or  :class:`Member` object representing the invoking
+        user.
     id
         The unique ID (snowflake) of this interaction.
     type
@@ -51,7 +52,7 @@ class Context(LoadableDataclass):
     target
         The targeted :class:`User` or message.
     """
-    author: Member = None
+    author: Union[Member, User] = None
     id: str = None
     type: int = None
     token: str = None
@@ -89,7 +90,6 @@ class Context(LoadableDataclass):
         result = cls(
             app = app,
             discord = discord,
-            author = Member.from_dict(data.get("member", {})),
             id = data.get("id"),
             type = data.get("data", {}).get("type") or ApplicationCommandType.CHAT_INPUT,
             token = data.get("token"),
@@ -106,6 +106,7 @@ class Context(LoadableDataclass):
 
         result.data = data
 
+        result.parse_author(data)
         result.parse_custom_id()
         result.parse_resolved()
         result.parse_target()
@@ -117,6 +118,26 @@ class Context(LoadableDataclass):
             return self.discord.auth_headers(self.app)
         else:
             return self.frozen_auth_headers
+
+    def parse_author(self, data):
+        """
+        Parse the author (invoking user) of this interaction.
+
+        This will set :attr:`author` to a :class:`User` object if this
+        interaction occurred in a direct message, or a :class:`Member` object
+        if interaction occurred in a guild.
+
+        Parameters
+        ----------
+        data
+            The incoming interaction data.
+        """
+        if data.get("member"):
+            self.author = Member.from_dict(data["member"])
+        elif data.get("user"):
+            self.author = User.from_dict(data["user"])
+        else:
+            self.author = None
 
     def parse_custom_id(self):
         """
