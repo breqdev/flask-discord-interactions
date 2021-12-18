@@ -132,3 +132,6 @@ dmypy.json
 
 # Redis dump
 dump.rdb
+
+# MacOS stuff
+.DS_Store
