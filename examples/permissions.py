@@ -44,6 +44,27 @@ def unlock_command(ctx):
     return "Unlocked!"
 
 
+# Command groups can have permissions at the top level
+
+group = discord.command_group("group", default_permission=False, permissions=[
+    Permission(role="786840072891662336")
+])
+
+@group.command()
+def locked_subcommand(ctx):
+    "Locked subcommand"
+
+    return "You have unlocked the secret subcommand!"
+
+@group.command()
+def lock_me_out(ctx):
+    "Lock me out of this group"
+
+    ctx.overwrite_permissions([Permission(user=ctx.author.id, allow=False)])
+
+    return "Locked!"
+
+
 discord.set_route("/interactions")
 
 

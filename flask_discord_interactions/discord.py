@@ -120,7 +120,8 @@ class DiscordInteractionsBlueprint:
 
         return decorator
 
-    def command_group(self, name, description="No description", is_async=False):
+    def command_group(self, name, description="No description", is_async=False,
+                      default_permission=None, permissions=None):
         """
         Create a new :class:`SlashCommandGroup`
         (which can contain multiple subcommands)
@@ -134,9 +135,14 @@ class DiscordInteractionsBlueprint:
         is_async
             Whether the subgroup should be considered async (if subcommands
             get an :class:`.AsyncContext` instead of a :class:`Context`.)
+        default_permission
+            Whether the command group is enabled by default.
+        permissions
+            List of permission overwrites. These apply to the entire group.
         """
 
-        group = SlashCommandGroup(name, description, is_async)
+        group = SlashCommandGroup(
+            name, description, is_async, default_permission, permissions)
         self.discord_commands[name] = group
         return group
 

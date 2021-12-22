@@ -302,6 +302,37 @@ class SlashCommandSubgroup(Command):
 
 
 class SlashCommandGroup(SlashCommandSubgroup):
+    """
+    Represents a Subgroup of slash commands.
+
+    Attributes
+    ----------
+    name
+        The name of this subgroup, shown in the Discord client.
+    description
+        The description of this subgroup, shown in the Discord client.
+    is_async
+        Whether the subgroup should be considered async (if subcommands
+        get an :class:`AsyncContext` instead of a :class:`Context`.)
+    default_permission
+        Whether the subgroup is enabled by default. Default is True.
+    permissions
+        List of permission overwrites. These apply to all subcommands of this
+        group.
+    """
+
+    def __init__(self, name, description, is_async=False,
+                 default_permission=True, permissions=None):
+        self.name = name
+        self.description = description
+        self.subcommands = {}
+        self.type = ApplicationCommandType.CHAT_INPUT
+
+        self.default_permission = default_permission
+        self.permissions = permissions or []
+
+        self.is_async = is_async
+
     def subgroup(self, name, description="No description", is_async=False):
         """
         Create a new :class:`SlashCommandSubroup`
