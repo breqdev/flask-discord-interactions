@@ -135,6 +135,10 @@ class DiscordInteractionsBlueprint:
         is_async
             Whether the subgroup should be considered async (if subcommands
             get an :class:`.AsyncContext` instead of a :class:`Context`.)
+        default_permission
+            Whether the command group is enabled by default.
+        permissions
+            List of permission overwrites. These apply to the entire group.
         """
 
         group = SlashCommandGroup(

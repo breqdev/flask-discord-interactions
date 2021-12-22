@@ -33,6 +33,27 @@ to specify any overwrites.
 
         return "You have permissions!"
 
+Subcommands and Command Groups
+------------------------------
+
+Discord only supports attaching permissions overwrites to top-level commands.
+Thus, there are no ``default_permission`` or ``permissions`` parameters for the
+:meth:`.SlashCommandGroup.command` decorator. However, you can still set
+permissions for an entire tree of subcommands using the
+:meth:`.DiscordInteractions.command_group` function.
+
+.. code-block:: python
+
+    group = discord.command_group("group", default_permission=False, permissions=[
+        Permission(role="786840072891662336")
+    ])
+
+    @group.command()
+    def locked_subcommand(ctx):
+        "Locked subcommand"
+
+        return "You have unlocked the secret subcommand!"
+
 Context object
 --------------
 
