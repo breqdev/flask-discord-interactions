@@ -54,6 +54,8 @@ class Context(LoadableDataclass):
         :class:`Role` object for each role specified as an option.
     target
         The targeted :class:`User` or message.
+    message
+        The message that the invoked components are attached to. Only available on component interactions
     """
     author: Union[Member, User] = None
     id: str = None
@@ -69,6 +71,7 @@ class Context(LoadableDataclass):
     members: List[Member] = None
     channels: List[Channel] = None
     roles: List[Role] = None
+    message: Message = None
 
     app: Any = None
     discord: Any = None
@@ -110,6 +113,7 @@ class Context(LoadableDataclass):
         result.data = data
 
         result.parse_author(data)
+        result.parse_message(data)
         result.parse_custom_id()
         result.parse_resolved()
         result.parse_target()
@@ -141,6 +145,20 @@ class Context(LoadableDataclass):
             self.author = User.from_dict(data["user"])
         else:
             self.author = None
+
+    def parse_message(self, data):
+        """
+        Parse the message out of in interaction.
+
+        Parameters
+        ----------
+        data
+            The incoming interaction data.
+        """
+        if data.get("message"):
+            self.message = Message.from_dict(data["message"])
+        else:
+            self.message = None
 
     def parse_custom_id(self):
         """
