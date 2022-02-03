@@ -130,11 +130,11 @@ class Message(LoadableDataclass):
 
     def dump_embeds(self):
         "Returns the embeds of this Message as a list of dicts."
-        return [embed.dump() for embed in self.embeds] if self.embeds else None
+        return [embed.dump() for embed in self.embeds] if self.embeds is not None else None
 
     def dump_components(self):
         "Returns the message components as a list of dicts."
-        return [c.dump() for c in self.components] if self.components else None
+        return [c.dump() for c in self.components] if self.components is not None else None
 
     @classmethod
     def from_return_value(cls, result):
