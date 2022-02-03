@@ -229,6 +229,10 @@ in an incoming interaction, it is split on the newline character. The first
 line is used as the ID, and any subsequent lines are taken as arguments to the
 handler function.
 
+Context Internals
+-----------------
+
+Just like commands, custom_id handlers are passed a :class:`.Context` object when invoked. This object will also have a :attr:`.Context.message` field containing the :class:`.Message` that contained the component.
 
 
 Full API

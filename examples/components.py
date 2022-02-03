@@ -216,6 +216,27 @@ def stateful_click_counter(ctx):
         ]
     )
 
+@discord.custom_handler()
+def handle_parse_message(ctx):
+    return f"I told you, {ctx.message.content}!"
+
+@discord.command()
+def message_parse_demo(ctx):
+    "Demonstrate the ability to parse the original message in a handler."
+
+    return Message(
+        content="The answer is 42",
+        components=[
+            ActionRow(components=[
+                Button(
+                    style=ButtonStyles.PRIMARY,
+                    custom_id=handle_parse_message,
+                    label="What is the answer?"
+                )
+            ])
+        ]
+    )
+
 
 discord.set_route("/interactions")
 discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
