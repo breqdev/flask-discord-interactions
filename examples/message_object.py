@@ -80,8 +80,32 @@ def ephemeral(ctx):
     return Message(
         "Ephemeral messages are only sent to the user who ran the command, "
         "and they go away after a short while.\n\n"
-        "Note that they cannot include embeds or files, "
+        "Note that they cannot include files, "
         "but Markdown is *perfectly fine.*",
+        ephemeral=True
+    )
+
+
+@discord.command()
+def ephemeral_embed(ctx):
+    "Ephemeral Message with an Embed"
+
+    return Message(
+        embed=Embed(
+            title="Embeds!",
+            description="Messages with Embeds can also be Ephemeral.",
+            fields=[
+                embed.Field(
+                    name="Can they use markdown?",
+                    value="**Yes!** [link](https://google.com/)"
+                ),
+                embed.Field(
+                    name="Where do I learn about how to format this object?",
+                    value=("[Try this visualizer!]"
+                           "(https://leovoel.github.io/embed-visualizer/)")
+                )
+            ]
+        ),
         ephemeral=True
     )
 
