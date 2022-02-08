@@ -49,7 +49,7 @@ response ephemeral:
         return Message(
             "Ephemeral messages are only sent to the user who ran the command, "
             "and they go away after a short while.\n\n"
-            "Note that they cannot include embeds or files, "
+            "Note that they cannot include files, "
             "but Markdown is *perfectly fine.*",
             ephemeral=True
         )
