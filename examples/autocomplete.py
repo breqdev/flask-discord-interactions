@@ -23,8 +23,11 @@ def autocomplete_example(ctx, country: Autocomplete(str), city: Autocomplete(str
     return f"{country} {city}"
 
 
-def autocomplete_handler(ctx, country: str, city: str):
-    return ["New York", "Chicago"]
+def autocomplete_handler(ctx, country=None, city=None):
+    if country.focused:
+        return ["Germany", "Canada"]
+    elif city.focused:
+        return ["New York", "Chicago"]
 
 
 discord.add_autocomplete_handler(autocomplete_handler, "autocomplete_example")

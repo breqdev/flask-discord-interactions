@@ -17,6 +17,7 @@ from flask_discord_interactions.models import (
     ApplicationCommandType,
     Message,
 )
+from flask_discord_interactions.models.option import Option
 
 
 @dataclass
@@ -331,6 +332,9 @@ class Context(LoadableDataclass):
                     )
 
         return args
+
+    def create_autocomplete_args(self):
+        return [Option.from_data(option) for option in self.options]
 
     def followup_url(self, message=None):
         """

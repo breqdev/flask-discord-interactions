@@ -524,7 +524,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         context = Context.from_data(self, current_app, data)
         handler = self.autocomplete_handlers[context.command_name]
-        args = context.create_args_chat_input()
+        args = context.create_autocomplete_args()
         result = handler(context, *args)
 
         return AutocompleteResult.from_return_value(result)
