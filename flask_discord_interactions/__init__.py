@@ -27,6 +27,7 @@ from flask_discord_interactions.models import (
     SelectMenuOption,
     Autocomplete,
     AutocompleteResult,
+    Option,
 )
 
 from flask_discord_interactions.discord import (
@@ -113,4 +114,5 @@ __all__ = [
     "Response",
     "InteractionResponse",
     "InteractionContext",
+    "Option",
 ]

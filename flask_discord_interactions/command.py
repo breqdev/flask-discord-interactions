@@ -13,6 +13,7 @@ from flask_discord_interactions.models import (
     Channel,
     Role,
     Autocomplete,
+    Option,
 )
 
 
@@ -104,6 +105,11 @@ class Command:
             self.description = None
 
         self.is_async = inspect.iscoroutinefunction(self.command)
+
+        if self.options:
+            self.options = [
+                (o.dump() if isinstance(o, Option) else o) for o in self.options
+            ]
 
         if self.type is ApplicationCommandType.CHAT_INPUT and self.options is None:
             sig = inspect.signature(self.command)

@@ -20,14 +20,26 @@ discord.update_commands()
 
 @discord.command()
 def autocomplete_example(ctx, country: Autocomplete(str), city: Autocomplete(str)):
-    return f"{country} {city}"
+    return f"You selected **{city}, {country}**!"
+
+
+COUNTRIES = ["Germany", "Canada", "United States", "United Kingdom"]
+CITIES = {
+    "Germany": ["Berlin", "Munich", "Frankfurt"],
+    "Canada": ["Toronto", "Montreal", "Vancouver"],
+    "United States": ["New York", "Chicago", "Los Angeles"],
+    "United Kingdom": ["London", "Manchester", "Liverpool"],
+}
 
 
 def autocomplete_handler(ctx, country=None, city=None):
     if country.focused:
-        return ["Germany", "Canada"]
+        return [c for c in COUNTRIES if c.lower().startswith(country.value.lower())]
     elif city.focused:
-        return ["New York", "Chicago"]
+        if country.value in CITIES:
+            return CITIES[country.value]
+        else:
+            return []
 
 
 discord.add_autocomplete_handler(autocomplete_handler, "autocomplete_example")
