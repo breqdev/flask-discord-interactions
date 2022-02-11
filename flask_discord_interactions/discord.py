@@ -88,8 +88,10 @@ class DiscordInteractionsBlueprint:
             type,
             default_permission,
             permissions,
+            self,
         )
         self.discord_commands[command.name] = command
+        return command
 
     def add_slash_command(self, *args, **kwargs):
         """
@@ -139,7 +141,7 @@ class DiscordInteractionsBlueprint:
 
         def decorator(func):
             nonlocal name, description, type, options
-            self.add_command(
+            command = self.add_command(
                 func,
                 name,
                 description,
@@ -149,7 +151,7 @@ class DiscordInteractionsBlueprint:
                 default_permission,
                 permissions,
             )
-            return func
+            return command
 
         return decorator
 

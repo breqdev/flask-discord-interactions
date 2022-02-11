@@ -44,6 +44,28 @@ def autocomplete_handler(ctx, country=None, city=None):
 
 discord.add_autocomplete_handler(autocomplete_handler, "autocomplete_example")
 
+
+# You can also use a decorator on the command itself
+# to add the autocomplete handler
+
+
+@discord.command()
+def more_autocomplete(ctx, value: Autocomplete(int)):
+    return f"Your number is **{value}**."
+
+
+@more_autocomplete.autocomplete()
+def more_autocomplete_handler(ctx, value=None):
+    # Note that even though this option is an int,
+    # the autocomplete handler still gets passed a str.
+    try:
+        value = int(value.value)
+    except ValueError:
+        return []
+
+    return [i for i in range(value, value + 10)]
+
+
 discord.set_route("/interactions")
 discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 

@@ -51,6 +51,9 @@ class Command:
         Whether the command is enabled by default. Default is True.
     permissions
         List of permission overwrites.
+    discord
+        DiscordInteractionsBlueprint instance which this Command is associated
+        with.
     """
 
     def __init__(
@@ -63,6 +66,7 @@ class Command:
         command_type=ApplicationCommandType.CHAT_INPUT,
         default_permission=True,
         permissions=None,
+        discord=None,
     ):
         self.command = command
         self.name = name
@@ -72,6 +76,7 @@ class Command:
         self.type = command_type
         self.default_permission = default_permission
         self.permissions = permissions or []
+        self.discord = discord
 
         if self.name is None:
             self.name = command.__name__
@@ -241,6 +246,12 @@ class Command:
 
     def dump_permissions(self):
         return [permission.dump() for permission in self.permissions]
+
+    def autocomplete(self):
+        def wrapper(f):
+            self.discord.add_autocomplete_handler(f, self.name)
+
+        return wrapper
 
 
 class SlashCommandSubgroup(Command):
