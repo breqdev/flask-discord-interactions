@@ -12,6 +12,8 @@ from flask import current_app, request, jsonify, abort
 from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
 
+from flask_discord_interactions.models.autocomplete import AutocompleteResult
+
 try:
     import aiohttp
 except ImportError:
@@ -26,6 +28,8 @@ class InteractionType:
     PING = 1
     APPLICATION_COMMAND = 2
     MESSAGE_COMPONENT = 3
+    APPLICATION_COMMAND_AUTOCOMPLETE = 4
+    MODAL_SUBMIT = 5
 
 
 class DiscordInteractionsBlueprint:
@@ -34,14 +38,23 @@ class DiscordInteractionsBlueprint:
 
     Useful for splitting a bot across multiple files.
     """
+
     def __init__(self):
         self.discord_commands = {}
         self.custom_id_handlers = {}
+        self.autocomplete_handlers = {}
 
-    def add_command(self, command, name=None, description=None,
-                          options=None, annotations=None,
-                          type=ApplicationCommandType.CHAT_INPUT,
-                          default_permission=None, permissions=None):
+    def add_command(
+        self,
+        command,
+        name=None,
+        description=None,
+        options=None,
+        annotations=None,
+        type=ApplicationCommandType.CHAT_INPUT,
+        default_permission=None,
+        permissions=None,
+    ):
         """
         Create and add a new :class:`ApplicationCommand`.
 
@@ -67,10 +80,16 @@ class DiscordInteractionsBlueprint:
             List of permission overwrites.
         """
         command = Command(
-            command, name, description, options, annotations,
-            type, default_permission, permissions)
+            command,
+            name,
+            description,
+            options,
+            annotations,
+            type,
+            default_permission,
+            permissions,
+        )
         self.discord_commands[command.name] = command
-
 
     def add_slash_command(self, *args, **kwargs):
         """
@@ -81,13 +100,20 @@ class DiscordInteractionsBlueprint:
             "Deprecated! As of v1.1.0, add_slash_command has been renamed to "
             "add_command, as it can now add User and Message commands.",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         return self.add_command(*args, **kwargs)
 
-
-    def command(self, name=None, description=None, options=None, annotations=None,
-                type=ApplicationCommandType.CHAT_INPUT, default_permission=None, permissions=None):
+    def command(
+        self,
+        name=None,
+        description=None,
+        options=None,
+        annotations=None,
+        type=ApplicationCommandType.CHAT_INPUT,
+        default_permission=None,
+        permissions=None,
+    ):
         """
         Decorator to create a new :class:`Command`.
 
@@ -114,14 +140,27 @@ class DiscordInteractionsBlueprint:
         def decorator(func):
             nonlocal name, description, type, options
             self.add_command(
-                func, name, description, options, annotations,
-                type, default_permission, permissions)
+                func,
+                name,
+                description,
+                options,
+                annotations,
+                type,
+                default_permission,
+                permissions,
+            )
             return func
 
         return decorator
 
-    def command_group(self, name, description="No description", is_async=False,
-                      default_permission=None, permissions=None):
+    def command_group(
+        self,
+        name,
+        description="No description",
+        is_async=False,
+        default_permission=None,
+        permissions=None,
+    ):
         """
         Create a new :class:`SlashCommandGroup`
         (which can contain multiple subcommands)
@@ -142,7 +181,8 @@ class DiscordInteractionsBlueprint:
         """
 
         group = SlashCommandGroup(
-            name, description, is_async, default_permission, permissions)
+            name, description, is_async, default_permission, permissions
+        )
         self.discord_commands[name] = group
         return group
 
@@ -179,12 +219,26 @@ class DiscordInteractionsBlueprint:
             The custom ID to respond to. If not specified, the ID will be
             generated randomly.
         """
+
         def decorator(func):
             nonlocal custom_id
             custom_id = self.add_custom_handler(func, custom_id)
             return custom_id
 
         return decorator
+
+    def add_autocomplete_handler(self, handler, command_name):
+        """
+        Add a handler for an incoming autocomplete request.
+
+        Parameters
+        ----------
+        handler
+            The function to call to handle the incoming autocomplete request.
+        command_name
+            The name of the command to autocomplete.
+        """
+        self.autocomplete_handlers[command_name] = handler
 
 
 class DiscordInteractions(DiscordInteractionsBlueprint):
@@ -193,6 +247,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
     incoming interaction data, and sending/editing/deleting messages via
     webhook.
     """
+
     def __init__(self, app=None):
         super().__init__()
 
@@ -219,6 +274,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         app.config.setdefault("DONT_REGISTER_WITH_DISCORD", False)
         app.discord_commands = self.discord_commands
         app.custom_id_handlers = self.custom_id_handlers
+        app.autocomplete_handlers = self.autocomplete_handlers
         app.discord_token = None
 
     def fetch_token(self, app=None):
@@ -236,34 +292,32 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         if app is None:
             app = self.app
 
-        if app.config['DONT_REGISTER_WITH_DISCORD']:
+        if app.config["DONT_REGISTER_WITH_DISCORD"]:
             app.discord_token = {
-                'token_type':'Bearer',
-                'scope':'applications.commands.update',
-                'expires_in':604800,
-                'access_token':'DONT_REGISTER_WITH_DISCORD'
+                "token_type": "Bearer",
+                "scope": "applications.commands.update",
+                "expires_in": 604800,
+                "access_token": "DONT_REGISTER_WITH_DISCORD",
             }
-            app.discord_token["expires_on"] = (time.time() + app.discord_token["expires_in"]/2)
+            app.discord_token["expires_on"] = (
+                time.time() + app.discord_token["expires_in"] / 2
+            )
             return
         response = requests.post(
             app.config["DISCORD_BASE_URL"] + "/oauth2/token",
             data={
                 "grant_type": "client_credentials",
-                "scope": "applications.commands.update"
+                "scope": "applications.commands.update",
             },
-            headers={
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            auth=(
-                app.config["DISCORD_CLIENT_ID"],
-                app.config["DISCORD_CLIENT_SECRET"]
-            )
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            auth=(app.config["DISCORD_CLIENT_ID"], app.config["DISCORD_CLIENT_SECRET"]),
         )
 
         response.raise_for_status()
         app.discord_token = response.json()
-        app.discord_token["expires_on"] = (time.time()
-                                           + app.discord_token["expires_in"]/2)
+        app.discord_token["expires_on"] = (
+            time.time() + app.discord_token["expires_in"] / 2
+        )
 
     def auth_headers(self, app):
         """
@@ -276,8 +330,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             The Flask app with the relevant access token.
         """
 
-        if (app.discord_token is None
-                or time.time() > app.discord_token["expires_on"]):
+        if app.discord_token is None or time.time() > app.discord_token["expires_on"]:
             self.fetch_token(app)
         return {"Authorization": f"Bearer {app.discord_token['access_token']}"}
 
@@ -304,20 +357,23 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             app = self.app
 
         if guild_id:
-            url = (f"{app.config['DISCORD_BASE_URL']}/applications/"
-                   f"{app.config['DISCORD_CLIENT_ID']}/"
-                   f"guilds/{guild_id}/commands")
+            url = (
+                f"{app.config['DISCORD_BASE_URL']}/applications/"
+                f"{app.config['DISCORD_CLIENT_ID']}/"
+                f"guilds/{guild_id}/commands"
+            )
         else:
-            url = (f"{app.config['DISCORD_BASE_URL']}/applications/"
-                   f"{app.config['DISCORD_CLIENT_ID']}/commands")
+            url = (
+                f"{app.config['DISCORD_BASE_URL']}/applications/"
+                f"{app.config['DISCORD_CLIENT_ID']}/commands"
+            )
 
-        overwrite_data = [
-            command.dump() for command in app.discord_commands.values()
-        ]
+        overwrite_data = [command.dump() for command in app.discord_commands.values()]
 
-        if not app.config['DONT_REGISTER_WITH_DISCORD']:
+        if not app.config["DONT_REGISTER_WITH_DISCORD"]:
             response = requests.put(
-                url, json=overwrite_data, headers=self.auth_headers(app))
+                url, json=overwrite_data, headers=self.auth_headers(app)
+            )
             self.throttle(response)
 
             try:
@@ -335,14 +391,10 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             for command in app.discord_commands.values():
                 command.id = command.name
 
-
         url += "/permissions"
 
         permissions_data = [
-            {
-                "id": command.id,
-                "permissions": command.dump_permissions()
-            }
+            {"id": command.id, "permissions": command.dump_permissions()}
             for command in app.discord_commands.values()
             if command.permissions
         ]
@@ -350,9 +402,10 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         if not permissions_data:
             return
 
-        if not app.config['DONT_REGISTER_WITH_DISCORD']:
+        if not app.config["DONT_REGISTER_WITH_DISCORD"]:
             response = requests.put(
-                url, json=permissions_data, headers=self.auth_headers(app))
+                url, json=permissions_data, headers=self.auth_headers(app)
+            )
             self.throttle(response)
 
             try:
@@ -372,7 +425,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             "Deprecated! As of v1.1.0, update_slash_commands has been renamed "
             "to update_commands, as it updates User and Message commands too.",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
 
         return self.update_commands(*args, **kwargs)
@@ -418,6 +471,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         app.discord_commands.update(blueprint.discord_commands)
         app.custom_id_handlers.update(blueprint.custom_id_handlers)
+        app.autocomplete_handlers.update(blueprint.autocomplete_handlers)
 
     def run_command(self, data):
         """
@@ -451,15 +505,29 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         """
 
         context = Context.from_data(self, current_app, data)
-
         handler = self.custom_id_handlers[context.primary_id]
-
         args = context.create_handler_args(handler)
-
         result = handler(context, *args)
 
         return Message.from_return_value(result)
 
+    def run_autocomplete(self, data):
+        """
+        Run the corresponding autocomplete handler given incoming interaction
+        data.
+
+        Parameters
+        ----------
+        data
+            Incoming interaction data.
+        """
+
+        context = Context.from_data(self, current_app, data)
+        handler = self.autocomplete_handlers[context.command_name]
+        args = context.create_args_chat_input()
+        result = handler(context, *args)
+
+        return AutocompleteResult.from_return_value(result)
 
     def verify_signature(self, request):
         """
@@ -471,8 +539,8 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             The request to verify the signature of.
         """
 
-        signature = request.headers.get('X-Signature-Ed25519')
-        timestamp = request.headers.get('X-Signature-Timestamp')
+        signature = request.headers.get("X-Signature-Ed25519")
+        timestamp = request.headers.get("X-Signature-Timestamp")
 
         if current_app.config["DONT_VALIDATE_SIGNATURE"]:
             return
@@ -481,8 +549,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             abort(401, "Missing signature or timestamp")
 
         message = timestamp.encode() + request.data
-        verify_key = VerifyKey(
-            bytes.fromhex(current_app.config["DISCORD_PUBLIC_KEY"]))
+        verify_key = VerifyKey(bytes.fromhex(current_app.config["DISCORD_PUBLIC_KEY"]))
         try:
             verify_key.verify(message, bytes.fromhex(signature))
         except BadSignatureError:
@@ -490,7 +557,6 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         if not request.json:
             abort(400, "Request JSON required")
-
 
     def set_route(self, route, app=None):
         """
@@ -525,6 +591,9 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             elif interaction_type == InteractionType.MESSAGE_COMPONENT:
                 return jsonify(self.run_handler(request.json).dump_handler())
 
+            elif interaction_type == InteractionType.APPLICATION_COMMAND_AUTOCOMPLETE:
+                return jsonify(self.run_autocomplete(request.json).dump())
+
     def set_route_async(self, route, app=None):
         """
         Add a route handler to a Quart app that handles incoming interaction
@@ -546,8 +615,8 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         if aiohttp == None:
             raise ImportError(
-                "The aiohttp module is required for async usage of this "
-                "library")
+                "The aiohttp module is required for async usage of this " "library"
+            )
 
         @app.route(route, methods=["POST"])
         async def interactions():
@@ -561,6 +630,8 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 result = self.run_command(request.json)
             elif interaction_type == InteractionType.MESSAGE_COMPONENT:
                 result = self.run_handler(request.json)
+            elif interaction_type == InteractionType.APPLICATION_COMMAND_AUTOCOMPLETE:
+                result = self.run_autocomplete(request.json)
 
             if inspect.isawaitable(result):
                 result = await result
@@ -571,8 +642,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         async def create_session():
             app.discord_client_session = aiohttp.ClientSession(
-                headers=self.auth_headers(app),
-                raise_for_status=True
+                headers=self.auth_headers(app), raise_for_status=True
             )
 
         async def close_session():
@@ -586,6 +656,5 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             # Flask apps
             app.before_first_request(create_session)
             atexit.register(
-                lambda: asyncio.get_event_loop().run_until_complete(
-                    close_session())
+                lambda: asyncio.get_event_loop().run_until_complete(close_session())
             )
