@@ -248,6 +248,23 @@ class Command:
         return [permission.dump() for permission in self.permissions]
 
     def autocomplete(self):
+        """
+        Register an autocomplete handler function for this command.
+
+        Use as a decorator, e.g.
+
+        .. code-block:: python
+
+            @app.command("test")
+            def test(ctx, value: str):
+                return f"{value}!"
+
+            @test.autocomplete()
+            def autocomplete(ctx, value = None):
+                return ["hello", "world"]
+
+        """
+
         def wrapper(f):
             self.discord.add_autocomplete_handler(f, self.name)
 

@@ -30,6 +30,20 @@ class Option:
     type
         The type of the option. Provide either a value of
         :class:`.CommandOptionType` or a type (e.g. ``str``).
+    description
+        The description of the option. Defaults to "No description."
+    required
+        Whether the option is required. Defaults to ``False``.
+    autocomplete
+        Whether the option should be autocompleted. Defaults to ``False``.
+        Set to ``True`` if you have an autocomplete handler for this command.
+    value
+        Only present on incoming options passed to autocomplete objects. You
+        shouldn't set this yourself. Represents the value that the user is
+        currently typing.
+    focused
+        Only present on incoming options passed to autocomplete objects. True
+        if the user is currently typing this option.
     """
 
     name: str
