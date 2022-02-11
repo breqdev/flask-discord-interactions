@@ -2,15 +2,27 @@ from flask_discord_interactions.models.message import ResponseType
 
 
 class Autocomplete:
+    """
+    Represents the type of an option that can be autocompleted.
+
+    Attributes
+    ----------
+    t
+        The underlying type of the option.
+    """
+
     def __init__(self, t: type):
         self.t = t
 
 
 class AutocompleteResult:
+    "Represents the result of an autocomplete handler."
+
     def __init__(self, choices={}):
         self.choices = choices
 
     def dump(self):
+        "Return this result as a complete interaction response."
         return {
             "type": ResponseType.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
             "data": {
@@ -23,6 +35,20 @@ class AutocompleteResult:
 
     @staticmethod
     def from_return_value(value):
+        """
+        Converts the return value of an autocomplete handler to an
+        AutocompleteResult.
+
+        Paramters
+        ---------
+        value: dict | list | AutocompleteResult
+            The return value of an autocomplete handler.
+
+        Returns
+        -------
+        AutocompleteResult
+            The AutocompleteResult that corresponds to the return value.
+        """
         if isinstance(value, AutocompleteResult):
             return value
         elif isinstance(value, dict):

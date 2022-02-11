@@ -20,6 +20,18 @@ class CommandOptionType:
 
 @dataclass
 class Option:
+    """
+    Represents an option provided to a slash command.
+
+    Attributes
+    ----------
+    name
+        The name of the option.
+    type
+        The type of the option. Provide either a value of
+        :class:`.CommandOptionType` or a type (e.g. ``str``).
+    """
+
     name: str
     type: int
 
@@ -51,6 +63,7 @@ class Option:
 
     @classmethod
     def from_data(cls, data):
+        "Load this option from incoming Interaction data."
         return cls(
             name=data["name"],
             type=data["type"],
@@ -59,6 +72,7 @@ class Option:
         )
 
     def dump(self):
+        "Return this option as as a dict for registration with Discord."
         data = {
             "name": self.name,
             "type": self.type,
