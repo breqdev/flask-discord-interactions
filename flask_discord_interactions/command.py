@@ -5,7 +5,15 @@ import itertools
 
 from flask_discord_interactions.context import Context, AsyncContext
 from flask_discord_interactions.models import (
-    Message, CommandOptionType, ApplicationCommandType, User, Member, Channel, Role
+    Message,
+    CommandOptionType,
+    ApplicationCommandType,
+    User,
+    Member,
+    Channel,
+    Role,
+    Autocomplete,
+    Option,
 )
 
 
@@ -35,7 +43,7 @@ class Command:
         annotations. Do not use with ``options``. If omitted, and if
         ``options`` is not provided, option descriptions default to
         "No description".
-    type
+    command_type
         Type for this command (depend on the action in the Discord client).
         The value is in ``ApplicationCommandType``. If omitted, set the default
         value to ``ApplicationCommandType.CHAT_INPUT``.
@@ -43,18 +51,32 @@ class Command:
         Whether the command is enabled by default. Default is True.
     permissions
         List of permission overwrites.
+    discord
+        DiscordInteractionsBlueprint instance which this Command is associated
+        with.
     """
 
-    def __init__(self, command, name, description, options, annotations,
-                 type=ApplicationCommandType.CHAT_INPUT, default_permission=True, permissions=None):
+    def __init__(
+        self,
+        command,
+        name,
+        description,
+        options,
+        annotations,
+        command_type=ApplicationCommandType.CHAT_INPUT,
+        default_permission=True,
+        permissions=None,
+        discord=None,
+    ):
         self.command = command
         self.name = name
         self.description = description
         self.options = options
         self.annotations = annotations or {}
-        self.type = type
+        self.type = command_type
         self.default_permission = default_permission
         self.permissions = permissions or []
+        self.discord = discord
 
         if self.name is None:
             self.name = command.__name__
@@ -62,7 +84,8 @@ class Command:
         if not 1 <= len(self.name) <= 32:
             raise ValueError(
                 f"Error adding command {self.name}: "
-                "Command name must be between 1 and 32 characters.")
+                "Command name must be between 1 and 32 characters."
+            )
         if self.type is ApplicationCommandType.CHAT_INPUT:
             if self.description is None:
                 self.description = command.__doc__ or "No description"
@@ -70,29 +93,41 @@ class Command:
                 raise ValueError(
                     f"Error adding command {self.name}: "
                     "Command name must be fully lowercase. "
-                    "No UPPERCASE or CamelCase names are allowed.")
+                    "No UPPERCASE or CamelCase names are allowed."
+                )
             if not re.fullmatch(r"^[\w-]{1,32}$", self.name):
                 raise ValueError(
                     f"Error adding command {self.name}: "
                     "Command name does not match regex. "
-                    "(Perhaps it contains an invalid character?)")
+                    "(Perhaps it contains an invalid character?)"
+                )
             if not 1 <= len(self.description) <= 100:
                 raise ValueError(
                     f"Error adding command {self.name}: "
-                    "Command description must be between 1 and 100 characters.")
+                    "Command description must be between 1 and 100 characters."
+                )
         else:
             self.description = None
 
         self.is_async = inspect.iscoroutinefunction(self.command)
 
+        if self.options:
+            self.options = [
+                (o.dump() if isinstance(o, Option) else o) for o in self.options
+            ]
+
         if self.type is ApplicationCommandType.CHAT_INPUT and self.options is None:
             sig = inspect.signature(self.command)
 
             self.options = []
-            for parameter in itertools.islice(
-                    sig.parameters.values(), 1, None):
+            for parameter in itertools.islice(sig.parameters.values(), 1, None):
 
                 annotation = parameter.annotation
+                autocomplete = False
+
+                if type(annotation) == Autocomplete:
+                    annotation = annotation.t
+                    autocomplete = True
 
                 # Primitive Types
                 if annotation == int:
@@ -124,9 +159,11 @@ class Command:
                 option = {
                     "name": parameter.name,
                     "description": self.annotations.get(
-                        parameter.name, "No description"),
+                        parameter.name, "No description"
+                    ),
                     "type": ptype,
-                    "required": (parameter.default == parameter.empty)
+                    "required": (parameter.default == parameter.empty),
+                    "autocomplete": autocomplete,
                 }
 
                 if issubclass(annotation, enum.Enum):
@@ -138,10 +175,9 @@ class Command:
                         value_type = str
 
                     for name, member in annotation.__members__.items():
-                        choices.append({
-                            "name": name,
-                            "value": value_type(member.value)
-                        })
+                        choices.append(
+                            {"name": name, "value": value_type(member.value)}
+                        )
 
                     option["choices"] = choices
 
@@ -200,17 +236,39 @@ class Command:
             "name": self.name,
             "description": self.description,
             "options": self.options,
-            "default_permission": self.default_permission
+            "default_permission": self.default_permission,
         }
 
-        if hasattr(self, 'type'):
-            data['type'] = self.type
+        if hasattr(self, "type"):
+            data["type"] = self.type
 
         return data
 
-
     def dump_permissions(self):
         return [permission.dump() for permission in self.permissions]
+
+    def autocomplete(self):
+        """
+        Register an autocomplete handler function for this command.
+
+        Use as a decorator, e.g.
+
+        .. code-block:: python
+
+            @app.command("test")
+            def test(ctx, value: str):
+                return f"{value}!"
+
+            @test.autocomplete()
+            def autocomplete(ctx, value = None):
+                return ["hello", "world"]
+
+        """
+
+        def wrapper(f):
+            self.discord.add_autocomplete_handler(f, self.name)
+
+        return wrapper
 
 
 class SlashCommandSubgroup(Command):
@@ -239,8 +297,7 @@ class SlashCommandSubgroup(Command):
 
         self.is_async = is_async
 
-    def command(self, name=None, description=None,
-                options=None, annotations=None):
+    def command(self, name=None, description=None, options=None, annotations=None):
         """
         Decorator to create a new Subcommand of this Subgroup.
 
@@ -260,8 +317,7 @@ class SlashCommandSubgroup(Command):
 
         def decorator(func):
             nonlocal name, description, options, annotations
-            subcommand = Command(
-                func, name, description, options, annotations)
+            subcommand = Command(func, name, description, options, annotations)
             self.subcommands[subcommand.name] = subcommand
             return func
 
@@ -297,8 +353,7 @@ class SlashCommandSubgroup(Command):
         **kwargs
             Any other options in the current invocation.
         """
-        return self.subcommands[subcommands[0]].run(
-            context, *subcommands[1:], **kwargs)
+        return self.subcommands[subcommands[0]].run(context, *subcommands[1:], **kwargs)
 
 
 class SlashCommandGroup(SlashCommandSubgroup):
@@ -321,8 +376,14 @@ class SlashCommandGroup(SlashCommandSubgroup):
         group.
     """
 
-    def __init__(self, name, description, is_async=False,
-                 default_permission=True, permissions=None):
+    def __init__(
+        self,
+        name,
+        description,
+        is_async=False,
+        default_permission=True,
+        permissions=None,
+    ):
         self.name = name
         self.description = description
         self.subcommands = {}

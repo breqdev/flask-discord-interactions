@@ -8,8 +8,16 @@ import types
 import requests
 
 from flask_discord_interactions.models import (
-    LoadableDataclass, Member, Channel, Role, User, CommandOptionType, ApplicationCommandType, Message
+    LoadableDataclass,
+    Member,
+    Channel,
+    Role,
+    User,
+    CommandOptionType,
+    ApplicationCommandType,
+    Message,
 )
+from flask_discord_interactions.models.option import Option
 
 
 @dataclass
@@ -57,6 +65,7 @@ class Context(LoadableDataclass):
     message
         The message that the invoked components are attached to. Only available on component interactions
     """
+
     author: Union[Member, User] = None
     id: str = None
     type: int = None
@@ -94,20 +103,20 @@ class Context(LoadableDataclass):
             app = app._get_current_object()
 
         result = cls(
-            app = app,
-            discord = discord,
-            id = data.get("id"),
-            type = data.get("data", {}).get("type") or ApplicationCommandType.CHAT_INPUT,
-            token = data.get("token"),
-            channel_id = data.get("channel_id"),
-            guild_id = data.get("guild_id"),
-            options = data.get("data", {}).get("options"),
-            values = data.get("data", {}).get("values", []),
-            resolved = data.get("data", {}).get("resolved", {}),
-            command_name = data.get("data", {}).get("name"),
-            command_id = data.get("data", {}).get("id"),
-            custom_id = data.get("data", {}).get("custom_id") or "",
-            target_id = data.get("data", {}).get("target_id"),
+            app=app,
+            discord=discord,
+            id=data.get("id"),
+            type=data.get("data", {}).get("type") or ApplicationCommandType.CHAT_INPUT,
+            token=data.get("token"),
+            channel_id=data.get("channel_id"),
+            guild_id=data.get("guild_id"),
+            options=data.get("data", {}).get("options"),
+            values=data.get("data", {}).get("values", []),
+            resolved=data.get("data", {}).get("resolved", {}),
+            command_name=data.get("data", {}).get("name"),
+            command_id=data.get("data", {}).get("id"),
+            custom_id=data.get("data", {}).get("custom_id") or "",
+            target_id=data.get("data", {}).get("target_id"),
         )
 
         result.data = data
@@ -185,16 +194,20 @@ class Context(LoadableDataclass):
             member_info["user"] = self.resolved["users"][id]
             self.members[id] = Member.from_dict(member_info)
 
-        self.users = {id: User.from_dict(data)
-                      for id, data
-                      in self.resolved.get("users", {}).items()}
+        self.users = {
+            id: User.from_dict(data)
+            for id, data in self.resolved.get("users", {}).items()
+        }
 
-        self.channels = {id: Channel.from_dict(data)
-                         for id, data
-                         in self.resolved.get("channels", {}).items()}
+        self.channels = {
+            id: Channel.from_dict(data)
+            for id, data in self.resolved.get("channels", {}).items()
+        }
 
-        self.roles = {id: Role.from_dict(data)
-                      for id, data in self.resolved.get("roles", {}).items()}
+        self.roles = {
+            id: Role.from_dict(data)
+            for id, data in self.resolved.get("roles", {}).items()
+        }
 
         self.messages = {
             id: Message.from_dict(data)
@@ -232,6 +245,7 @@ class Context(LoadableDataclass):
         Create the arguments for this command, assuming it is a ``CHAT_INPUT``
         command.
         """
+
         def create_args_recursive(data, resolved):
             if not data.get("options"):
                 return [], {}
@@ -241,13 +255,13 @@ class Context(LoadableDataclass):
 
             for option in data["options"]:
                 if option["type"] in [
-                        CommandOptionType.SUB_COMMAND,
-                        CommandOptionType.SUB_COMMAND_GROUP]:
+                    CommandOptionType.SUB_COMMAND,
+                    CommandOptionType.SUB_COMMAND_GROUP,
+                ]:
 
                     args.append(option["name"])
 
-                    sub_args, sub_kwargs = create_args_recursive(
-                        option, resolved)
+                    sub_args, sub_kwargs = create_args_recursive(option, resolved)
 
                     args += sub_args
                     kwargs.update(sub_kwargs)
@@ -259,15 +273,19 @@ class Context(LoadableDataclass):
 
                         kwargs[option["name"]] = Member.from_dict(member_data)
                     else:
-                        kwargs[option["name"]] = User.from_dict(resolved["users"][option["value"]])
+                        kwargs[option["name"]] = User.from_dict(
+                            resolved["users"][option["value"]]
+                        )
 
                 elif option["type"] == CommandOptionType.CHANNEL:
                     kwargs[option["name"]] = Channel.from_dict(
-                        resolved["channels"][option["value"]])
+                        resolved["channels"][option["value"]]
+                    )
 
                 elif option["type"] == CommandOptionType.ROLE:
                     kwargs[option["name"]] = Role.from_dict(
-                        resolved["roles"][option["value"]])
+                        resolved["roles"][option["value"]]
+                    )
 
                 else:
                     kwargs[option["name"]] = option["value"]
@@ -283,8 +301,8 @@ class Context(LoadableDataclass):
 
         Parameters
         ----------
-        data
-            An object with the incoming data for the invocation.
+        handler
+            The custom ID handler to create arguments for.
         """
 
         args = self.handler_state[1:]
@@ -292,9 +310,7 @@ class Context(LoadableDataclass):
         sig = inspect.signature(handler)
 
         iterator = zip(
-            itertools.count(),
-            args,
-            itertools.islice(sig.parameters.values(), 1, None)
+            itertools.count(), args, itertools.islice(sig.parameters.values(), 1, None)
         )
 
         for i, argument, parameter in iterator:
@@ -312,9 +328,13 @@ class Context(LoadableDataclass):
                     args[i] = None
                 else:
                     raise ValueError(
-                        f"Invalid bool in handler state parsing: {args[i]}")
+                        f"Invalid bool in handler state parsing: {args[i]}"
+                    )
 
         return args
+
+    def create_autocomplete_args(self):
+        return [Option.from_data(option) for option in self.options]
 
     def followup_url(self, message=None):
         """
@@ -329,8 +349,10 @@ class Context(LoadableDataclass):
             If "@original", refers to the original message.
         """
 
-        url = (f"{self.app.config['DISCORD_BASE_URL']}/webhooks/"
-               f"{self.app.config['DISCORD_CLIENT_ID']}/{self.token}")
+        url = (
+            f"{self.app.config['DISCORD_BASE_URL']}/webhooks/"
+            f"{self.app.config['DISCORD_CLIENT_ID']}/{self.token}"
+        )
         if message is not None:
             url += f"/messages/{message}"
 
@@ -357,7 +379,7 @@ class Context(LoadableDataclass):
         updated = requests.patch(
             self.followup_url(message),
             json=updated.dump_followup(),
-            headers=self.auth_headers
+            headers=self.auth_headers,
         )
         updated.raise_for_status()
 
@@ -376,8 +398,7 @@ class Context(LoadableDataclass):
             return
 
         response = requests.delete(
-            self.followup_url(message),
-            headers=self.auth_headers
+            self.followup_url(message), headers=self.auth_headers
         )
         response.raise_for_status()
 
@@ -397,9 +418,7 @@ class Context(LoadableDataclass):
         message = Message.from_return_value(message)
 
         message = requests.post(
-            self.followup_url(),
-            headers=self.auth_headers,
-            **message.dump_multipart()
+            self.followup_url(), headers=self.auth_headers, **message.dump_multipart()
         )
         message.raise_for_status()
         return message.json()["id"]
@@ -439,9 +458,9 @@ class Context(LoadableDataclass):
         if self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
-        response = requests.put(url, headers=self.auth_headers, json={
-            "permissions": data
-        })
+        response = requests.put(
+            url, headers=self.auth_headers, json={"permissions": data}
+        )
         response.raise_for_status()
 
     def freeze(self):
@@ -455,9 +474,7 @@ class Context(LoadableDataclass):
             "DONT_REGISTER_WITH_DISCORD",
         ]
 
-        app.config = {
-            key: self.app.config[key] for key in CONFIG_KEYS
-        }
+        app.config = {key: self.app.config[key] for key in CONFIG_KEYS}
 
         new_context = Context.from_data(app=app, data=self.data)
         new_context.frozen_auth_headers = self.auth_headers
@@ -534,9 +551,7 @@ class AsyncContext(Context):
             return
 
         async with self.session.post(
-            self.followup_url(),
-            headers=self.auth_headers,
-            **message.dump_multipart()
+            self.followup_url(), headers=self.auth_headers, **message.dump_multipart()
         ) as message:
             return (await message.json())["id"]
 
@@ -565,9 +580,9 @@ class AsyncContext(Context):
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
-        await self.session.put(url, headers=self.auth_headers, json={
-            "permissions": data
-        })
+        await self.session.put(
+            url, headers=self.auth_headers, json={"permissions": data}
+        )
 
     async def close(self):
         """
@@ -584,5 +599,5 @@ class AsyncContext(Context):
             "Since v1.0.2, only one aiohttp ClientSession is created "
             "for all requests to Discord for the app. "
             "Thus, there is no need to close the AsyncContext. ",
-            DeprecationWarning
+            DeprecationWarning,
         )

@@ -3,6 +3,7 @@ from typing import List
 
 from flask_discord_interactions.models.utils import LoadableDataclass
 
+
 @dataclass
 class Footer(LoadableDataclass):
     "Represents the footer of an Embed."
@@ -10,12 +11,14 @@ class Footer(LoadableDataclass):
     icon_url: str = None
     proxy_icon_url: str = None
 
+
 @dataclass
 class Field(LoadableDataclass):
     "Represents a field on an Embed."
     name: str
     value: str
     inline: bool = False
+
 
 @dataclass
 class Media(LoadableDataclass):
@@ -25,11 +28,13 @@ class Media(LoadableDataclass):
     height: int = None
     width: int = None
 
+
 @dataclass
 class Provider(LoadableDataclass):
     "Represents a provider of an Embed."
     name: str = None
     url: str = None
+
 
 @dataclass
 class Author(LoadableDataclass):
@@ -38,6 +43,7 @@ class Author(LoadableDataclass):
     url: str = None
     icon_url: str = None
     proxy_icon_url: str = None
+
 
 @dataclass
 class Embed(LoadableDataclass):
@@ -57,13 +63,22 @@ class Embed(LoadableDataclass):
     color
         An integer representing the color of the sidebar of the embed.
     footer
+        A :class:`Footer` representing the footer of the embed.
     image
+        A :class:`Media` representing the image of the embed.
     thumbnail
+        A :class:`Media` representing the thumbnail of the embed.
     video
+        A :class:`Media` representing the video of the embed.
     provider
+        A :class:`Provider` representing the name and URL of the provider of
+        the embed.
     author
+        A :class:`Author` representing the author of the embed.
     fields
+        A list of :class:`Field` objects representing the fields of the embed.
     """
+
     title: str = None
     description: str = None
     url: str = None
@@ -79,10 +94,10 @@ class Embed(LoadableDataclass):
 
     def dump(self):
         "Returns this Embed as a dictionary, removing fields which are None."
+
         def filter_none(d):
             if isinstance(d, dict):
-                return {k: filter_none(v)
-                        for k, v in d.items() if v is not None}
+                return {k: filter_none(v) for k, v in d.items() if v is not None}
             else:
                 return d
 
