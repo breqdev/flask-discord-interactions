@@ -1,3 +1,4 @@
+from typing import Union
 from flask_discord_interactions.models.message import ResponseType
 
 
@@ -16,7 +17,15 @@ class Autocomplete:
 
 
 class AutocompleteResult:
-    "Represents the result of an autocomplete handler."
+    """
+    Represents the result of an autocomplete handler.
+
+    Attributes
+    ----------
+    choices
+        A dict mapping the displayed name of each choice to its value passed to
+        your command.
+    """
 
     def __init__(self, choices={}):
         self.choices = choices
@@ -34,14 +43,14 @@ class AutocompleteResult:
         }
 
     @staticmethod
-    def from_return_value(value):
+    def from_return_value(value: Union[dict, list, "AutocompleteResult"]):
         """
         Converts the return value of an autocomplete handler to an
         AutocompleteResult.
 
         Paramters
         ---------
-        value: dict | list | AutocompleteResult
+        value
             The return value of an autocomplete handler.
 
         Returns
