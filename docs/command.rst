@@ -50,7 +50,7 @@ Here is a basic command:
 Options and Description cannot be provided.
 
 Message Commands
--------------
+----------------
 
 User Commands are created using the :meth:`.DiscordInteractions.command`
 decorator. The ``type`` needs to be specified using the

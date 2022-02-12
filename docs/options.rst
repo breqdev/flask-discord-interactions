@@ -59,7 +59,7 @@ Choices
 -------
 
 To specify a list of choices the user can choose from, you can use Python's
-:py:class:`enum.Enum` class.
+:class:`enum.Enum` class.
 
 .. code-block:: python
 
@@ -83,7 +83,7 @@ choices:
         "What is the animal you hate the most?"
         return f"{ctx.author.display_name} hates {choice}s."
 
-You can also use an :py:class:`enum.IntEnum` to receive the value as an integer
+You can also use an :class:`enum.IntEnum` to receive the value as an integer
 instead of a string:
 
 .. code-block:: python

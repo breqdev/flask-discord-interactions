@@ -196,7 +196,7 @@ a custom ID string. Instead, the handler function *appears* to be passed
 directly to the ``custom_id`` field. How is this possible?
 
 The trick is, the :meth:`.DiscordInteractions.custom_handler` decorator will
-actually generate a custom ID string (a :py:func:`uuid.uuid4`). It will return
+actually generate a custom ID string (a :func:`uuid.uuid4`). It will return
 this custom ID string in place of the function, after it adds it to the
 internal :attr:`.DiscordInteractions.custom_id_handlers` attribute.
 This means that the line ``custom_id=handle_click`` is actually passing a
@@ -239,12 +239,6 @@ Full API
 --------
 
 .. autoclass:: flask_discord_interactions.Component
-    :members:
-
-|
-
-.. autoclass:: flask_discord_interactions.CustomIdComponent
-    :show-inheritance:
     :members:
 
 |

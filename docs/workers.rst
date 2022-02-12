@@ -151,7 +151,7 @@ Custom IDs
 
 When declaring a custom ID handler without specifying the custom ID,
 te :meth:`.DiscordInteractions.custom_handler` decorator will
-actually generate a custom ID string itself (a :py:func:`uuid.uuid4`). It will return
+actually generate a custom ID string itself (a :func:`uuid.uuid4`). It will return
 this custom ID string in place of the function.
 
 This strategy works great for development, but can lead to some frustrating

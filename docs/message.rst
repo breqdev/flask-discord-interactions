@@ -69,12 +69,19 @@ For followup messages (*not* the initial response), you can also attach files:
             print("Sending a file")
             ctx.send(Message(
                 content="Sending a file",
-                file=("README.md", open("README.md", "r"), "text/markdown")))
+                file=("README.md", open("README.md", "rb"), "text/markdown")))
 
         thread = threading.Thread(target=do_followup)
         thread.start()
 
         return "Sending an original message"
+
+Pass files as a tuple, containing:
+- The filename
+- A file object (typically the result of a call to ``open(filename, "rb")`` , but you could use something like :class:`io.BytesIO` too)
+- Optionally, the content-type of the file
+
+See the ``files`` parameter of :func:`requests.request` for details.
 
 The ``allowed_mentions`` parameter can be used to restrict which users and
 roles the message should mention. It is a good idea to use this whenever your
