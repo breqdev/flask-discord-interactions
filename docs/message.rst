@@ -77,9 +77,11 @@ For followup messages (*not* the initial response), you can also attach files:
         return "Sending an original message"
 
 Pass files as a tuple, containing:
-- The filename
-- A file object (typically the result of a call to ``open(filename, "rb")`` , but you could use something like :class:`io.BytesIO` too)
-- Optionally, the content-type of the file
+
+* The filename
+* A file object (typically the result of a call to ``open(filename, "rb")`` ,
+  but you could use something like :class:`io.BytesIO` too)
+* Optionally, the content-type of the file
 
 See the ``files`` parameter of :func:`requests.request` for details.
 
