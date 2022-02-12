@@ -52,8 +52,15 @@ class Message(LoadableDataclass):
         interactions / custom ID handlers.
     file
         The file to attach to the message. Only valid for outgoing webhooks.
+        Pass a 2-tuple containing the file name and a file object, e.g.
+
+        .. code-block:: python
+
+            ("README.md", open("README.md", "rb"))
+
+        See the ``files`` parameter of :func:`requests.request` for details.
     files
-        An array of files to attach to the message. Specify just one of
+        A list of files to attach to the message. Specify just one of
         ``file`` or ``files``. Only valid for outgoing webhooks.
     components
         An array of :class:`.Component` objects representing message

@@ -4,7 +4,7 @@ Using Asyncio with Quart
 ========================
 
 `Quart <https://pgjones.gitlab.io/quart/>`_ is a Python web framework designed
-to have a similar API to Flask, but using :py:mod:`asyncio`.
+to have a similar API to Flask, but using :mod:`asyncio`.
 
 .. code-block:: python
 
