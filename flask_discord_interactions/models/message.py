@@ -224,9 +224,9 @@ class Message(LoadableDataclass):
             raise ValueError(
                 "Supply at least one of content, embeds, files, or deferred.")
 
-        # if self.ephemeral or self.deferred or self.update:
-        #     raise ValueError(
-        #         "ephemeral and deferred are not valid in followup Messages")
+        if self.ephemeral or self.deferred or self.update:
+            raise ValueError(
+                "ephemeral and deferred are not valid in followup Messages")
 
         return {
             "content": self.content,
