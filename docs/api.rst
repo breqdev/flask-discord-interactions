@@ -8,6 +8,7 @@ API Reference
     command.rst
     context.rst
     options.rst
+    autocomplete.rst
     message.rst
     client.rst
     components.rst

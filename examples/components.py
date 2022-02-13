@@ -8,10 +8,16 @@ from flask import Flask
 # (you don't actually need it in your code)
 sys.path.insert(1, ".")
 
-from flask_discord_interactions import (DiscordInteractions,
-                                        Message, ActionRow, Button,
-                                        ButtonStyles, Embed, SelectMenu,
-                                        SelectMenuOption)
+from flask_discord_interactions import (
+    DiscordInteractions,
+    Message,
+    ActionRow,
+    Button,
+    ButtonStyles,
+    Embed,
+    SelectMenu,
+    SelectMenuOption,
+)
 
 
 app = Flask(__name__)
@@ -42,15 +48,17 @@ def handle_click(ctx):
     return Message(
         content=f"The button has been clicked {click_count} times",
         components=[
-            ActionRow(components=[
-                Button(
-                    style=ButtonStyles.PRIMARY,
-                    custom_id=handle_click,
-                    label="Click Me!"
-                )
-            ])
+            ActionRow(
+                components=[
+                    Button(
+                        style=ButtonStyles.PRIMARY,
+                        custom_id=handle_click,
+                        label="Click Me!",
+                    )
+                ]
+            )
         ],
-        update=True
+        update=True,
     )
 
 
@@ -62,14 +70,16 @@ def click_counter(ctx):
     return Message(
         content=f"The button has been clicked {click_count} times",
         components=[
-            ActionRow(components=[
-                Button(
-                    style=ButtonStyles.PRIMARY,
-                    custom_id=handle_click,
-                    label="Click Me!"
-                )
-            ])
-        ]
+            ActionRow(
+                components=[
+                    Button(
+                        style=ButtonStyles.PRIMARY,
+                        custom_id=handle_click,
+                        label="Click Me!",
+                    )
+                ]
+            )
+        ],
     )
 
 
@@ -77,6 +87,7 @@ def click_counter(ctx):
 @discord.custom_handler()
 def handle_upvote(ctx):
     return f"Upvote by {ctx.author.display_name}!"
+
 
 @discord.custom_handler()
 def handle_downvote(ctx):
@@ -90,23 +101,23 @@ def voting(ctx, question: str):
     return Message(
         content=f"The question is: {question}",
         components=[
-            ActionRow(components=[
-                Button(
-                    style=ButtonStyles.SUCCESS,
-                    custom_id=handle_upvote,
-                    emoji={
-                        "name": "⬆️"
-                    }
-                ),
-                Button(
-                    style=ButtonStyles.DANGER,
-                    custom_id=handle_downvote,
-                    emoji={
-                        "name": "⬇️",
-                    }
-                )
-            ])
-        ]
+            ActionRow(
+                components=[
+                    Button(
+                        style=ButtonStyles.SUCCESS,
+                        custom_id=handle_upvote,
+                        emoji={"name": "⬆️"},
+                    ),
+                    Button(
+                        style=ButtonStyles.DANGER,
+                        custom_id=handle_downvote,
+                        emoji={
+                            "name": "⬇️",
+                        },
+                    ),
+                ]
+            )
+        ],
     )
 
 
@@ -116,10 +127,11 @@ def handle_avatar_view(ctx):
     return Message(
         embed=Embed(
             title=f"{ctx.author.display_name}",
-            description=f"{ctx.author.username}#{ctx.author.discriminator}"
+            description=f"{ctx.author.username}#{ctx.author.discriminator}",
         ),
-        ephemeral=True
+        ephemeral=True,
     )
+
 
 @discord.command()
 def username(ctx):
@@ -128,14 +140,16 @@ def username(ctx):
     return Message(
         content="Show user info!",
         components=[
-            ActionRow(components=[
-                Button(
-                    style=ButtonStyles.PRIMARY,
-                    custom_id=handle_avatar_view,
-                    label="View User!"
-                )
-            ])
-        ]
+            ActionRow(
+                components=[
+                    Button(
+                        style=ButtonStyles.PRIMARY,
+                        custom_id=handle_avatar_view,
+                        label="View User!",
+                    )
+                ]
+            )
+        ],
     )
 
 
@@ -144,19 +158,22 @@ def username(ctx):
 def handle_do_nothing(ctx):
     print("Doing nothing...")
 
+
 @discord.command()
 def do_nothing(ctx):
     return Message(
         content="Do nothing",
         components=[
-            ActionRow(components=[
-                Button(
-                    style=ButtonStyles.PRIMARY,
-                    custom_id=handle_do_nothing,
-                    label="Nothing at all!"
-                )
-            ])
-        ]
+            ActionRow(
+                components=[
+                    Button(
+                        style=ButtonStyles.PRIMARY,
+                        custom_id=handle_do_nothing,
+                        label="Nothing at all!",
+                    )
+                ]
+            )
+        ],
     )
 
 
@@ -166,14 +183,16 @@ def google(ctx):
     return Message(
         content="search engine",
         components=[
-            ActionRow(components=[
-                Button(
-                    style=ButtonStyles.LINK,
-                    url="https://www.google.com/",
-                    label="Go to google"
-                )
-            ])
-        ]
+            ActionRow(
+                components=[
+                    Button(
+                        style=ButtonStyles.LINK,
+                        url="https://www.google.com/",
+                        label="Go to google",
+                    )
+                ]
+            )
+        ],
     )
 
 
@@ -184,20 +203,25 @@ def handle_stateful(ctx, interaction_id, current_count: int):
     current_count += 1
 
     return Message(
-        content=(f"This button has been clicked {current_count} times. "
-                 "Try calling this command multiple times to see--each button "
-                 "count is tracked separately!"),
+        content=(
+            f"This button has been clicked {current_count} times. "
+            "Try calling this command multiple times to see--each button "
+            "count is tracked separately!"
+        ),
         components=[
-            ActionRow(components=[
-                Button(
-                    style=ButtonStyles.PRIMARY,
-                    custom_id=[handle_stateful, interaction_id, current_count],
-                    label="Click Me!"
-                )
-            ])
+            ActionRow(
+                components=[
+                    Button(
+                        style=ButtonStyles.PRIMARY,
+                        custom_id=[handle_stateful, interaction_id, current_count],
+                        label="Click Me!",
+                    )
+                ]
+            )
         ],
-        update=True
+        update=True,
     )
+
 
 @discord.command()
 def stateful_click_counter(ctx):
@@ -206,19 +230,23 @@ def stateful_click_counter(ctx):
     return Message(
         content=f"Click the button!",
         components=[
-            ActionRow(components=[
-                Button(
-                    style=ButtonStyles.PRIMARY,
-                    custom_id=[handle_stateful, ctx.id, 0],
-                    label="Click Me!"
-                )
-            ])
-        ]
+            ActionRow(
+                components=[
+                    Button(
+                        style=ButtonStyles.PRIMARY,
+                        custom_id=[handle_stateful, ctx.id, 0],
+                        label="Click Me!",
+                    )
+                ]
+            )
+        ],
     )
+
 
 @discord.custom_handler()
 def handle_parse_message(ctx):
     return f"I told you, {ctx.message.content}!"
+
 
 @discord.command()
 def message_parse_demo(ctx):
@@ -227,14 +255,16 @@ def message_parse_demo(ctx):
     return Message(
         content="The answer is 42",
         components=[
-            ActionRow(components=[
-                Button(
-                    style=ButtonStyles.PRIMARY,
-                    custom_id=handle_parse_message,
-                    label="What is the answer?"
-                )
-            ])
-        ]
+            ActionRow(
+                components=[
+                    Button(
+                        style=ButtonStyles.PRIMARY,
+                        custom_id=handle_parse_message,
+                        label="What is the answer?",
+                    )
+                ]
+            )
+        ],
     )
 
 
@@ -242,6 +272,6 @@ discord.set_route("/interactions")
 discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Disable threading because of global variables
     app.run(threaded=False)

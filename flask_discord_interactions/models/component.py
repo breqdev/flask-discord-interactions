@@ -1,6 +1,7 @@
 from dataclasses import dataclass, asdict
 from typing import List, Union
 
+
 class ComponentType:
     ACTION_ROW = 1
     BUTTON = 2
@@ -12,11 +13,10 @@ class Component:
 
     def dump(self):
         "Returns this Component as a dictionary, removing fields which are None."
+
         def filter_none(d):
             if isinstance(d, dict):
-                return {
-                    k: filter_none(v) for k, v in d.items() if v is not None
-                }
+                return {k: filter_none(v) for k, v in d.items() if v is not None}
             elif isinstance(d, list):
                 return [filter_none(v) for v in d if v is not None]
             else:
@@ -27,13 +27,20 @@ class Component:
 
 @dataclass
 class CustomIdComponent:
-    "Represents a Message Component with a Custom ID."
+    """
+    Represents a Message Component with a Custom ID.
+
+    Attributes
+    ----------
+    custom_id: str | List
+        The custom ID of the component. Strings represent a single ID, lists
+        take advantage of newlines to store state alongside the ID.
+    """
 
     custom_id: Union[str, List] = None
 
     def __post_init__(self):
-        if (isinstance(self.custom_id, list)
-                or isinstance(self.custom_id, tuple)):
+        if isinstance(self.custom_id, list) or isinstance(self.custom_id, tuple):
             self.custom_id = "\n".join(str(item) for item in self.custom_id)
 
         if self.custom_id and len(self.custom_id) > 100:
@@ -42,18 +49,24 @@ class CustomIdComponent:
 
 @dataclass
 class ActionRow(Component):
-    "Represents an ActionRow message component."
+    """
+    Represents an ActionRow message component.
+
+    Attributes
+    ----------
+    components: List[Component]
+        The message components to display in the action row.
+        Limited to any of the following:
+        - 5 Buttons
+        - 1 Select Menu
+    """
+
     components: List[Component] = None
 
     type: int = ComponentType.ACTION_ROW
 
-
     def __post_init__(self):
         if self.components:
-            # Limited to any of the following:
-            # - 5 Buttons
-            # - 1 Select Menu
-
             if len(self.components) > 5:
                 raise ValueError("ActionRow can have at most 5 components")
 
@@ -65,11 +78,12 @@ class ActionRow(Component):
                 elif component.type == ComponentType.SELECT_MENU:
                     if len(self.components) > 1:
                         raise ValueError(
-                            "select menu must be the only child of action row")
-
+                            "select menu must be the only child of action row"
+                        )
 
 
 class ButtonStyles:
+    "Represents the styles that can be applied to Button message components."
     PRIMARY = 1
     SECONDARY = 2
     SUCCESS = 3
@@ -79,7 +93,21 @@ class ButtonStyles:
 
 @dataclass
 class Button(CustomIdComponent):
-    "Represents a Button message component."
+    """
+    Represents a Button message component.
+
+    Attributes
+    ----------
+    style: int
+        The style of the button (see :class:`ButtonStyles`).
+    label: str
+        The label displayed on the button.
+    url: str
+        For link buttons, the URL that the button links to.
+    disabled: bool
+        Whether the button is disabled.
+    """
+
     style: int = ButtonStyles.PRIMARY
     label: str = None
 
@@ -99,8 +127,7 @@ class Button(CustomIdComponent):
             if self.custom_id is None:
                 raise ValueError("Buttons require custom_id")
 
-        if (isinstance(self.custom_id, list)
-                or isinstance(self.custom_id, tuple)):
+        if isinstance(self.custom_id, list) or isinstance(self.custom_id, tuple):
             self.custom_id = "\n".join(str(item) for item in self.custom_id)
 
         if self.custom_id and len(self.custom_id) > 100:
@@ -108,7 +135,24 @@ class Button(CustomIdComponent):
 
 
 @dataclass
-class SelectMenuOption():
+class SelectMenuOption:
+    """
+    Represents an option in a SelectMenu message component.
+
+    Attributes
+    ----------
+    label: str
+        The label displayed on the option.
+    value: str
+        The value of the option passed to the custom ID handler.
+    description: str
+        The description displayed on the option.
+    emoji: dict
+        The emoji displayed on the option.
+    default: bool
+        Whether the option is the default option.
+    """
+
     label: str
     value: str
 
@@ -119,7 +163,23 @@ class SelectMenuOption():
 
 @dataclass
 class SelectMenu(CustomIdComponent):
-    "Represents a SelectMenu component."
+    """
+    Represents a SelectMenu message component.
+
+    Attributes
+    ----------
+    options: List[SelectMenuOption]
+        The options to display in the select menu.
+    placeholder: str
+        The placeholder displayed when the select menu is empty.
+    min_values: int
+        The minimum number of options that must be selected.
+    max_values: int
+        The maximum number of options that can be selected.
+    disabled: bool
+        Whether the select menu is disabled.
+    """
+
     options: List[SelectMenuOption] = None
 
     placeholder: str = None

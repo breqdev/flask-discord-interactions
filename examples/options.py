@@ -7,8 +7,14 @@ from flask import Flask
 
 sys.path.insert(1, ".")
 
-from flask_discord_interactions import (DiscordInteractions,
-                                        Message, Member, Channel, Role)
+from flask_discord_interactions import (
+    DiscordInteractions,
+    Message,
+    Member,
+    Channel,
+    Role,
+    Option,
+)
 
 
 app = Flask(__name__)
@@ -89,22 +95,20 @@ def big_number(ctx, number: BigNumber):
 @discord.command(annotations={"user": "The user to show information about"})
 def avatar_of(ctx, user: Member):
     "Show someone else's user info"
-    return Message(embed={
-        "title": user.display_name,
-        "description": "Avatar Info",
-        "fields": [
-            {
-                "name": "Username",
-                "value": (f"**{user.username}**"
-                          f"#{user.discriminator}")
-            },
-            {
-                "name": "User ID",
-                "value": user.id
-            }
-        ],
-        "image": {"url": user.avatar_url}
-    })
+    return Message(
+        embed={
+            "title": user.display_name,
+            "description": "Avatar Info",
+            "fields": [
+                {
+                    "name": "Username",
+                    "value": (f"**{user.username}**" f"#{user.discriminator}"),
+                },
+                {"name": "User ID", "value": user.id},
+            ],
+            "image": {"url": user.avatar_url},
+        }
+    )
 
 
 @discord.command()
@@ -117,20 +121,35 @@ def has_role(ctx, user: Member, role: Role):
 
 @discord.command()
 def channel_info(ctx, channel: Channel):
-    return Message(embed={
-        "title": channel.name,
-        "fields": [
-            {
-                "name": "Channel ID",
-                "value": channel.id
-            }
-        ]
-    })
+    return Message(
+        embed={
+            "title": channel.name,
+            "fields": [{"name": "Channel ID", "value": channel.id}],
+        }
+    )
+
+
+# You can also pass in a list of Option objects
+@discord.command(
+    options=[
+        Option(
+            name="message", type=str, description="The message to repeat", required=True
+        ),
+        Option(
+            name="times",
+            type=int,
+            description="How many times to repeat the message",
+            required=True,
+        ),
+    ]
+)
+def repeat_many(ctx, message: str, times: int):
+    return " ".join([message] * times)
 
 
 discord.set_route("/interactions")
 discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()

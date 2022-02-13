@@ -11,7 +11,6 @@ class Permission:
     from using the command
     """
 
-
     def __init__(self, role=None, user=None, allow=True):
         if bool(role) == bool(user):
             raise ValueError("specify only one of role or user")
@@ -21,8 +20,5 @@ class Permission:
         self.permission = allow
 
     def dump(self):
-        return {
-            "type": self.type,
-            "id": self.id,
-            "permission": self.permission
-        }
+        "Returns a dict representation of the permission"
+        return {"type": self.type, "id": self.id, "permission": self.permission}

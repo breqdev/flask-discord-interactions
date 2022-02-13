@@ -17,6 +17,7 @@ class ResponseType:
     DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE = 5
     DEFERRED_UPDATE_MESSAGE = 6
     UPDATE_MESSAGE = 7
+    APPLICATION_COMMAND_AUTOCOMPLETE_RESULT = 8
 
 
 @dataclasses.dataclass
@@ -51,19 +52,28 @@ class Message(LoadableDataclass):
         interactions / custom ID handlers.
     file
         The file to attach to the message. Only valid for outgoing webhooks.
+        Pass a 2-tuple containing the file name and a file object, e.g.
+
+        .. code-block:: python
+
+            ("README.md", open("README.md", "rb"))
+
+        See the ``files`` parameter of :func:`requests.request` for details.
     files
-        An array of files to attach to the message. Specify just one of
+        A list of files to attach to the message. Specify just one of
         ``file`` or ``files``. Only valid for outgoing webhooks.
     components
         An array of :class:`.Component` objects representing message
         components.
     """
+
     content: str = None
     tts: bool = False
     embed: Union[Embed, dict] = None
     embeds: List[Union[Embed, dict]] = None
     allowed_mentions: dict = dataclasses.field(
-        default_factory=lambda: {"parse": ["roles", "users", "everyone"]})
+        default_factory=lambda: {"parse": ["roles", "users", "everyone"]}
+    )
     deferred: bool = False
     ephemeral: bool = False
     update: bool = False
@@ -104,18 +114,17 @@ class Message(LoadableDataclass):
                 self.Message_type = ResponseType.UPDATE_MESSAGE
         else:
             if self.deferred:
-                self.Message_type = \
-                    ResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
+                self.Message_type = ResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
             else:
                 self.Message_type = ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
 
         if isinstance(self.timestamp, str):
-            self.timestamp = datetime.strptime(
-                self.timestamp, "%Y-%m-%dT%H:%M:%S.%f%z")
+            self.timestamp = datetime.strptime(self.timestamp, "%Y-%m-%dT%H:%M:%S.%f%z")
 
         if isinstance(self.edited_timestamp, str):
             self.edited_timestamp = datetime.strptime(
-                self.edited_timestamp, "%Y-%m-%dT%H:%M:%S.%f%z")
+                self.edited_timestamp, "%Y-%m-%dT%H:%M:%S.%f%z"
+            )
 
         if isinstance(self.author, dict):
             self.author = Member.from_dict(self.author)
@@ -130,11 +139,15 @@ class Message(LoadableDataclass):
 
     def dump_embeds(self):
         "Returns the embeds of this Message as a list of dicts."
-        return [embed.dump() for embed in self.embeds] if self.embeds is not None else None
+        return (
+            [embed.dump() for embed in self.embeds] if self.embeds is not None else None
+        )
 
     def dump_components(self):
         "Returns the message components as a list of dicts."
-        return [c.dump() for c in self.components] if self.components is not None else None
+        return (
+            [c.dump() for c in self.components] if self.components is not None else None
+        )
 
     @classmethod
     def from_return_value(cls, result):
@@ -167,14 +180,18 @@ class Message(LoadableDataclass):
         incoming webhook.
         """
 
-        if (self.content is None and self.embeds is None
-                and self.files is None and not self.deferred):
+        if (
+            self.content is None
+            and self.embeds is None
+            and self.files is None
+            and not self.deferred
+        ):
             raise ValueError(
-                "Supply at least one of content, embeds, files, or deferred.")
+                "Supply at least one of content, embeds, files, or deferred."
+            )
 
         if self.files:
-            raise ValueError(
-                "files are not allowed in an initial Interaction Message")
+            raise ValueError("files are not allowed in an initial Interaction Message")
 
         if self.update:
             raise ValueError("update is only valid for custom ID handlers")
@@ -187,8 +204,8 @@ class Message(LoadableDataclass):
                 "embeds": self.dump_embeds(),
                 "allowed_mentions": self.allowed_mentions,
                 "flags": self.flags,
-                "components": self.dump_components()
-            }
+                "components": self.dump_components(),
+            },
         }
 
     def dump_handler(self):
@@ -198,8 +215,7 @@ class Message(LoadableDataclass):
         """
 
         if self.files:
-            raise ValueError(
-                "files are not allowed in a custom handler Message")
+            raise ValueError("files are not allowed in a custom handler Message")
 
         return {
             "type": self.Message_type,
@@ -209,31 +225,36 @@ class Message(LoadableDataclass):
                 "embeds": self.dump_embeds(),
                 "allowed_mentions": self.allowed_mentions,
                 "flags": self.flags,
-                "components": self.dump_components()
-            }
+                "components": self.dump_components(),
+            },
         }
-
 
     def dump_followup(self):
         """
         Return this ``Message`` as a dict to be sent to an outgoing webhook.
         """
 
-        if (self.content is None and self.embeds is None
-                and self.files is None and not self.deferred):
+        if (
+            self.content is None
+            and self.embeds is None
+            and self.files is None
+            and not self.deferred
+        ):
             raise ValueError(
-                "Supply at least one of content, embeds, files, or deferred.")
+                "Supply at least one of content, embeds, files, or deferred."
+            )
 
         if self.ephemeral or self.deferred or self.update:
             raise ValueError(
-                "ephemeral and deferred are not valid in followup Messages")
+                "ephemeral and deferred are not valid in followup Messages"
+            )
 
         return {
             "content": self.content,
             "tts": self.tts,
             "embeds": self.dump_embeds(),
             "allowed_mentions": self.allowed_mentions,
-            "components": self.dump_components()
+            "components": self.dump_components(),
         }
 
     def dump_multipart(self):

@@ -59,7 +59,7 @@ Choices
 -------
 
 To specify a list of choices the user can choose from, you can use Python's
-:py:class:`enum.Enum` class.
+:class:`enum.Enum` class.
 
 .. code-block:: python
 
@@ -83,7 +83,7 @@ choices:
         "What is the animal you hate the most?"
         return f"{ctx.author.display_name} hates {choice}s."
 
-You can also use an :py:class:`enum.IntEnum` to receive the value as an integer
+You can also use an :class:`enum.IntEnum` to receive the value as an integer
 instead of a string:
 
 .. code-block:: python
@@ -100,8 +100,37 @@ instead of a string:
         "Print out a large number"
         return f"One more than the number is {number+1}."
 
+Explicit Options
+----------------
+
+If all of this magic doesn't fit your use case, there's an escape hatch you can
+use to have full control over the data sent to Discord. Pass a list of ``dict`` s
+or :class:`.Option` objects to the ``options`` argument when registering a
+command:
+
+.. code-block:: python
+
+    @discord.command(
+        options=[
+            Option(
+                name="message", type=str, description="The message to repeat", required=True
+            ),
+            Option(
+                name="times",
+                type=int,
+                description="How many times to repeat the message",
+                required=True,
+            ),
+        ]
+    )
+    def repeat_many(ctx, message: str, times: int):
+        return " ".join([message] * times)
+
 Full API
 --------
+
+.. autoclass:: flask_discord_interactions.Option
+    :members:
 
 .. autoclass:: flask_discord_interactions.CommandOptionType
     :members:
