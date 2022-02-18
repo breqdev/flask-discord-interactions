@@ -45,6 +45,8 @@ class Context(LoadableDataclass):
         A list of the options passed to the command.
     values
         A list of the values selected, if this is a Select Menu handler.
+    components
+        A list of the components with their submitted values, if this is a Modal handler.
     resolved
         Additional data ()
     command_name
@@ -74,6 +76,7 @@ class Context(LoadableDataclass):
     guild_id: str = None
     options: list = None
     values: list = None
+    components: list = None
     resolved: dict = None
     command_name: str = None
     command_id: str = None
@@ -112,6 +115,7 @@ class Context(LoadableDataclass):
             guild_id=data.get("guild_id"),
             options=data.get("data", {}).get("options"),
             values=data.get("data", {}).get("values", []),
+            components=data.get("data", {}).get("components", []),
             resolved=data.get("data", {}).get("resolved", {}),
             command_name=data.get("data", {}).get("name"),
             command_id=data.get("data", {}).get("id"),
