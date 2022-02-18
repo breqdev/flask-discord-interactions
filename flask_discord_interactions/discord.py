@@ -596,6 +596,9 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             elif interaction_type == InteractionType.APPLICATION_COMMAND_AUTOCOMPLETE:
                 return jsonify(self.run_autocomplete(request.json).dump())
 
+            elif interaction_type == InteractionType.MODAL_SUBMIT:
+                return jsonify(self.run_handler(request.json).dump())
+
     def set_route_async(self, route, app=None):
         """
         Add a route handler to a Quart app that handles incoming interaction

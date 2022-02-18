@@ -6,6 +6,7 @@ class ComponentType:
     ACTION_ROW = 1
     BUTTON = 2
     SELECT_MENU = 3
+    TEXT_INPUT = 4
 
 
 class Component:
@@ -203,3 +204,58 @@ class SelectMenu(CustomIdComponent):
 
         if self.max_values > 25:
             raise ValueError("max_values is maximum 25")
+
+
+class TextStyles:
+    "Represents the styles that can be applied to TextInput modal components."
+    SHORT = 1
+    PARAGRAPH = 2
+
+
+@dataclass
+class TextInput(CustomIdComponent):
+    """
+    Represents a SelectMenu message component.
+
+    Attributes
+    ----------
+    label: str
+        The label displayed for the field.
+    style: int
+        The style of the text input (see :class:`TextStyles`).
+    value: str
+        A pre-filled value for this component, max 4000 characters.
+    placeholder: str
+        The placeholder displayed when the select menu is empty.
+    min_length: int
+        The minimum input length for a text input, min 0, max 4000
+    max_length: int
+        The maximum input length for a text input, min 1, max 4000
+    required: bool
+        Whether the text input is required.
+    """
+
+    label: str
+
+    style: int = TextStyles.SHORT
+    value: str = None
+    placeholder: str = None
+
+    min_length: int = 0
+    max_length: int = 4000
+
+    required: bool = True
+
+    type: int = ComponentType.TEXT_INPUT
+
+    def __post_init__(self):
+        super().__post_init__()
+
+        if self.min_length > self.max_length:
+            raise ValueError("min_length must be less than or equal to max_length")
+
+        if not 0 <= self.min_length <= 4000:
+            raise ValueError("max_length must be between 0 and 4000, inclusive")
+
+        if not 0 < self.max_length <= 4000:
+            raise ValueError("max_length must be between 1 and 4000, inclusive")
