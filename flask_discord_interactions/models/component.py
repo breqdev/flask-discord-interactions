@@ -235,7 +235,7 @@ class TextInput(CustomIdComponent):
         Whether the text input is required.
     """
 
-    label: str
+    label: str = None
 
     style: int = TextStyles.SHORT
     value: str = None
