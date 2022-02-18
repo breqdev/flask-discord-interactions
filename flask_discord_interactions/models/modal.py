@@ -18,7 +18,8 @@ class Modal(LoadableDataclass):
     title
         The title of the modal.
     components
-        A list of :class:`Component` objects representing the elements of the form.
+        A list of :class:`ActionRow` objects representing the rows of the form.
+        Must have at least 1 row, at most 5 rows.
     """
 
     custom_id: str = None
@@ -41,12 +42,16 @@ class Modal(LoadableDataclass):
             raise ValueError("Modals require title")
 
         # Verify Components
-        # if not (self.components and 1 <= len(self.components) <= 5):
-        #     raise ValueError("Modal must have between 1 and 5 (inclusive) components that make up the modal")
-        #
-        # for component in self.components:
-        #     if component.type != ComponentType.TEXT_INPUT:
-        #         raise ValueError("Only Text Input components are supported for Modals")
+        if not (
+            self.components
+            and isinstance(self.components, (list, tuple, set))
+            and 1 <= len(self.components) <= 5
+        ):
+            raise ValueError("Modal must have between 1 and 5 (inclusive) components that make up the modal")
+
+        for component in self.components:
+            if component.type != ComponentType.ACTION_ROW:
+                raise ValueError("Only Action Row components are supported for Modals")
 
     def dump_components(self):
         "Returns the message components as a list of dicts."

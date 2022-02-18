@@ -81,6 +81,11 @@ class ActionRow(Component):
                         raise ValueError(
                             "select menu must be the only child of action row"
                         )
+                elif component.type == ComponentType.TEXT_INPUT:
+                    if len(self.components) > 1:
+                        raise ValueError(
+                            "text input must be the only child of action row"
+                        )
 
 
 class ButtonStyles:
@@ -215,7 +220,7 @@ class TextStyles:
 @dataclass
 class TextInput(CustomIdComponent):
     """
-    Represents a SelectMenu message component.
+    Represents a TextInput modal component.
 
     Attributes
     ----------

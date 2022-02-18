@@ -621,7 +621,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         if app is None:
             app = self.app
 
-        if aiohttp == None:
+        if aiohttp is None:
             raise ImportError(
                 "The aiohttp module is required for async usage of this " "library"
             )
