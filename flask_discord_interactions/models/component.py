@@ -27,7 +27,7 @@ class Component:
 
 
 @dataclass
-class CustomIdComponent:
+class CustomIdComponent(Component):
     """
     Represents a Message Component with a Custom ID.
 

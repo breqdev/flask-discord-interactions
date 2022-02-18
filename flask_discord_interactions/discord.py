@@ -599,6 +599,9 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             elif interaction_type == InteractionType.MODAL_SUBMIT:
                 return jsonify(self.run_handler(request.json).dump())
 
+            else:
+                print(f"Interaction type {interaction_type} is not yet supported")
+
     def set_route_async(self, route, app=None):
         """
         Add a route handler to a Quart app that handles incoming interaction
@@ -637,6 +640,12 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 result = self.run_handler(request.json)
             elif interaction_type == InteractionType.APPLICATION_COMMAND_AUTOCOMPLETE:
                 result = self.run_autocomplete(request.json)
+
+            elif interaction_type == InteractionType.MODAL_SUBMIT:
+                result = self.run_handler(request.json)
+
+            else:
+                print(f"Interaction type {interaction_type} is not yet supported")
 
             if inspect.isawaitable(result):
                 result = await result
