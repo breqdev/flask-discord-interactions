@@ -6,6 +6,7 @@ import itertools
 from flask_discord_interactions.context import Context, AsyncContext
 from flask_discord_interactions.models import (
     Message,
+    Modal,
     CommandOptionType,
     ApplicationCommandType,
     User,
@@ -212,7 +213,10 @@ class Command:
 
         result = self.run(context, *args, **kwargs)
 
-        return Message.from_return_value(result)
+        if isinstance(result, Modal):
+            return result
+        else:
+            return Message.from_return_value(result)
 
     def run(self, context, *args, **kwargs):
         """
