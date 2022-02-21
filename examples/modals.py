@@ -70,46 +70,6 @@ def modal(ctx):
     return Modal("example_modal", "Tell me about yourself", fields)
 
 
-# Alternatively, you can inherit the Modal class yourself:
-
-
-class OOPModal(Modal):
-    def __init__(self):
-        fields = []
-        fields.append(ActionRow([TextInput(
-            custom_id="name",
-            label="What's your name?",
-            placeholder="John Doe",
-            style=TextStyles.SHORT,
-            required=True,
-        )]))
-        fields.append(ActionRow([TextInput(
-            custom_id="age",
-            label="What's your age?",
-            style=TextStyles.SHORT,
-            min_length=1,
-            max_length=5,
-            required=False,
-        )]))
-        fields.append(ActionRow([TextInput(
-            custom_id="description",
-            label="Describe yourself:",
-            value="A very interesting person",
-            style=TextStyles.PARAGRAPH,
-            min_length=10,
-            max_length=2000,
-        )]))
-        super().__init__("example_modal", "Tell me about yourself", fields)
-
-
-@discord.command(
-    name="test_modal_oop",
-    description="Also with Object Oriented Programming"
-)
-def modal2(ctx):
-    return OOPModal()
-
-
 discord.set_route("/interactions")
 discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
