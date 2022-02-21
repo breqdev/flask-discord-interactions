@@ -21,7 +21,7 @@ except ImportError:
 
 from flask_discord_interactions.command import Command, SlashCommandGroup
 from flask_discord_interactions.context import Context, ApplicationCommandType
-from flask_discord_interactions.models import Message, ResponseType
+from flask_discord_interactions.models import Message, Modal, ResponseType
 
 
 class InteractionType:
@@ -495,7 +495,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         return command.make_context_and_run(self, current_app, data)
 
-    def run_handler(self, data):
+    def run_handler(self, data, *, allow_modal = True):
         """
         Run the corresponding custom ID handler given incoming interaction
         data.
@@ -510,6 +510,12 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         handler = self.custom_id_handlers[context.primary_id]
         args = context.create_handler_args(handler)
         result = handler(context, *args)
+
+        if isinstance(result, Modal):
+            if allow_modal:
+                return result
+            else:
+                raise ValueError("Cannot return a Modal to that interaction type.")
 
         return Message.from_return_value(result)
 
@@ -597,7 +603,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 return jsonify(self.run_autocomplete(request.json).dump())
 
             elif interaction_type == InteractionType.MODAL_SUBMIT:
-                return jsonify(self.run_handler(request.json).dump())
+                return jsonify(self.run_handler(request.json, allow_modal=False).dump())
 
             else:
                 raise RuntimeWarning(f"Interaction type {interaction_type} is not yet supported")
@@ -642,7 +648,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 result = self.run_autocomplete(request.json)
 
             elif interaction_type == InteractionType.MODAL_SUBMIT:
-                result = self.run_handler(request.json)
+                result = self.run_handler(request.json, allow_modal=False)
 
             else:
                 raise RuntimeWarning(f"Interaction type {interaction_type} is not yet supported")
