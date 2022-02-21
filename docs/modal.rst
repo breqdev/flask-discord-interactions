@@ -63,7 +63,7 @@ They are defined the same way you would register a callback for a Button or anot
 Full API
 --------
 
-.. autoclass:: flask_discord_interactions.AutocompleteResult
+.. autoclass:: flask_discord_interactions.Modal
     :members:
 .. autoclass:: flask_discord_interactions.TextInput
     :members:
