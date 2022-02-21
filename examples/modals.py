@@ -27,7 +27,53 @@ app.config["DISCORD_CLIENT_SECRET"] = os.environ["DISCORD_CLIENT_SECRET"]
 discord.update_commands()
 
 
-class ExampleModal(Modal):
+@discord.custom_handler("example_modal")
+def modal_callback(ctx):
+    components = ctx.components
+    msg = f"""
+    Hello {components['name']}!
+    So you are {components['age']} years old and this is how you describe yourself:
+    {components['description']}"""
+    return Message(msg, ephemeral=True)
+
+
+@discord.command(
+    name="test_modal",
+    description="Opens a Modal window"
+)
+def modal(ctx):
+    fields = [
+        ActionRow([TextInput(
+            custom_id="name",
+            label="What's your name?",
+            placeholder="John Doe",
+            style=TextStyles.SHORT,
+            required=True,
+        )]),
+        ActionRow([TextInput(
+            custom_id="age",
+            label="What's your age?",
+            style=TextStyles.SHORT,
+            min_length=1,
+            max_length=5,
+            required=False,
+        )]),
+        ActionRow([TextInput(
+            custom_id="description",
+            label="Describe yourself:",
+            value="A very interesting person",
+            style=TextStyles.PARAGRAPH,
+            min_length=10,
+            max_length=2000,
+        )])
+    ]
+    return Modal("example_modal", "Tell me about yourself", fields)
+
+
+# Alternatively, you can inherit the Modal class yourself:
+
+
+class OOPModal(Modal):
     def __init__(self):
         fields = []
         fields.append(ActionRow([TextInput(
@@ -56,22 +102,12 @@ class ExampleModal(Modal):
         super().__init__("example_modal", "Tell me about yourself", fields)
 
 
-@discord.custom_handler("example_modal")
-def modal_callback(ctx):
-    components = ctx.components
-    msg = f"""
-    Hello {components['name']}!
-    So you are {components['age']} years old and this is how you describe yourself:
-    {components['description']}"""
-    return Message(msg, ephemeral=True)
-
-
 @discord.command(
-    name="test_modal",
-    description="Opens a Modal window"
+    name="test_modal_oop",
+    description="Also with Object Oriented Programming"
 )
-def modal(ctx):
-    return ExampleModal()
+def modal2(ctx):
+    return OOPModal()
 
 
 discord.set_route("/interactions")
