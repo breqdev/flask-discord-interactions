@@ -46,7 +46,7 @@ class Context(LoadableDataclass):
     values
         A list of the values selected, if this is a Select Menu handler.
     components
-        A dictionary of the components IDs with their submitted values, if this is a Modal handler.
+        The Modal's components with their submitted values, if this is a Modal handler.
     resolved
         Additional data ()
     command_name
@@ -76,7 +76,7 @@ class Context(LoadableDataclass):
     guild_id: str = None
     options: list = None
     values: list = None
-    _components: list = None
+    components: list = None
     resolved: dict = None
     command_name: str = None
     command_id: str = None
@@ -115,7 +115,7 @@ class Context(LoadableDataclass):
             guild_id=data.get("guild_id"),
             options=data.get("data", {}).get("options"),
             values=data.get("data", {}).get("values", []),
-            _components=data.get("data", {}).get("components", []),
+            components=data.get("data", {}).get("components", []),
             resolved=data.get("data", {}).get("resolved", {}),
             command_name=data.get("data", {}).get("name"),
             command_id=data.get("data", {}).get("id"),
@@ -131,14 +131,6 @@ class Context(LoadableDataclass):
         result.parse_resolved()
         result.parse_target()
         return result
-
-    @property
-    def components(self):
-        return {
-            component["custom_id"]: component["value"]
-            for action_row in self._components
-            for component in action_row["components"]
-        }
 
     @property
     def auth_headers(self):
