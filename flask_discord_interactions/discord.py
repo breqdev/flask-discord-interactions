@@ -600,7 +600,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 return jsonify(self.run_handler(request.json).dump())
 
             else:
-                print(f"Interaction type {interaction_type} is not yet supported")
+                raise RuntimeWarning(f"Interaction type {interaction_type} is not yet supported")
 
     def set_route_async(self, route, app=None):
         """
@@ -645,7 +645,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 result = self.run_handler(request.json)
 
             else:
-                print(f"Interaction type {interaction_type} is not yet supported")
+                raise RuntimeWarning(f"Interaction type {interaction_type} is not yet supported")
 
             if inspect.isawaitable(result):
                 result = await result
