@@ -24,13 +24,11 @@ def test_uppercase_name(discord):
         def UPPERCASE(ctx):
             return "this shouldn't work..."
 
-
 def test_invalid_character(discord):
     with pytest.raises(ValueError):
         @discord.command(name="invalid&character")
         def invalid_character(ctx):
             return "this shouldn't work..."
-
 
 def test_type_user_valid(discord, client):
     @discord.command(name="testuser", type=ApplicationCommandType.USER)
@@ -39,7 +37,6 @@ def test_type_user_valid(discord, client):
 
     assert client.run("testuser").content == "hi user"
 
-
 def test_type_message_valid(discord, client):
     @discord.command(name="testmessage", type=ApplicationCommandType.MESSAGE)
     def fn(ctx, message):
@@ -47,14 +44,12 @@ def test_type_message_valid(discord, client):
 
     assert client.run("testmessage").content == "message"
 
-
 def test_type_user_valid_uppercase(discord, client):
     @discord.command(name="TEST USER", type=ApplicationCommandType.USER)
     def fn(ctx, user):
         return "hi user"
 
     assert client.run("TEST USER").content == "hi user"
-
 
 def test_type_message_valid_uppercase(discord, client):
     @discord.command(name="TEST MSG", type=ApplicationCommandType.MESSAGE)
