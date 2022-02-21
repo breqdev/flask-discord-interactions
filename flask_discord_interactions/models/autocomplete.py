@@ -27,7 +27,7 @@ class AutocompleteResult:
         your command.
     """
 
-    def __init__(self, choices={}):
+    def __init__(self, choices=[]):
         self.choices = choices
 
     def dump(self):
@@ -35,10 +35,7 @@ class AutocompleteResult:
         return {
             "type": ResponseType.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
             "data": {
-                "choices": [
-                    {"name": choice, "value": value}
-                    for choice, value in self.choices.items()
-                ]
+                "choices": self.choices
             },
         }
 
@@ -61,6 +58,8 @@ class AutocompleteResult:
         if isinstance(value, AutocompleteResult):
             return value
         elif isinstance(value, dict):
+            return AutocompleteResult([value])
+        elif isinstance(value, list) and all(isinstance(choice, dict) for choice in value):
             return AutocompleteResult(value)
         elif isinstance(value, list):
-            return AutocompleteResult({choice: choice for choice in value})
+            return AutocompleteResult([{"name": str(choice), "value":choice} for choice in value])
