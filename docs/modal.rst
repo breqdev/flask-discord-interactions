@@ -56,7 +56,17 @@ They are defined the same way you would register a callback for a Button or anot
     def modal_callback(ctx):
         components = ctx.components
         action_row = components[0]
-        text_input = action_row.components[0]
+        text_input = action_row["components"][0]
+        name = text_input["value"]
+        return f"Hello {name}"!
+
+There is also a convenience method for getting a specified component based on the ID:
+
+.. code-block:: python
+
+    @discord.custom_handler("example_modal")
+    def modal_callback(ctx):
+        text_input = ctx.get_component("user_input_name")
         name = text_input["value"]
         return f"Hello {name}"!
 

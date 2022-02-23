@@ -485,6 +485,17 @@ class Context(LoadableDataclass):
 
         return new_context
 
+    def get_component(self, component_id: str):
+        """Get a Component, only available for Modal Contexts.
+        If the component was not found, raises a LookupError."""
+        if not self.components:
+            raise ValueError("This Context does not have any components.")
+        for action_row in self.components:
+            for component in action_row["components"]:
+                if component.get("custom_id") == component_id:
+                    return component
+        raise LookupError("The specified component was not found.")
+
 
 @dataclass
 class AsyncContext(Context):
