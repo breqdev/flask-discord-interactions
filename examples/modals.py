@@ -27,23 +27,14 @@ app.config["DISCORD_CLIENT_SECRET"] = os.environ["DISCORD_CLIENT_SECRET"]
 discord.update_commands()
 
 
-def parse_components(components):
-    "Turns the nested ActionRow / TextInput structure into a dictionary"
-    dictionary = {}
-    for action_row in components:
-        for component in action_row["components"]:
-            key = component["custom_id"]
-            dictionary[key] = component["value"]
-    return dictionary
-
-
 @discord.custom_handler("example_modal")
 def modal_callback(ctx):
-    components = parse_components(ctx.components)
-    msg = f"""
-    Hello {components['name']}!
-    So you are {components['age']} years old and this is how you describe yourself:
-    {components['description']}"""
+    msg = (
+        f"Hello {ctx.get_component('name').value}! "
+        f"So you are {ctx.get_component('age').value} years old "
+        "and this is how you describe yourself: "
+        f"{ctx.get_component('description').value}"
+    )
     return Message(msg, ephemeral=True)
 
 

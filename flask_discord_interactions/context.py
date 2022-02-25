@@ -16,8 +16,9 @@ from flask_discord_interactions.models import (
     CommandOptionType,
     ApplicationCommandType,
     Message,
+    Component,
+    Option
 )
-from flask_discord_interactions.models.option import Option
 
 
 @dataclass
@@ -65,7 +66,8 @@ class Context(LoadableDataclass):
     target
         The targeted :class:`User` or message.
     message
-        The message that the invoked components are attached to. Only available on component interactions
+        The message that the invoked components are attached to.
+        Only available on component interactions.
     """
 
     author: Union[Member, User] = None
@@ -130,6 +132,7 @@ class Context(LoadableDataclass):
         result.parse_custom_id()
         result.parse_resolved()
         result.parse_target()
+        result.parse_components()
         return result
 
     @property
@@ -231,6 +234,9 @@ class Context(LoadableDataclass):
             self.target = self.messages[self.target_id]
         else:
             self.target = None
+
+    def parse_components(self):
+        self.components = [Component.from_dict(c) for c in self.components]
 
     def create_args(self):
         """
@@ -491,8 +497,8 @@ class Context(LoadableDataclass):
         if not self.components:
             raise ValueError("This Context does not have any components.")
         for action_row in self.components:
-            for component in action_row["components"]:
-                if component.get("custom_id") == component_id:
+            for component in action_row.components:
+                if component.custom_id == component_id:
                     return component
         raise LookupError("The specified component was not found.")
 

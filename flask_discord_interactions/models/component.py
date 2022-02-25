@@ -25,6 +25,19 @@ class Component:
 
         return filter_none(asdict(self))
 
+    @staticmethod
+    def from_dict(data):
+        if data.get("type") == ComponentType.ACTION_ROW:
+            return ActionRow.from_dict(data)
+        elif data.get("type") == ComponentType.BUTTON:
+            return Button(**data)
+        elif data.get("type") == ComponentType.SELECT_MENU:
+            return SelectMenu(**data)
+        elif data.get("type") == ComponentType.TEXT_INPUT:
+            return TextInput(**data)
+        else:
+            raise ValueError(f"Unknown component type: {data.get('type')}")
+
 
 @dataclass
 class CustomIdComponent(Component):
@@ -65,6 +78,13 @@ class ActionRow(Component):
     components: List[Component] = None
 
     type: int = ComponentType.ACTION_ROW
+
+    @staticmethod
+    def from_dict(data):
+        components = [
+            Component.from_dict(component) for component in data.get("components", [])
+        ]
+        return ActionRow(components=components)
 
     def __post_init__(self):
         if self.components:
