@@ -72,3 +72,7 @@ class Modal(LoadableDataclass):
                 "components": self.dump_components(),
             },
         }
+
+    def dump_handler(self):
+        "Return a modal in component handlers."
+        return self.dump()
