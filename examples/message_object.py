@@ -5,8 +5,12 @@ from flask import Flask
 
 sys.path.insert(1, ".")
 
-from flask_discord_interactions import (DiscordInteractions,  # noqa: E402
-                                        Message, Embed, embed)
+from flask_discord_interactions import (
+    DiscordInteractions,  # noqa: E402
+    Message,
+    Embed,
+    embed,
+)
 
 
 app = Flask(__name__)
@@ -35,42 +39,50 @@ def markdown(ctx):
 def embed_(ctx):
     "Embeds!"
 
-    return Message(embed=Embed(
-        title="Embeds!",
-        description="Embeds can be specified as Embed objects.",
-        fields=[
-            embed.Field(
-                name="Can they use markdown?",
-                value="**Yes!** [link](https://google.com/)"
-            ),
-            embed.Field(
-                name="Where do I learn about how to format this object?",
-                value=("[Try this visualizer!]"
-                       "(https://leovoel.github.io/embed-visualizer/)")
-            )
-        ]
-    ))
+    return Message(
+        embed=Embed(
+            title="Embeds!",
+            description="Embeds can be specified as Embed objects.",
+            fields=[
+                embed.Field(
+                    name="Can they use markdown?",
+                    value="**Yes!** [link](https://google.com/)",
+                ),
+                embed.Field(
+                    name="Where do I learn about how to format this object?",
+                    value=(
+                        "[Try this visualizer!]"
+                        "(https://leovoel.github.io/embed-visualizer/)"
+                    ),
+                ),
+            ],
+        )
+    )
 
 
 @discord.command()
 def dict_embed(ctx):
     "Embeds as dict objects!"
 
-    return Message(embed={
-        "title": "Embeds!",
-        "description": "Embeds can also be specified as JSON objects.",
-        "fields": [
-            {
-                "name": "Can they use markdown?",
-                "value": "**Yes!** [link](https://google.com/)"
-            },
-            {
-                "name": "Where do I learn about how to format this object?",
-                "value": ("[Try this visualizer!]"
-                          "(https://leovoel.github.io/embed-visualizer/)")
-            }
-        ]
-    })
+    return Message(
+        embed={
+            "title": "Embeds!",
+            "description": "Embeds can also be specified as JSON objects.",
+            "fields": [
+                {
+                    "name": "Can they use markdown?",
+                    "value": "**Yes!** [link](https://google.com/)",
+                },
+                {
+                    "name": "Where do I learn about how to format this object?",
+                    "value": (
+                        "[Try this visualizer!]"
+                        "(https://leovoel.github.io/embed-visualizer/)"
+                    ),
+                },
+            ],
+        }
+    )
 
 
 @discord.command()
@@ -82,7 +94,7 @@ def ephemeral(ctx):
         "and they go away after a short while.\n\n"
         "Note that they cannot include files, "
         "but Markdown is *perfectly fine.*",
-        ephemeral=True
+        ephemeral=True,
     )
 
 
@@ -97,16 +109,18 @@ def ephemeral_embed(ctx):
             fields=[
                 embed.Field(
                     name="Can they use markdown?",
-                    value="**Yes!** [link](https://google.com/)"
+                    value="**Yes!** [link](https://google.com/)",
                 ),
                 embed.Field(
                     name="Where do I learn about how to format this object?",
-                    value=("[Try this visualizer!]"
-                           "(https://leovoel.github.io/embed-visualizer/)")
-                )
-            ]
+                    value=(
+                        "[Try this visualizer!]"
+                        "(https://leovoel.github.io/embed-visualizer/)"
+                    ),
+                ),
+            ],
         ),
-        ephemeral=True
+        ephemeral=True,
     )
 
 
@@ -114,5 +128,5 @@ discord.set_route("/interactions")
 discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()

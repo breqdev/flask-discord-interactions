@@ -17,6 +17,7 @@ class Client:
     discord
         The DiscordInteractions object to connect to.
     """
+
     def __init__(self, discord):
         self.discord = discord
         self.current_context = Context()
@@ -71,10 +72,12 @@ class Client:
                 i += 1
 
             return Message.from_return_value(
-                command.run(self.current_context, *names[i:], **params))
+                command.run(self.current_context, *names[i:], **params)
+            )
 
         return Message.from_return_value(
-            command.run(self.current_context, self.current_context.target))
+            command.run(self.current_context, self.current_context.target)
+        )
 
     def run_handler(self, custom_id, *args):
         """

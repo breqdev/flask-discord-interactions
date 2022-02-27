@@ -34,6 +34,7 @@ class User(LoadableDataclass):
     public_flags
         Miscellaneous information about the user.
     """
+
     id: str = None
     username: str = None
     discriminator: str = None
@@ -60,8 +61,7 @@ class User(LoadableDataclass):
     @property
     def avatar_url(self):
         "The URL of the user's profile picture."
-        return ("https://cdn.discordapp.com/avatars/"
-                f"{self.id}/{self.avatar_hash}.png")
+        return "https://cdn.discordapp.com/avatars/" f"{self.id}/{self.avatar_hash}.png"
 
 
 @dataclasses.dataclass
@@ -89,6 +89,7 @@ class Member(User):
     pending
         Whether the user has passed the membership requirements of a guild.
     """
+
     nick: str = None
     roles: list = None
     joined_at: str = None

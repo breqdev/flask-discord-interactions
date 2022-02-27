@@ -2,11 +2,13 @@ import json
 
 from flask_discord_interactions import Context, Member, Message, ApplicationCommandType
 
+
 def test_context_parsing():
     # Test data taken from
     # https://discord.com/developers/docs/interactions/application-commands#slash-commands-example-interaction
 
-    data = json.loads("""
+    data = json.loads(
+        """
         {
             "type": 2,
             "token": "A_UNIQUE_TOKEN",
@@ -40,7 +42,8 @@ def test_context_parsing():
             },
             "channel_id": "645027906669510667"
         }
-    """)
+    """
+    )
 
     context = Context.from_data(data=data)
 
@@ -50,7 +53,6 @@ def test_context_parsing():
     assert context.author.display_name == "Mason"
     assert context.command_name == "cardsearch"
     assert context.options[0]["value"] == "The Gitrog Monster"
-
 
 
 def test_author(discord, client):
@@ -96,7 +98,8 @@ def test_user_command_context_parsing():
     # Test data taken from
     # https://discord.com/developers/docs/interactions/application-commands#user-commands-example-interaction
 
-    data = json.loads("""
+    data = json.loads(
+        """
         {
             "application_id": "775799577604522054",
             "channel_id": "772908445358620702",
@@ -155,7 +158,8 @@ def test_user_command_context_parsing():
             "type": 2,
             "version": 1
         }
-    """)
+    """
+    )
 
     context = Context.from_data(data=data)
 
@@ -167,7 +171,8 @@ def test_message_command_context_parsing():
     # Test data taken from
     # https://discord.com/developers/docs/interactions/application-commands#message-commands-example-interaction
 
-    data = json.loads("""
+    data = json.loads(
+        """
         {
             "application_id": "775799577604522054",
             "channel_id": "772908445358620702",
@@ -230,7 +235,8 @@ def test_message_command_context_parsing():
             "type": 2,
             "version": 1
         }
-    """)
+    """
+    )
 
     context = Context.from_data(data=data)
 

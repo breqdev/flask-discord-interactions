@@ -9,15 +9,13 @@ def do_screenshot(ctx, url):
             "url": url,
             "output": "image",
             "file_type": "png",
-            "wait_for_event": "load"
+            "wait_for_event": "load",
         },
-        stream=True
+        stream=True,
     )
 
     response.raw.decode_content = True
 
     ctx.edit(Message(content="Your screenshot is ready!"))
 
-    ctx.send(Message(
-        file=("screenshot.png", response.raw, "image/png")
-    ))
+    ctx.send(Message(file=("screenshot.png", response.raw, "image/png")))

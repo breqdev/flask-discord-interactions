@@ -36,5 +36,5 @@ def multiworkerping(ctx):
 
 discord.set_route("/interactions")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()

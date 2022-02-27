@@ -5,9 +5,14 @@ from flask import Flask
 
 sys.path.insert(1, ".")
 
-from flask_discord_interactions import (DiscordInteractions,  # noqa: E402
-                                        Message, ActionRow, Embed, SelectMenu,
-                                        SelectMenuOption)
+from flask_discord_interactions import (
+    DiscordInteractions,  # noqa: E402
+    Message,
+    ActionRow,
+    Embed,
+    SelectMenu,
+    SelectMenuOption,
+)
 
 
 app = Flask(__name__)
@@ -24,22 +29,23 @@ discord.update_commands()
 # In your actual app, use an actual database for this!
 favorite_colors = {}
 
+
 @discord.custom_handler()
 def handle_favorite_color(ctx):
     favorite_colors[ctx.author.display_name] = ", ".join(ctx.values)
     return make_favorite_color_message(update=True)
 
+
 def make_favorite_color_message(**kwargs):
     message_embed = Embed(
         title="What is your favorite color?",
         description=(
-            "Favorite colors so far: \n" + (
-                "\n".join(
-                    f"{name}: {color}"
-                    for name, color in favorite_colors.items()
-                ) or "None yet -- be the first!"
+            "Favorite colors so far: \n"
+            + (
+                "\n".join(f"{name}: {color}" for name, color in favorite_colors.items())
+                or "None yet -- be the first!"
             )
-        )
+        ),
     )
 
     menu = SelectMenu(
@@ -50,41 +56,27 @@ def make_favorite_color_message(**kwargs):
                 label="Red",
                 value="red",
                 description="The color of stop signs 🛑",
-                emoji={
-                    "name": "🔴"
-                }
+                emoji={"name": "🔴"},
             ),
             SelectMenuOption(
                 label="Green",
                 value="green",
                 description="The color of plants 🌿",
-                emoji={
-                    "name": "🟢"
-                }
+                emoji={"name": "🟢"},
             ),
             SelectMenuOption(
                 label="Blue",
                 value="blue",
                 description="The color of the ocean 🌊",
-                emoji={
-                    "name": "🔵"
-                }
+                emoji={"name": "🔵"},
             ),
         ],
-        max_values = 2,
+        max_values=2,
     )
 
     return Message(
-        embed=message_embed,
-        components=[
-            ActionRow(
-                components=[menu]
-            )
-        ],
-        **kwargs
+        embed=message_embed, components=[ActionRow(components=[menu])], **kwargs
     )
-
-
 
 
 @discord.command()
@@ -98,6 +90,6 @@ discord.set_route("/interactions")
 discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Disable threading because of global variables
     app.run(threaded=False)

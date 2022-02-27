@@ -2,7 +2,12 @@ import threading
 
 from flask import Flask
 
-from flask_discord_interactions import DiscordInteractions, ResponseType, InteractionType, Message
+from flask_discord_interactions import (
+    DiscordInteractions,
+    ResponseType,
+    InteractionType,
+    Message,
+)
 
 
 def test_flask():
@@ -19,37 +24,28 @@ def test_flask():
     discord.set_route("/interactions")
 
     with app.test_client() as client:
-        response = client.post("/interactions", json={
-            "type": InteractionType.APPLICATION_COMMAND,
-            "id": 1,
-            "channel_id": "",
-            "guild_id": "",
-            "token": "",
-            "data": {
+        response = client.post(
+            "/interactions",
+            json={
+                "type": InteractionType.APPLICATION_COMMAND,
                 "id": 1,
-                "name": "ping",
-                "options": [
-                    {
-                        "type": 1,
-                        "name": "Pong"
-                    }
-                ]
-            },
-            "member": {
-                "id": 1,
-                "nick": "",
-                "user": {
+                "channel_id": "",
+                "guild_id": "",
+                "token": "",
+                "data": {
                     "id": 1,
-                    "username": "test"
-                }
-            }
-        })
+                    "name": "ping",
+                    "options": [{"type": 1, "name": "Pong"}],
+                },
+                "member": {"id": 1, "nick": "", "user": {"id": 1, "username": "test"}},
+            },
+        )
 
         assert response.status_code == 200
-        assert response.get_json()["type"] == \
-            ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
+        assert response.get_json()["type"] == ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
 
         assert response.get_json()["data"]["content"] == "Ping Pong!"
+
 
 def test_app_factory():
     discord = DiscordInteractions()
@@ -69,37 +65,28 @@ def test_app_factory():
     app.config["DONT_REGISTER_WITH_DISCORD"] = True
 
     with app.test_client() as client:
-        response = client.post("/interactions", json={
-            "type": InteractionType.APPLICATION_COMMAND,
-            "id": 1,
-            "channel_id": "",
-            "guild_id": "",
-            "token": "",
-            "data": {
+        response = client.post(
+            "/interactions",
+            json={
+                "type": InteractionType.APPLICATION_COMMAND,
                 "id": 1,
-                "name": "ping",
-                "options": [
-                    {
-                        "type": 1,
-                        "name": "Pong"
-                    }
-                ]
-            },
-            "member": {
-                "id": 1,
-                "nick": "",
-                "user": {
+                "channel_id": "",
+                "guild_id": "",
+                "token": "",
+                "data": {
                     "id": 1,
-                    "username": "test"
-                }
-            }
-        })
+                    "name": "ping",
+                    "options": [{"type": 1, "name": "Pong"}],
+                },
+                "member": {"id": 1, "nick": "", "user": {"id": 1, "username": "test"}},
+            },
+        )
 
         assert response.status_code == 200
-        assert response.get_json()["type"] == \
-            ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
+        assert response.get_json()["type"] == ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
 
         assert response.get_json()["data"]["content"] == "Ping Pong!"
+
 
 def test_followup():
     app = Flask(__name__)
@@ -122,21 +109,23 @@ def test_followup():
 
         return Message(deferred=True)
 
-
     discord.set_route("/interactions")
 
     with app.test_client() as client:
-        response = client.post("/interactions", json={
-            "type": InteractionType.APPLICATION_COMMAND,
-            "id": 1,
-            "channel_id": "",
-            "guild_id": "",
-            "token": "",
-            "data": {
+        response = client.post(
+            "/interactions",
+            json={
+                "type": InteractionType.APPLICATION_COMMAND,
                 "id": 1,
-                "name": "ping",
-            }
-        })
+                "channel_id": "",
+                "guild_id": "",
+                "token": "",
+                "data": {
+                    "id": 1,
+                    "name": "ping",
+                },
+            },
+        )
 
     # Make sure we wait for the thread to complete
     ref_to_thread.join()

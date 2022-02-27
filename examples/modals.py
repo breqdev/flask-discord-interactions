@@ -12,7 +12,8 @@ from flask_discord_interactions import (
     DiscordInteractions,
     Message,
     Modal,
-    TextInput, TextStyles,
+    TextInput,
+    TextStyles,
     ActionRow,
 )
 
@@ -38,35 +39,44 @@ def modal_callback(ctx):
     return Message(msg, ephemeral=True)
 
 
-@discord.command(
-    name="test_modal",
-    description="Opens a Modal window"
-)
+@discord.command(name="test_modal", description="Opens a Modal window")
 def modal(ctx):
     fields = [
-        ActionRow([TextInput(
-            custom_id="name",
-            label="What's your name?",
-            placeholder="John Doe",
-            style=TextStyles.SHORT,
-            required=True,
-        )]),
-        ActionRow([TextInput(
-            custom_id="age",
-            label="What's your age?",
-            style=TextStyles.SHORT,
-            min_length=1,
-            max_length=5,
-            required=False,
-        )]),
-        ActionRow([TextInput(
-            custom_id="description",
-            label="Describe yourself:",
-            value="A very interesting person",
-            style=TextStyles.PARAGRAPH,
-            min_length=10,
-            max_length=2000,
-        )])
+        ActionRow(
+            [
+                TextInput(
+                    custom_id="name",
+                    label="What's your name?",
+                    placeholder="John Doe",
+                    style=TextStyles.SHORT,
+                    required=True,
+                )
+            ]
+        ),
+        ActionRow(
+            [
+                TextInput(
+                    custom_id="age",
+                    label="What's your age?",
+                    style=TextStyles.SHORT,
+                    min_length=1,
+                    max_length=5,
+                    required=False,
+                )
+            ]
+        ),
+        ActionRow(
+            [
+                TextInput(
+                    custom_id="description",
+                    label="Describe yourself:",
+                    value="A very interesting person",
+                    style=TextStyles.PARAGRAPH,
+                    min_length=10,
+                    max_length=2000,
+                )
+            ]
+        ),
     ]
     return Modal("example_modal", "Tell me about yourself", fields)
 

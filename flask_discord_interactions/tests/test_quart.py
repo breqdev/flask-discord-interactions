@@ -3,7 +3,12 @@ import asyncio
 import pytest
 from quart import Quart
 
-from flask_discord_interactions import DiscordInteractions, Client, Message, AsyncContext
+from flask_discord_interactions import (
+    DiscordInteractions,
+    Client,
+    Message,
+    AsyncContext,
+)
 
 
 @pytest.fixture()
@@ -38,6 +43,7 @@ async def test_await_in_command(quart_discord):
         return "Hi!"
 
     assert (await client.run("wait")).content == "Hi!"
+
 
 @pytest.mark.asyncio
 async def test_mixed_commands(quart_discord):

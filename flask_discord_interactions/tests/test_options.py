@@ -40,7 +40,7 @@ def test_number(discord, client):
 def test_default(discord, client):
     @discord.command()
     def square(ctx, number: int = 5):
-        return str(number ** 2)
+        return str(number**2)
 
     assert client.run("square").content == "25"
     assert client.run("square", number=2).content == "4"
@@ -66,7 +66,6 @@ def test_str_enum(discord, client):
         Dog = "dog"
         Cat = "cat"
 
-
     @discord.command()
     def favorite(ctx, choice: Animal):
         return f"You chose {choice}!"
@@ -80,7 +79,6 @@ def test_int_enum(discord, client):
         million = 1_000_000
         billion = 1_000_000_000
         trillion = 1_000_000_000_000
-
 
     @discord.command()
     def big_number(ctx, number: BigNumber):
@@ -102,8 +100,9 @@ def test_channel(discord, client):
     def channel_name(ctx, channel: Channel):
         return channel.name
 
-    assert client.run(
-        "channel_name", channel=Channel(name="general")).content == "general"
+    assert (
+        client.run("channel_name", channel=Channel(name="general")).content == "general"
+    )
 
 
 def test_member(discord, client):
@@ -112,14 +111,15 @@ def test_member(discord, client):
         return f"{ctx.author.display_name} <3 {other.display_name}"
 
     with client.context(author=Member(username="Romeo")):
-        assert client.run(
-            "ship_them", other=Member(username="Juliet")).content == \
-                "Romeo <3 Juliet"
+        assert (
+            client.run("ship_them", other=Member(username="Juliet")).content
+            == "Romeo <3 Juliet"
+        )
 
-        assert client.run(
-            "ship_them",
-            other=Member(username="Juliet", nick="J")).content == \
-                "Romeo <3 J"
+        assert (
+            client.run("ship_them", other=Member(username="Juliet", nick="J")).content
+            == "Romeo <3 J"
+        )
 
 
 def test_multiple(discord, client):
@@ -135,7 +135,5 @@ def test_multiple(discord, client):
         assert client.run("has_role", role=Role(id="7")).content == "False"
 
         user = Member(roles=["7"])
-        assert client.run(
-            "has_role", user=user, role=Role(id="2")).content == "False"
-        assert client.run(
-            "has_role", user=user, role=Role(id="7")).content == "True"
+        assert client.run("has_role", user=user, role=Role(id="2")).content == "False"
+        assert client.run("has_role", user=user, role=Role(id="7")).content == "True"

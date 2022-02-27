@@ -7,6 +7,7 @@ bp = DiscordInteractionsBlueprint()
 group = bp.command_group("group", "First Group")
 sub = group.subgroup("sub", "Sub Group")
 
+
 @sub.command()
 def echo_delay(ctx, text: str):
     "Repeat a string on a delay"

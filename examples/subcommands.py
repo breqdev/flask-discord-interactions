@@ -34,7 +34,6 @@ def homestuck(ctx, number: int):
     return f"https://homestuck.com/story/{number}"
 
 
-
 # Subcommand groups are also supported
 base = discord.command_group("base", "Convert a number between bases")
 
@@ -79,9 +78,11 @@ def name(ctx):
 def discriminator(ctx):
     return ctx.author.discriminator
 
+
 # And so do subcommands in subcommand groups
 top_level = discord.command_group("toplevel")
 second_level = top_level.subgroup("secondlevel")
+
 
 @second_level.command()
 def thirdlevel(ctx):
@@ -99,6 +100,7 @@ def thirdlevel(ctx):
 # Subcommands can send followup messages too
 delay = discord.command_group("delay")
 
+
 @delay.command()
 def seconds(ctx, seconds: int):
     def do_delay():
@@ -110,6 +112,7 @@ def seconds(ctx, seconds: int):
     thread.start()
 
     return Message(deferred=True)
+
 
 @delay.command()
 def minutes(ctx, minutes: str):
@@ -128,5 +131,5 @@ discord.set_route("/interactions")
 discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()

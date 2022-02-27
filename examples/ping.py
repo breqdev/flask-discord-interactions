@@ -43,5 +43,5 @@ discord.set_route("/interactions")
 discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()

@@ -14,9 +14,7 @@ def test_content(discord, client):
 
 
 def test_dict_embed(discord, client):
-    my_embed = {
-        "title": "My Cool Embed"
-    }
+    my_embed = {"title": "My Cool Embed"}
 
     @discord.command()
     def embeddy(ctx):
@@ -32,17 +30,9 @@ def test_dict_embed(discord, client):
 
 
 def test_class_embed(discord, client):
-    my_embed = Embed(
-        title="My Cool Embed",
-        image=embed.Media(url="https://google.com")
-    )
+    my_embed = Embed(title="My Cool Embed", image=embed.Media(url="https://google.com"))
 
-    output = {
-        "title": "My Cool Embed",
-        "image": {
-            "url": "https://google.com"
-        }
-    }
+    output = {"title": "My Cool Embed", "image": {"url": "https://google.com"}}
 
     @discord.command()
     def embeddy(ctx):
@@ -62,9 +52,7 @@ def test_improper_immediate(discord, client):
 
     @discord.command()
     def improper_immediate(ctx):
-        return Message(
-            file=("README.md", fp, "text/markdown")
-        )
+        return Message(file=("README.md", fp, "text/markdown"))
 
     result = client.run("improper_immediate")
 
@@ -103,14 +91,12 @@ def test_dump_immediate(discord, client):
         "type": ResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         "data": {
             "content": "hi",
-            "embeds": [{
-                "title": "hello!"
-            }],
+            "embeds": [{"title": "hello!"}],
             "flags": 0,
             "tts": True,
             "allowed_mentions": {"parse": ["roles", "users", "everyone"]},
-            "components": None
-        }
+            "components": None,
+        },
     }
 
     assert client.run("use_response").dump() == expected
@@ -124,12 +110,10 @@ def test_dump_followup():
 
     expected = {
         "content": "Followup",
-        "embeds": [{
-            "title": "hello!"
-        }],
+        "embeds": [{"title": "hello!"}],
         "tts": False,
         "allowed_mentions": {"parse": ["roles", "users", "everyone"]},
-        "components": None
+        "components": None,
     }
 
     assert resp.dump_followup() == expected
@@ -140,24 +124,22 @@ def test_dump_multipart():
     resp = Message(
         content="Followup",
         embed=Embed(title="hello!"),
-        file=("README.md", fp, "text/markdown")
+        file=("README.md", fp, "text/markdown"),
     )
 
     expected = {
         "data": {
-            "payload_json": json.dumps({
-                "content": "Followup",
-                "tts": False,
-                "embeds": [{
-                    "title": "hello!"
-                }],
-                "allowed_mentions": {"parse": ["roles", "users", "everyone"]},
-                "components": None
-            })
+            "payload_json": json.dumps(
+                {
+                    "content": "Followup",
+                    "tts": False,
+                    "embeds": [{"title": "hello!"}],
+                    "allowed_mentions": {"parse": ["roles", "users", "everyone"]},
+                    "components": None,
+                }
+            )
         },
-        "files": [
-            ("file", ("README.md", fp, "text/markdown"))
-        ]
+        "files": [("file", ("README.md", fp, "text/markdown"))],
     }
 
     try:

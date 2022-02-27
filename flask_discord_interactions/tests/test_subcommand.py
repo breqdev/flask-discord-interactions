@@ -40,30 +40,36 @@ def test_subcommand_groups(discord, client):
 
 
 def test_oldstyle_subcommand(discord, client):
-    @discord.command(options=[
-        {
-            "name": "google",
-            "description": "Search with Google",
-            "type": CommandOptionType.SUB_COMMAND,
-            "options": [{
-                "name": "query",
-                "description": "Search query",
-                "type": CommandOptionType.STRING,
-                "required": True
-            }]
-        },
-        {
-            "name": "bing",
-            "description": "Search with Bing",
-            "type": CommandOptionType.SUB_COMMAND,
-            "options": [{
-                "name": "query",
-                "description": "Search query",
-                "type": CommandOptionType.STRING,
-                "required": True
-            }]
-        }
-    ])
+    @discord.command(
+        options=[
+            {
+                "name": "google",
+                "description": "Search with Google",
+                "type": CommandOptionType.SUB_COMMAND,
+                "options": [
+                    {
+                        "name": "query",
+                        "description": "Search query",
+                        "type": CommandOptionType.STRING,
+                        "required": True,
+                    }
+                ],
+            },
+            {
+                "name": "bing",
+                "description": "Search with Bing",
+                "type": CommandOptionType.SUB_COMMAND,
+                "options": [
+                    {
+                        "name": "query",
+                        "description": "Search query",
+                        "type": CommandOptionType.STRING,
+                        "required": True,
+                    }
+                ],
+            },
+        ]
+    )
     def search(ctx, subcommand, *, query):
         "Search the Internet!"
         if subcommand == "google":
@@ -71,10 +77,15 @@ def test_oldstyle_subcommand(discord, client):
         if subcommand == "bing":
             return f"https://bing.com/search?q={query}"
 
-    assert client.run("search", "google", query="hello").content == \
-        "https://google.com/search?q=hello"
-    assert client.run("search", "bing", query="hello").content == \
-        "https://bing.com/search?q=hello"
+    assert (
+        client.run("search", "google", query="hello").content
+        == "https://google.com/search?q=hello"
+    )
+    assert (
+        client.run("search", "bing", query="hello").content
+        == "https://bing.com/search?q=hello"
+    )
+
 
 def test_context_with_subcommand(discord, client):
     group = discord.command_group("group")

@@ -20,7 +20,7 @@ discord.update_commands()
 
 from echo import bp as echo_bp  # noqa: E402
 from reverse import bp as reverse_bp  # noqa: E402
-from subcommands import bp as subcommands_bp # noqa: E402
+from subcommands import bp as subcommands_bp  # noqa: E402
 
 
 discord.register_blueprint(echo_bp)
@@ -38,5 +38,5 @@ def index():
     return send_file("../../LICENSE", mimetype="text/html")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()

@@ -33,9 +33,12 @@ def followup(ctx):
         time.sleep(5)
 
         print("Sending a file")
-        ctx.send(Message(
-            content="Sending a file",
-            file=("README.md", open("README.md", "r"), "text/markdown")))
+        ctx.send(
+            Message(
+                content="Sending a file",
+                file=("README.md", open("README.md", "r"), "text/markdown"),
+            )
+        )
         time.sleep(5)
 
         print("Deleting original message")
@@ -73,5 +76,5 @@ discord.set_route("/interactions")
 discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()

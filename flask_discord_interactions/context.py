@@ -17,7 +17,7 @@ from flask_discord_interactions.models import (
     ApplicationCommandType,
     Message,
     Component,
-    Option
+    Option,
 )
 
 

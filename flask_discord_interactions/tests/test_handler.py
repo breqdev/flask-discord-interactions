@@ -12,17 +12,18 @@ def test_basic_handler(discord, client):
         return Message(
             content=f"The button has been clicked {click_count} times",
             components=[
-                ActionRow(components=[
-                    Button(
-                        style=ButtonStyles.PRIMARY,
-                        custom_id=handle_click,
-                        label="Click Me!"
-                    )
-                ])
+                ActionRow(
+                    components=[
+                        Button(
+                            style=ButtonStyles.PRIMARY,
+                            custom_id=handle_click,
+                            label="Click Me!",
+                        )
+                    ]
+                )
             ],
-            update=True
+            update=True,
         )
-
 
     # The main command sends the initial Response
     @discord.command()
@@ -32,14 +33,16 @@ def test_basic_handler(discord, client):
         return Message(
             content=f"The button has been clicked {click_count} times",
             components=[
-                ActionRow(components=[
-                    Button(
-                        style=ButtonStyles.PRIMARY,
-                        custom_id=handle_click,
-                        label="Click Me!"
-                    )
-                ])
-            ]
+                ActionRow(
+                    components=[
+                        Button(
+                            style=ButtonStyles.PRIMARY,
+                            custom_id=handle_click,
+                            label="Click Me!",
+                        )
+                    ]
+                )
+            ],
         )
 
     client.run("click_counter")
@@ -56,17 +59,18 @@ def test_stateful_handler(discord, client):
         return Message(
             content=f"{click_count} clicks",
             components=[
-                ActionRow(components=[
-                    Button(
-                        style=ButtonStyles.PRIMARY,
-                        custom_id=[handle_click, click_count],
-                        label="Click Me!"
-                    )
-                ])
+                ActionRow(
+                    components=[
+                        Button(
+                            style=ButtonStyles.PRIMARY,
+                            custom_id=[handle_click, click_count],
+                            label="Click Me!",
+                        )
+                    ]
+                )
             ],
-            update=True
+            update=True,
         )
-
 
     # The main command sends the initial Response
     @discord.command()
@@ -76,14 +80,16 @@ def test_stateful_handler(discord, client):
         return Message(
             content=f"The button has been clicked 0 times",
             components=[
-                ActionRow(components=[
-                    Button(
-                        style=ButtonStyles.PRIMARY,
-                        custom_id=[handle_click, 0],
-                        label="Click Me!"
-                    )
-                ])
-            ]
+                ActionRow(
+                    components=[
+                        Button(
+                            style=ButtonStyles.PRIMARY,
+                            custom_id=[handle_click, 0],
+                            label="Click Me!",
+                        )
+                    ]
+                )
+            ],
         )
 
     client.run("click_counter")
