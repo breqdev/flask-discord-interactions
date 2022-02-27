@@ -22,7 +22,7 @@ class Modal(LoadableDataclass):
         Must have at least 1 row, at most 5 rows.
     """
 
-    custom_id: str = None
+    custom_id: Union[str, list] = None
     title: str = None
     components: List[Component] = None
 
