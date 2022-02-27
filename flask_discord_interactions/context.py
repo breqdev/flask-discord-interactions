@@ -16,8 +16,9 @@ from flask_discord_interactions.models import (
     CommandOptionType,
     ApplicationCommandType,
     Message,
+    Component,
+    Option
 )
-from flask_discord_interactions.models.option import Option
 
 
 @dataclass
@@ -45,6 +46,8 @@ class Context(LoadableDataclass):
         A list of the options passed to the command.
     values
         A list of the values selected, if this is a Select Menu handler.
+    components
+        The Modal's components with their submitted values, if this is a Modal handler.
     resolved
         Additional data ()
     command_name
@@ -63,7 +66,8 @@ class Context(LoadableDataclass):
     target
         The targeted :class:`User` or message.
     message
-        The message that the invoked components are attached to. Only available on component interactions
+        The message that the invoked components are attached to.
+        Only available on component interactions.
     """
 
     author: Union[Member, User] = None
@@ -74,6 +78,7 @@ class Context(LoadableDataclass):
     guild_id: str = None
     options: list = None
     values: list = None
+    components: list = None
     resolved: dict = None
     command_name: str = None
     command_id: str = None
@@ -112,6 +117,7 @@ class Context(LoadableDataclass):
             guild_id=data.get("guild_id"),
             options=data.get("data", {}).get("options"),
             values=data.get("data", {}).get("values", []),
+            components=data.get("data", {}).get("components", []),
             resolved=data.get("data", {}).get("resolved", {}),
             command_name=data.get("data", {}).get("name"),
             command_id=data.get("data", {}).get("id"),
@@ -126,6 +132,7 @@ class Context(LoadableDataclass):
         result.parse_custom_id()
         result.parse_resolved()
         result.parse_target()
+        result.parse_components()
         return result
 
     @property
@@ -227,6 +234,9 @@ class Context(LoadableDataclass):
             self.target = self.messages[self.target_id]
         else:
             self.target = None
+
+    def parse_components(self):
+        self.components = [Component.from_dict(c) for c in self.components]
 
     def create_args(self):
         """
@@ -480,6 +490,17 @@ class Context(LoadableDataclass):
         new_context.frozen_auth_headers = self.auth_headers
 
         return new_context
+
+    def get_component(self, component_id: str):
+        """Get a Component, only available for Modal Contexts.
+        If the component was not found, raises a LookupError."""
+        if not self.components:
+            raise ValueError("This Context does not have any components.")
+        for action_row in self.components:
+            for component in action_row.components:
+                if component.custom_id == component_id:
+                    return component
+        raise LookupError("The specified component was not found.")
 
 
 @dataclass

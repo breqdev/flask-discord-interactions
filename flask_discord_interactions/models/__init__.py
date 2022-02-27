@@ -10,7 +10,10 @@ from flask_discord_interactions.models.component import (
     SelectMenuOption,
     Component,
     ButtonStyles,
+    TextInput,
+    TextStyles,
 )
+from flask_discord_interactions.models.modal import Modal
 from flask_discord_interactions.models.command import ApplicationCommandType
 from flask_discord_interactions.models.permission import Permission
 from flask_discord_interactions.models.role import Role
@@ -36,6 +39,9 @@ __all__ = [
     "SelectMenuOption",
     "Component",
     "ButtonStyles",
+    "TextInput",
+    "TextStyles",
+    "Modal",
     "ApplicationCommandType",
     "CommandOptionType",
     "Permission",

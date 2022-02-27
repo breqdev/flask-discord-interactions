@@ -6,6 +6,7 @@ class ComponentType:
     ACTION_ROW = 1
     BUTTON = 2
     SELECT_MENU = 3
+    TEXT_INPUT = 4
 
 
 class Component:
@@ -24,9 +25,22 @@ class Component:
 
         return filter_none(asdict(self))
 
+    @staticmethod
+    def from_dict(data):
+        if data.get("type") == ComponentType.ACTION_ROW:
+            return ActionRow.from_dict(data)
+        elif data.get("type") == ComponentType.BUTTON:
+            return Button(**data)
+        elif data.get("type") == ComponentType.SELECT_MENU:
+            return SelectMenu(**data)
+        elif data.get("type") == ComponentType.TEXT_INPUT:
+            return TextInput(**data)
+        else:
+            raise ValueError(f"Unknown component type: {data.get('type')}")
+
 
 @dataclass
-class CustomIdComponent:
+class CustomIdComponent(Component):
     """
     Represents a Message Component with a Custom ID.
 
@@ -65,6 +79,13 @@ class ActionRow(Component):
 
     type: int = ComponentType.ACTION_ROW
 
+    @staticmethod
+    def from_dict(data):
+        components = [
+            Component.from_dict(component) for component in data.get("components", [])
+        ]
+        return ActionRow(components=components)
+
     def __post_init__(self):
         if self.components:
             if len(self.components) > 5:
@@ -79,6 +100,11 @@ class ActionRow(Component):
                     if len(self.components) > 1:
                         raise ValueError(
                             "select menu must be the only child of action row"
+                        )
+                elif component.type == ComponentType.TEXT_INPUT:
+                    if len(self.components) > 1:
+                        raise ValueError(
+                            "text input must be the only child of action row"
                         )
 
 
@@ -203,3 +229,58 @@ class SelectMenu(CustomIdComponent):
 
         if self.max_values > 25:
             raise ValueError("max_values is maximum 25")
+
+
+class TextStyles:
+    "Represents the styles that can be applied to TextInput modal components."
+    SHORT = 1
+    PARAGRAPH = 2
+
+
+@dataclass
+class TextInput(CustomIdComponent):
+    """
+    Represents a TextInput modal component.
+
+    Attributes
+    ----------
+    label: str
+        The label displayed for the field.
+    style: int
+        The style of the text input (see :class:`TextStyles`).
+    value: str
+        A pre-filled value for this component, max 4000 characters.
+    placeholder: str
+        The placeholder displayed when the select menu is empty.
+    min_length: int
+        The minimum input length for a text input, min 0, max 4000
+    max_length: int
+        The maximum input length for a text input, min 1, max 4000
+    required: bool
+        Whether the text input is required.
+    """
+
+    label: str = None
+
+    style: int = TextStyles.SHORT
+    value: str = None
+    placeholder: str = None
+
+    min_length: int = 0
+    max_length: int = 4000
+
+    required: bool = True
+
+    type: int = ComponentType.TEXT_INPUT
+
+    def __post_init__(self):
+        super().__post_init__()
+
+        if self.min_length > self.max_length:
+            raise ValueError("min_length must be less than or equal to max_length")
+
+        if not 0 <= self.min_length <= 4000:
+            raise ValueError("max_length must be between 0 and 4000, inclusive")
+
+        if not 0 < self.max_length <= 4000:
+            raise ValueError("max_length must be between 1 and 4000, inclusive")
