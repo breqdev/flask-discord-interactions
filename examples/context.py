@@ -25,34 +25,25 @@ def avatar(ctx):
     "Show your user info"
 
     # You have to define the embed JSON manually for now (see API docs)
-    return Message(embed={
-        "title": ctx.author.display_name,
-        "description": "Avatar Info",
-        "fields": [
-            {
-                "name": "Member Since",
-                "value": ctx.author.joined_at
-            },
-            {
-                "name": "Username",
-                "value": (f"**{ctx.author.username}**"
-                          f"#{ctx.author.discriminator}")
-            },
-            {
-                "name": "User ID",
-                "value": ctx.author.id
-            },
-            {
-                "name": "Channel ID",
-                "value": ctx.channel_id
-            },
-            {
-                "name": "Guild ID",
-                "value": ctx.guild_id
-            }
-        ],
-        "image": {"url": ctx.author.avatar_url}
-    })
+    return Message(
+        embed={
+            "title": ctx.author.display_name,
+            "description": "Avatar Info",
+            "fields": [
+                {"name": "Member Since", "value": ctx.author.joined_at},
+                {
+                    "name": "Username",
+                    "value": (
+                        f"**{ctx.author.username}**" f"#{ctx.author.discriminator}"
+                    ),
+                },
+                {"name": "User ID", "value": ctx.author.id},
+                {"name": "Channel ID", "value": ctx.channel_id},
+                {"name": "Guild ID", "value": ctx.guild_id},
+            ],
+            "image": {"url": ctx.author.avatar_url},
+        }
+    )
 
 
 # You can use this to implement a rudimentary server-side permissions system
@@ -61,7 +52,7 @@ def admin_only(ctx):
     if not ctx.author.permissions & 8:
         return Message(
             content="Only administrators are allowed to use this command",
-            ephemeral=True
+            ephemeral=True,
         )
 
     return "Hello!"
@@ -85,5 +76,5 @@ discord.set_route("/interactions")
 discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()

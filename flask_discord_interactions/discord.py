@@ -495,7 +495,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         return command.make_context_and_run(self, current_app, data)
 
-    def run_handler(self, data, *, allow_modal = True):
+    def run_handler(self, data, *, allow_modal=True):
         """
         Run the corresponding custom ID handler given incoming interaction
         data.
@@ -606,7 +606,9 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 return jsonify(self.run_handler(request.json, allow_modal=False).dump())
 
             else:
-                raise RuntimeWarning(f"Interaction type {interaction_type} is not yet supported")
+                raise RuntimeWarning(
+                    f"Interaction type {interaction_type} is not yet supported"
+                )
 
     def set_route_async(self, route, app=None):
         """
@@ -651,7 +653,9 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 result = self.run_handler(request.json, allow_modal=False)
 
             else:
-                raise RuntimeWarning(f"Interaction type {interaction_type} is not yet supported")
+                raise RuntimeWarning(
+                    f"Interaction type {interaction_type} is not yet supported"
+                )
 
             if inspect.isawaitable(result):
                 result = await result

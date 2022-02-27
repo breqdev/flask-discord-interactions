@@ -34,9 +34,7 @@ class AutocompleteResult:
         "Return this result as a complete interaction response."
         return {
             "type": ResponseType.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
-            "data": {
-                "choices": self.choices
-            },
+            "data": {"choices": self.choices},
         }
 
     @staticmethod
@@ -59,7 +57,11 @@ class AutocompleteResult:
             return value
         elif isinstance(value, dict):
             return AutocompleteResult([value])
-        elif isinstance(value, list) and all(isinstance(choice, dict) for choice in value):
+        elif isinstance(value, list) and all(
+            isinstance(choice, dict) for choice in value
+        ):
             return AutocompleteResult(value)
         elif isinstance(value, list):
-            return AutocompleteResult([{"name": str(choice), "value":choice} for choice in value])
+            return AutocompleteResult(
+                [{"name": str(choice), "value": choice} for choice in value]
+            )

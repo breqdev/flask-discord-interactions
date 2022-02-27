@@ -15,6 +15,7 @@ def mock_flask():
     del sys.modules["flask_discord_interactions.discord"]
 
     import quart.flask_patch
+
     yield None
 
     del sys.modules["flask"]
@@ -29,8 +30,11 @@ def mock_flask():
 
 @pytest.mark.asyncio
 async def test_full_server(mock_flask):
-    from flask_discord_interactions import (DiscordInteractions,
-                                        InteractionType, ResponseType)
+    from flask_discord_interactions import (
+        DiscordInteractions,
+        InteractionType,
+        ResponseType,
+    )
 
     app = Quart("test_quart")
     app.config["DONT_VALIDATE_SIGNATURE"] = True
@@ -47,23 +51,22 @@ async def test_full_server(mock_flask):
 
     client = app.test_client()
 
-    response = await client.post("/interactions", json={
-        "type": InteractionType.APPLICATION_COMMAND,
-        "id": 1,
-        "channel_id": "",
-        "guild_id": "",
-        "token": "",
-        "data": {
+    response = await client.post(
+        "/interactions",
+        json={
+            "type": InteractionType.APPLICATION_COMMAND,
             "id": 1,
-            "name": "wait"
-        }
-    })
+            "channel_id": "",
+            "guild_id": "",
+            "token": "",
+            "data": {"id": 1, "name": "wait"},
+        },
+    )
 
     assert response.status_code == 200
 
     json = await response.get_json()
 
-    assert json["type"] == \
-        ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
+    assert json["type"] == ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
 
     assert json["data"]["content"] == "Hi!"

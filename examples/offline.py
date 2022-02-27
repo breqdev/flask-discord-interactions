@@ -31,7 +31,7 @@ discord.update_commands()
 
 # Simplest type of command: respond with a string
 @discord.command()
-def ping(ctx, pong: str = 'pong'):
+def ping(ctx, pong: str = "pong"):
     f"Respond with a friendly 'pong'!"
     return f"{pong} with no signature verification!"
 
@@ -46,5 +46,5 @@ discord.set_route("/interactions")
 discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()

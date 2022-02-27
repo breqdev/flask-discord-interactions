@@ -18,13 +18,13 @@ def test_response():
 
     assert response.content == "Hello this is my response"
 
+
 def test_add_slash_command(discord):
     with pytest.deprecated_call():
-        discord.add_slash_command(
-            lambda ctx: "ping", "ping", "test test test", [], []
-        )
+        discord.add_slash_command(lambda ctx: "ping", "ping", "test test test", [], [])
 
     assert discord.discord_commands["ping"].description == "test test test"
+
 
 def test_update_slash_commands():
     app = Flask(__name__)

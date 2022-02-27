@@ -1,5 +1,6 @@
 import inspect
 
+
 class LoadableDataclass:
     @classmethod
     def from_dict(cls, data):
@@ -12,7 +13,6 @@ class LoadableDataclass:
         data
             A dictionary of fields to set on the dataclass.
         """
-        return cls(**{
-            k: v for k, v in data.items()
-            if k in inspect.signature(cls).parameters
-        })
+        return cls(
+            **{k: v for k, v in data.items() if k in inspect.signature(cls).parameters}
+        )

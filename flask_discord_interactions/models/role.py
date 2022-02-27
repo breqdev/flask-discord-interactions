@@ -3,7 +3,6 @@ import dataclasses
 from flask_discord_interactions.models.utils import LoadableDataclass
 
 
-
 @dataclasses.dataclass
 class Role(LoadableDataclass):
     """
@@ -30,6 +29,7 @@ class Role(LoadableDataclass):
     tags
         Miscellaneous information about the role.
     """
+
     id: str = None
     name: str = None
     color: str = None

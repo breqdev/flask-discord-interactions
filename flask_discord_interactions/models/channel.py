@@ -31,9 +31,8 @@ class Channel(LoadableDataclass):
     type
         The type of channel.
     """
+
     id: str = None
     name: str = None
     permissions: int = None
     type: int = None
-
-

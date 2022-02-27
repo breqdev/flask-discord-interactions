@@ -51,5 +51,5 @@ if "register" in sys.argv:
     sys.exit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()

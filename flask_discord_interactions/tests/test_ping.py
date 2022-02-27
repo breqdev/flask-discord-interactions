@@ -6,4 +6,3 @@ def test_ping(discord, client):
 
     assert client.run("ping").content == "Pong pong!"
     assert client.run("ping", pong="sprong").content == "Pong sprong!"
-

@@ -47,9 +47,8 @@ async def qotd(ctx):
     "Quote of the day"
     async with aiohttp.ClientSession() as session:
         async with session.get(
-                    "https://quotes.rest/qod",
-                    headers={"Content-Type": "application/json"}
-                ) as resp:
+            "https://quotes.rest/qod", headers={"Content-Type": "application/json"}
+        ) as resp:
             return (await resp.json())["contents"]["quotes"][0]["quote"]
 
 
@@ -95,7 +94,7 @@ def wait_partly_sync(ctx, seconds: int):
 
     async def do_followup():
         await asyncio.sleep(seconds)
-        ctx.edit("Done!") # We are passed a Context, not an AsyncContext
+        ctx.edit("Done!")  # We are passed a Context, not an AsyncContext
 
     asyncio.create_task(do_followup())
     return Message(deferred=True)
@@ -104,6 +103,7 @@ def wait_partly_sync(ctx, seconds: int):
 # Async subcommands also work, and they can access context
 toplevel = discord.command_group("toplevel", is_async=True)
 secondlevel = toplevel.subgroup("secondlevel", is_async=True)
+
 
 @secondlevel.command()
 async def thirdlevel(ctx):
@@ -123,5 +123,5 @@ discord.set_route_async("/interactions")
 discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()

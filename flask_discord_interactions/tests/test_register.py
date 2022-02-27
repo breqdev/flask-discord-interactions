@@ -3,6 +3,7 @@ from flask import Flask
 from flask_discord_interactions import DiscordInteractions
 from flask_discord_interactions.context import ApplicationCommandType
 
+
 def test_register_command():
     app = Flask(__name__)
     app.config["DONT_VALIDATE_SIGNATURE"] = True

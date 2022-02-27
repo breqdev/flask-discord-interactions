@@ -47,7 +47,9 @@ class Modal(LoadableDataclass):
             and isinstance(self.components, (list, tuple, set))
             and 1 <= len(self.components) <= 5
         ):
-            raise ValueError("Modal must have between 1 and 5 (inclusive) components that make up the modal")
+            raise ValueError(
+                "Modal must have between 1 and 5 (inclusive) components that make up the modal"
+            )
 
         for component in self.components:
             if component.type != ComponentType.ACTION_ROW:
@@ -55,9 +57,7 @@ class Modal(LoadableDataclass):
 
     def dump_components(self):
         "Returns the message components as a list of dicts."
-        return (
-            [c.dump() for c in self.components]
-        )
+        return [c.dump() for c in self.components]
 
     def dump(self):
         """
