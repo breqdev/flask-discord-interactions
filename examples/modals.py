@@ -84,7 +84,7 @@ def modal(ctx):
 
 @discord.custom_handler()
 def example_modal_2(ctx):
-    return f"Hello {ctx.get_component('name').value}!"
+    return Message(f"Hello {ctx.get_component('name').value}!", update=True)
 
 
 @discord.custom_handler()
