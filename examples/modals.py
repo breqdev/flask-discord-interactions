@@ -15,6 +15,7 @@ from flask_discord_interactions import (
     TextInput,
     TextStyles,
     ActionRow,
+    Button,
 )
 
 app = Flask(__name__)
@@ -79,6 +80,40 @@ def modal(ctx):
         ),
     ]
     return Modal("example_modal", "Tell me about yourself", fields)
+
+
+@discord.custom_handler()
+def example_modal_2(ctx):
+    return Message(f"Hello {ctx.get_component('name').value}!", update=True)
+
+
+@discord.custom_handler()
+def launch_modal(ctx):
+    return Modal(
+        example_modal_2,
+        "Tell me about yourself",
+        [
+            ActionRow(
+                [
+                    TextInput(
+                        custom_id="name",
+                        label="What's your name?",
+                        placeholder="John Doe",
+                        style=TextStyles.SHORT,
+                        required=True,
+                    )
+                ]
+            )
+        ],
+    )
+
+
+@discord.command()
+def launch_modal_from_button(ctx):
+    return Message(
+        content="Launch Modal",
+        components=[ActionRow([Button(custom_id=launch_modal, label="Launch Modal")])],
+    )
 
 
 discord.set_route("/interactions")

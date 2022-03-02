@@ -603,7 +603,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 return jsonify(self.run_autocomplete(request.json).dump())
 
             elif interaction_type == InteractionType.MODAL_SUBMIT:
-                return jsonify(self.run_handler(request.json, allow_modal=False).dump())
+                return jsonify(self.run_handler(request.json, allow_modal=False).dump_handler())
 
             else:
                 raise RuntimeWarning(

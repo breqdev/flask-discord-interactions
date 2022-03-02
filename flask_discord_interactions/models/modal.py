@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Union
 
 from flask_discord_interactions.models.utils import LoadableDataclass
 from flask_discord_interactions.models.component import Component, ComponentType
@@ -22,7 +22,7 @@ class Modal(LoadableDataclass):
         Must have at least 1 row, at most 5 rows.
     """
 
-    custom_id: str = None
+    custom_id: Union[str, list] = None
     title: str = None
     components: List[Component] = None
 
@@ -72,3 +72,7 @@ class Modal(LoadableDataclass):
                 "components": self.dump_components(),
             },
         }
+
+    def dump_handler(self):
+        "Return a modal in component handlers."
+        return self.dump()
