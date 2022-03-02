@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Union
 
 from flask_discord_interactions.models.utils import LoadableDataclass
 from flask_discord_interactions.models.component import Component, ComponentType
