@@ -2,6 +2,7 @@ import re
 import enum
 import inspect
 import itertools
+import warnings
 
 from flask_discord_interactions.context import Context, AsyncContext
 from flask_discord_interactions.models import (
@@ -49,7 +50,9 @@ class Command:
         The value is in ``ApplicationCommandType``. If omitted, set the default
         value to ``ApplicationCommandType.CHAT_INPUT``.
     default_permission
-        Whether the command is enabled by default. Default is True.
+        Deprecated as of 1.4.x! Whether the command is enabled by default.
+    default_member_permissons
+        A permission integer defining the required permissions a user must have to run the command
     permissions
         List of permission overwrites.
     discord
@@ -65,7 +68,8 @@ class Command:
         options,
         annotations,
         command_type=ApplicationCommandType.CHAT_INPUT,
-        default_permission=True,
+        default_permission=None,
+        default_member_permissions=None,
         permissions=None,
         discord=None,
     ):
@@ -76,6 +80,7 @@ class Command:
         self.annotations = annotations or {}
         self.type = command_type
         self.default_permission = default_permission
+        self.default_member_permissions = default_member_permissions
         self.permissions = permissions or []
         self.discord = discord
 
@@ -240,8 +245,20 @@ class Command:
             "name": self.name,
             "description": self.description,
             "options": self.options,
-            "default_permission": self.default_permission,
         }
+
+        # Keeping this here not to break any bots using the old system
+        if hasattr(self, "default_permission"):
+            data["default_permission"] = self.default_member_permissions
+            warnings.warn(
+                "Deprecated! As of v1.4.x, the old default_permisson is deprecated in favor of "
+                "the new default_member_permissions",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
+        if hasattr(self, "default_member_permissions"):
+            data["default_member_permissions"] = self.default_member_permissions
 
         if hasattr(self, "type"):
             data["type"] = self.type
@@ -297,6 +314,7 @@ class SlashCommandSubgroup(Command):
         self.type = ApplicationCommandType.CHAT_INPUT
 
         self.default_permission = None
+        self.default_member_permissions = None
         self.permissions = []
 
         self.is_async = is_async
@@ -385,7 +403,8 @@ class SlashCommandGroup(SlashCommandSubgroup):
         name,
         description,
         is_async=False,
-        default_permission=True,
+        default_permission=None,
+        default_member_permissions=None,
         permissions=None,
     ):
         self.name = name
@@ -394,6 +413,7 @@ class SlashCommandGroup(SlashCommandSubgroup):
         self.type = ApplicationCommandType.CHAT_INPUT
 
         self.default_permission = default_permission
+        self.default_member_permissions = default_member_permissions
         self.permissions = permissions or []
 
         self.is_async = is_async
