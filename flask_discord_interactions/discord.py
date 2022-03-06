@@ -53,6 +53,7 @@ class DiscordInteractionsBlueprint:
         annotations=None,
         type=ApplicationCommandType.CHAT_INPUT,
         default_permission=None,
+        default_member_permissions=None,
         permissions=None,
     ):
         """
@@ -75,7 +76,9 @@ class DiscordInteractionsBlueprint:
         type
             The ``ApplicationCommandType`` of the command.
         default_permission
-            Whether the command is enabled by default. Default is True.
+            Deprecated as of 1.4.x! Whether the command is enabled by default.
+        default_member_permissions
+            A permission integer defining the required permissions a user must have to run the command
         permissions
             List of permission overwrites.
         """
@@ -87,6 +90,7 @@ class DiscordInteractionsBlueprint:
             annotations,
             type,
             default_permission,
+            default_member_permissions
             permissions,
             self,
         )
@@ -114,6 +118,7 @@ class DiscordInteractionsBlueprint:
         annotations=None,
         type=ApplicationCommandType.CHAT_INPUT,
         default_permission=None,
+        default_member_permissions=None,
         permissions=None,
     ):
         """
@@ -134,7 +139,9 @@ class DiscordInteractionsBlueprint:
         type
             The ``ApplicationCommandType`` of the command.
         default_permission
-            Whether the command is enabled by default. Default is True.
+            Deprecated as of 1.4.x! Whether the command is enabled by default.
+        default_member_permissions
+            A permission integer defining the required permissions a user must have to run the command
         permissions
             List of permission overwrites.
         """
@@ -149,6 +156,7 @@ class DiscordInteractionsBlueprint:
                 annotations,
                 type,
                 default_permission,
+                default_member_permissions,
                 permissions,
             )
             return command
@@ -161,6 +169,7 @@ class DiscordInteractionsBlueprint:
         description="No description",
         is_async=False,
         default_permission=None,
+        default_member_permissions=None,
         permissions=None,
     ):
         """
@@ -177,13 +186,15 @@ class DiscordInteractionsBlueprint:
             Whether the subgroup should be considered async (if subcommands
             get an :class:`.AsyncContext` instead of a :class:`Context`.)
         default_permission
-            Whether the command group is enabled by default.
+            Deprecated as of 1.4.x! Whether the command is enabled by default.
+        default_member_permissions
+            A permission integer defining the required permissions a user must have to run the command
         permissions
             List of permission overwrites. These apply to the entire group.
         """
 
         group = SlashCommandGroup(
-            name, description, is_async, default_permission, permissions
+            name, description, is_async, default_permission, default_member_permissions, permissions
         )
         self.discord_commands[name] = group
         return group
