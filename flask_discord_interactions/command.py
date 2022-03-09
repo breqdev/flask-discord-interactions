@@ -53,6 +53,8 @@ class Command:
         Deprecated as of 1.4.x! Whether the command is enabled by default.
     default_member_permissions
         A permission integer defining the required permissions a user must have to run the command
+    dm_permission
+        Indicates whether the command can be used in DMs
     permissions
         List of permission overwrites.
     discord
@@ -70,6 +72,7 @@ class Command:
         command_type=ApplicationCommandType.CHAT_INPUT,
         default_permission=None,
         default_member_permissions=None,
+        dm_permission=None,
         permissions=None,
         discord=None,
     ):
@@ -81,6 +84,7 @@ class Command:
         self.type = command_type
         self.default_permission = default_permission
         self.default_member_permissions = default_member_permissions
+        self.dm_permission = dm_permission
         self.permissions = permissions or []
         self.discord = discord
 
@@ -232,13 +236,14 @@ class Command:
     def dump(self):
         "Returns this command as a dict for registration with the Discord API."
         data = {
+            "type": self.type,
             "name": self.name,
             "description": self.description,
             "options": self.options,
         }
 
         # Keeping this here not to break any bots using the old system
-        if hasattr(self, "default_permission"):
+        if self.default_permission is not None:
             data["default_permission"] = self.default_member_permissions
             warnings.warn(
                 "Deprecated! As of v1.4.x, the old default_permission is deprecated in favor of "
@@ -247,11 +252,11 @@ class Command:
                 stacklevel=2,
             )
 
-        if hasattr(self, "default_member_permissions"):
+        if self.default_member_permissions:
             data["default_member_permissions"] = self.default_member_permissions
 
-        if hasattr(self, "type"):
-            data["type"] = self.type
+        if self.dm_permission:
+            data["dm_permission"] = self.dm_permission
 
         return data
 
@@ -305,6 +310,7 @@ class SlashCommandSubgroup(Command):
 
         self.default_permission = None
         self.default_member_permissions = None
+        self.dm_permission = None
         self.permissions = []
 
         self.is_async = is_async
@@ -385,6 +391,8 @@ class SlashCommandGroup(SlashCommandSubgroup):
         Whether the subgroup is enabled by default. Default is True.
     default_member_permissions:
         Permission integer setting permission defaults for a command
+    dm_permission
+        Indicates whether the command can be used in DMs
     permissions
         List of permission overwrites. These apply to all subcommands of this
         group.
@@ -397,6 +405,7 @@ class SlashCommandGroup(SlashCommandSubgroup):
         is_async=False,
         default_permission=None,
         default_member_permissions=None,
+        dm_permission=None,
         permissions=None,
     ):
         self.name = name
@@ -406,6 +415,7 @@ class SlashCommandGroup(SlashCommandSubgroup):
 
         self.default_permission = default_permission
         self.default_member_permissions = default_member_permissions
+        self.dm_permission = dm_permission
         self.permissions = permissions or []
 
         self.is_async = is_async
