@@ -111,12 +111,12 @@ class Message(LoadableDataclass):
                 self.Message_type = ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
 
         if isinstance(self.timestamp, str):
-            self.timestamp = datetime.strptime(self.timestamp, "%Y-%m-%dT%H:%M:%S.%f%z")
+            self.timestamp = datetime.fromisoformat(self.timestamp)
+
 
         if isinstance(self.edited_timestamp, str):
-            self.edited_timestamp = datetime.strptime(
-                self.edited_timestamp, "%Y-%m-%dT%H:%M:%S.%f%z"
-            )
+            self.edited_timestamp = datetime.fromisoformat(self.edited_timestamp)
+
 
         if isinstance(self.author, dict):
             self.author = Member.from_dict(self.author)
