@@ -244,7 +244,7 @@ class Command:
 
         # Keeping this here not to break any bots using the old system
         if self.default_permission is not None:
-            data["default_permission"] = self.default_member_permissions
+            data["default_permission"] = self.default_permission
             warnings.warn(
                 "Deprecated! As of v1.5, the old default_permission is deprecated in favor of "
                 "the new default_member_permissions",
