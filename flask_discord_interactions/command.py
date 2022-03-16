@@ -50,7 +50,7 @@ class Command:
         The value is in ``ApplicationCommandType``. If omitted, set the default
         value to ``ApplicationCommandType.CHAT_INPUT``.
     default_permission
-        Deprecated as of 1.4.x! Whether the command is enabled by default.
+        Deprecated as of v1.5! Whether the command is enabled by default.
     default_member_permissions
         A permission integer defining the required permissions a user must have to run the command
     dm_permission
@@ -246,7 +246,7 @@ class Command:
         if self.default_permission is not None:
             data["default_permission"] = self.default_member_permissions
             warnings.warn(
-                "Deprecated! As of v1.4.x, the old default_permission is deprecated in favor of "
+                "Deprecated! As of v1.5, the old default_permission is deprecated in favor of "
                 "the new default_member_permissions",
                 DeprecationWarning,
                 stacklevel=2,

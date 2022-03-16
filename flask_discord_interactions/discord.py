@@ -77,7 +77,7 @@ class DiscordInteractionsBlueprint:
         type
             The ``ApplicationCommandType`` of the command.
         default_permission
-            Deprecated as of 1.4.x! Whether the command is enabled by default.
+            Deprecated as of v1.5! Whether the command is enabled by default.
         default_member_permissions
             A permission integer defining the required permissions a user must have to run the command
         dm_permission
@@ -144,7 +144,7 @@ class DiscordInteractionsBlueprint:
         type
             The ``ApplicationCommandType`` of the command.
         default_permission
-            Deprecated as of 1.4.x! Whether the command is enabled by default.
+            Deprecated as of v1.5! Whether the command is enabled by default.
         default_member_permissions
             A permission integer defining the required permissions a user must have to run the command
         dm_permission
@@ -195,7 +195,7 @@ class DiscordInteractionsBlueprint:
             Whether the subgroup should be considered async (if subcommands
             get an :class:`.AsyncContext` instead of a :class:`Context`.)
         default_permission
-            Deprecated as of 1.4.x! Whether the command is enabled by default.
+            Deprecated as of v1.5! Whether the command is enabled by default.
         default_member_permissions
             A permission integer defining the required permissions a user must have to run the command
         dm_permission
