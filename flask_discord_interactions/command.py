@@ -253,7 +253,7 @@ class Command:
             )
 
         if self.default_member_permissions:
-            data["default_member_permissions"] = self.default_member_permissions
+            data["default_member_permissions"] = str(self.default_member_permissions)
 
         if self.dm_permission:
             data["dm_permission"] = self.dm_permission
