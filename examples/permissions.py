@@ -17,6 +17,11 @@ app.config["DISCORD_CLIENT_SECRET"] = os.environ["DISCORD_CLIENT_SECRET"]
 
 discord.update_commands()
 
+@discord.command(default_member_permissions=4)
+def blacklist(ctx, user):
+    "Only members with the 'Ban members' permission can use this command"
+    return f"{user.username} has been blacklisted!"
+
 
 @discord.command(
     default_permission=False, permissions=[Permission(role="786840072891662336")]
