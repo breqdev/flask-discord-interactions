@@ -9,6 +9,7 @@ API Reference
     context.rst
     options.rst
     autocomplete.rst
+    modal.rst
     message.rst
     client.rst
     components.rst
