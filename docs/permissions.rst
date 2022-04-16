@@ -8,7 +8,7 @@ and two major ways of setting the permissions of a command.
 Default member Permissions
 --------------------------
 
-This field represents a permission integer like it is also used in channel overwrites and role permissions and
+This field represents a permission integer like it is used in channel overwrites and role permissions and
 determines the permissions a guild member needs to have in order to execute that command.
 
 Let's say you want to have a `/setup` command that is locked to members who have the permissions to manage channels and to manage roles.
@@ -21,7 +21,7 @@ By simply putting the number shown above into the ``default_member_permissions``
 
     @discord.command(default_member_permissions=268435472)
     def setup(ctx):
-        "Only members with channel- and rolemanagament permissions can run this"
+        "Only members with channel- and role-managament permissions can run this"
 
         return "You have the right permissions! Setting up now..."
 
@@ -29,8 +29,8 @@ Setting specific overwrites
 ---------------------------
 
 .. warning::
-   The methods below will require an extra oauth scope granted by a server owner as of discord's revamp of slash command permissions.
-   It's highly recommended to use the ``default_member_permissions`` field instead,
+   The methods below will require an extra oauth scope granted by a server admin as of discord's rewrite of slash command permissions.
+   It's highly recommended to use the ``default_member_permissions`` field instead.
 
 Permission class
 ^^^^^^^^^^^^^^^^
