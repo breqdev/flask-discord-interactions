@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Optional
 
 from flask_discord_interactions.models import User, Member, Channel, Role
 
@@ -34,6 +34,16 @@ class Option:
         The description of the option. Defaults to "No description."
     required
         Whether the option is required. Defaults to ``False``.
+    options:
+        A list of further options if the option is a subcommand or a subcommand group.
+    choices
+        A list of choices for the option.
+    channel_types:
+        A list of :class:`.ChannelType` for the option.
+    min_value
+        The minimum value of the option if the option is numeric.
+    max_value
+        The maximum value of the option if the option is numeric.
     autocomplete
         Whether the option should be autocompleted. Defaults to ``False``.
         Set to ``True`` if you have an autocomplete handler for this command.
@@ -51,10 +61,16 @@ class Option:
 
     description: str = "No description"
     required: bool = False
+    options: Optional[list] = None
+    choices: Optional[list] = None
+    channel_types: Optional[list] = None
+    min_value: Optional[int] = None
+    max_value: Optional[int] = None
+
     autocomplete: bool = False
 
     value: Any = None
-    focused: bool = None
+    focused: Optional[bool] = None
 
     def __post_init__(self):
         if isinstance(self.type, type):
@@ -92,6 +108,11 @@ class Option:
             "type": self.type,
             "description": self.description,
             "required": self.required,
+            "options": self.options,
+            "choices": self.choices,
+            "channel_types": self.channel_types,
+            "min_value": self.min_value,
+            "max_value": self.max_value,
             "autocomplete": self.autocomplete,
         }
         return data
