@@ -5,7 +5,7 @@ from flask import Flask
 
 sys.path.insert(1, ".")
 
-from flask_discord_interactions import DiscordInteractions, Permission
+from flask_discord_interactions import DiscordInteractions, Permission, Member
 
 
 app = Flask(__name__)
@@ -16,6 +16,12 @@ app.config["DISCORD_PUBLIC_KEY"] = os.environ["DISCORD_PUBLIC_KEY"]
 app.config["DISCORD_CLIENT_SECRET"] = os.environ["DISCORD_CLIENT_SECRET"]
 
 discord.update_commands()
+
+
+@discord.command(default_member_permissions=4)
+def blacklist(ctx, user: Member):
+    "Only members with the 'Ban members' permission can use this command"
+    return f"{user.username} has been blacklisted!"
 
 
 @discord.command(

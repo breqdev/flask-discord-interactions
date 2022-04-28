@@ -2,6 +2,7 @@ import re
 import enum
 import inspect
 import itertools
+import warnings
 
 from flask_discord_interactions.context import Context, AsyncContext
 from flask_discord_interactions.models import (
@@ -49,7 +50,11 @@ class Command:
         The value is in ``ApplicationCommandType``. If omitted, set the default
         value to ``ApplicationCommandType.CHAT_INPUT``.
     default_permission
-        Whether the command is enabled by default. Default is True.
+        Deprecated as of v1.5! Whether the command is enabled by default.
+    default_member_permissions
+        A permission integer defining the required permissions a user must have to run the command
+    dm_permission
+        Indicates whether the command can be used in DMs
     permissions
         List of permission overwrites.
     discord
@@ -65,7 +70,9 @@ class Command:
         options,
         annotations,
         command_type=ApplicationCommandType.CHAT_INPUT,
-        default_permission=True,
+        default_permission=None,
+        default_member_permissions=None,
+        dm_permission=None,
         permissions=None,
         discord=None,
     ):
@@ -76,6 +83,8 @@ class Command:
         self.annotations = annotations or {}
         self.type = command_type
         self.default_permission = default_permission
+        self.default_member_permissions = default_member_permissions
+        self.dm_permission = dm_permission
         self.permissions = permissions or []
         self.discord = discord
 
@@ -83,10 +92,7 @@ class Command:
             self.name = command.__name__
 
         if not 1 <= len(self.name) <= 32:
-            raise ValueError(
-                f"Error adding command {self.name}: "
-                "Command name must be between 1 and 32 characters."
-            )
+            raise ValueError(f"Error adding command {self.name}: " "Command name must be between 1 and 32 characters.")
         if self.type is ApplicationCommandType.CHAT_INPUT:
             if self.description is None:
                 self.description = command.__doc__ or "No description"
@@ -104,8 +110,7 @@ class Command:
                 )
             if not 1 <= len(self.description) <= 100:
                 raise ValueError(
-                    f"Error adding command {self.name}: "
-                    "Command description must be between 1 and 100 characters."
+                    f"Error adding command {self.name}: " "Command description must be between 1 and 100 characters."
                 )
         else:
             self.description = None
@@ -113,9 +118,7 @@ class Command:
         self.is_async = inspect.iscoroutinefunction(self.command)
 
         if self.options:
-            self.options = [
-                (o.dump() if isinstance(o, Option) else o) for o in self.options
-            ]
+            self.options = [(o.dump() if isinstance(o, Option) else o) for o in self.options]
 
         if self.type is ApplicationCommandType.CHAT_INPUT and self.options is None:
             sig = inspect.signature(self.command)
@@ -159,9 +162,7 @@ class Command:
 
                 option = {
                     "name": parameter.name,
-                    "description": self.annotations.get(
-                        parameter.name, "No description"
-                    ),
+                    "description": self.annotations.get(parameter.name, "No description"),
                     "type": ptype,
                     "required": (parameter.default == parameter.empty),
                     "autocomplete": autocomplete,
@@ -176,9 +177,7 @@ class Command:
                         value_type = str
 
                     for name, member in annotation.__members__.items():
-                        choices.append(
-                            {"name": name, "value": value_type(member.value)}
-                        )
+                        choices.append({"name": name, "value": value_type(member.value)})
 
                     option["choices"] = choices
 
@@ -237,14 +236,27 @@ class Command:
     def dump(self):
         "Returns this command as a dict for registration with the Discord API."
         data = {
+            "type": self.type,
             "name": self.name,
             "description": self.description,
             "options": self.options,
-            "default_permission": self.default_permission,
         }
 
-        if hasattr(self, "type"):
-            data["type"] = self.type
+        # Keeping this here not to break any bots using the old system
+        if self.default_permission is not None:
+            data["default_permission"] = self.default_permission
+            warnings.warn(
+                "Deprecated! As of v1.5, the old default_permission is deprecated in favor of "
+                "the new default_member_permissions",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
+        if self.default_member_permissions:
+            data["default_member_permissions"] = str(self.default_member_permissions)
+
+        if self.dm_permission:
+            data["dm_permission"] = self.dm_permission
 
         return data
 
@@ -297,6 +309,8 @@ class SlashCommandSubgroup(Command):
         self.type = ApplicationCommandType.CHAT_INPUT
 
         self.default_permission = None
+        self.default_member_permissions = None
+        self.dm_permission = None
         self.permissions = []
 
         self.is_async = is_async
@@ -375,6 +389,10 @@ class SlashCommandGroup(SlashCommandSubgroup):
         get an :class:`AsyncContext` instead of a :class:`Context`.)
     default_permission
         Whether the subgroup is enabled by default. Default is True.
+    default_member_permissions:
+        Permission integer setting permission defaults for a command
+    dm_permission
+        Indicates whether the command can be used in DMs
     permissions
         List of permission overwrites. These apply to all subcommands of this
         group.
@@ -385,7 +403,9 @@ class SlashCommandGroup(SlashCommandSubgroup):
         name,
         description,
         is_async=False,
-        default_permission=True,
+        default_permission=None,
+        default_member_permissions=None,
+        dm_permission=None,
         permissions=None,
     ):
         self.name = name
@@ -394,6 +414,8 @@ class SlashCommandGroup(SlashCommandSubgroup):
         self.type = ApplicationCommandType.CHAT_INPUT
 
         self.default_permission = default_permission
+        self.default_member_permissions = default_member_permissions
+        self.dm_permission = dm_permission
         self.permissions = permissions or []
 
         self.is_async = is_async
