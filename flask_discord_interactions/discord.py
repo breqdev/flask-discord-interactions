@@ -404,7 +404,6 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             response = requests.put(
                 url, json=overwrite_data, headers=self.auth_headers(app)
             )
-            self.throttle(response)
 
             try:
                 response.raise_for_status()
@@ -413,6 +412,8 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                     f"Unable to register commands:"
                     f"{response.status_code} {response.text}"
                 )
+
+            self.throttle(response)
 
             for command in response.json():
                 if command["name"] in app.discord_commands:
@@ -428,7 +429,6 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                     json={"permissions": command.dump_permissions()},
                     headers=self.auth_headers(app),
                 )
-                self.throttle(response)
 
                 try:
                     response.raise_for_status()
@@ -437,6 +437,8 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                         f"Unable to register permissions for {command.id}:"
                         f"{response.status_code} {response.text}"
                     )
+
+                self.throttle(response)
 
     def update_slash_commands(self, *args, **kwargs):
         """
