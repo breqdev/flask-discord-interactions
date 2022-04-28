@@ -422,23 +422,24 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             for command in app.discord_commands.values():
                 command.id = command.name
 
-        for command in app.discord_commands.values():
-            if not app.config["DONT_REGISTER_WITH_DISCORD"]:
-                response = requests.put(
-                    url + "/" + command.id + "/permissions",
-                    json={"permissions": command.dump_permissions()},
-                    headers=self.auth_headers(app),
-                )
-
-                try:
-                    response.raise_for_status()
-                except requests.exceptions.HTTPError:
-                    raise ValueError(
-                        f"Unable to register permissions for {command.id}:"
-                        f"{response.status_code} {response.text}"
+        if guild_id:
+            for command in app.discord_commands.values():
+                if not app.config["DONT_REGISTER_WITH_DISCORD"]:
+                    response = requests.put(
+                        url + "/" + command.id + "/permissions",
+                        json={"permissions": command.dump_permissions()},
+                        headers=self.auth_headers(app),
                     )
 
-                self.throttle(response)
+                    try:
+                        response.raise_for_status()
+                    except requests.exceptions.HTTPError:
+                        raise ValueError(
+                            f"Unable to register permissions for {command.id}:"
+                            f"{response.status_code} {response.text}"
+                        )
+
+                    self.throttle(response)
 
     def update_slash_commands(self, *args, **kwargs):
         """
