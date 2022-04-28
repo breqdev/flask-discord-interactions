@@ -325,7 +325,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         if app.config["DONT_REGISTER_WITH_DISCORD"]:
             app.discord_token = {
                 "token_type": "Bearer",
-                "scope": "applications.commands.update",
+                "scope": "applications.commands.update applications.commands.permissions.update",
                 "expires_in": 604800,
                 "access_token": "DONT_REGISTER_WITH_DISCORD",
             }
@@ -337,7 +337,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             app.config["DISCORD_BASE_URL"] + "/oauth2/token",
             data={
                 "grant_type": "client_credentials",
-                "scope": "applications.commands.update",
+                "scope": "applications.commands.update applications.commands.permissions.update",
             },
             headers={"Content-Type": "application/x-www-form-urlencoded"},
             auth=(app.config["DISCORD_CLIENT_ID"], app.config["DISCORD_CLIENT_SECRET"]),
@@ -421,30 +421,22 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             for command in app.discord_commands.values():
                 command.id = command.name
 
-        url += "/permissions"
-
-        permissions_data = [
-            {"id": command.id, "permissions": command.dump_permissions()}
-            for command in app.discord_commands.values()
-            if command.permissions
-        ]
-
-        if not permissions_data:
-            return
-
-        if not app.config["DONT_REGISTER_WITH_DISCORD"]:
-            response = requests.put(
-                url, json=permissions_data, headers=self.auth_headers(app)
-            )
-            self.throttle(response)
-
-            try:
-                response.raise_for_status()
-            except requests.exceptions.HTTPError:
-                raise ValueError(
-                    f"Unable to register permissions:"
-                    f"{response.status_code} {response.text}"
+        for command in app.discord_commands.values():
+            if not app.config["DONT_REGISTER_WITH_DISCORD"]:
+                response = requests.put(
+                    url + "/" + command.id + "/permissions",
+                    json={"permissions": command.dump_permissions()},
+                    headers=self.auth_headers(app),
                 )
+                self.throttle(response)
+
+                try:
+                    response.raise_for_status()
+                except requests.exceptions.HTTPError:
+                    raise ValueError(
+                        f"Unable to register permissions for {command.id}:"
+                        f"{response.status_code} {response.text}"
+                    )
 
     def update_slash_commands(self, *args, **kwargs):
         """
@@ -631,7 +623,9 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 return jsonify(self.run_autocomplete(request.json).dump())
 
             elif interaction_type == InteractionType.MODAL_SUBMIT:
-                return jsonify(self.run_handler(request.json, allow_modal=False).dump_handler())
+                return jsonify(
+                    self.run_handler(request.json, allow_modal=False).dump_handler()
+                )
 
             else:
                 raise RuntimeWarning(
