@@ -252,10 +252,10 @@ class Command:
                 stacklevel=2,
             )
 
-        if self.default_member_permissions:
+        if self.default_member_permissions is not None:
             data["default_member_permissions"] = str(self.default_member_permissions)
 
-        if self.dm_permission:
+        if self.dm_permission is not None:
             data["dm_permission"] = self.dm_permission
 
         return data
