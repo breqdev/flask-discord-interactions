@@ -64,7 +64,7 @@ Subcommands and Command Groups
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Discord only supports attaching permissions overwrites to top-level commands.
-Thus, there are no ``permissions`` parameters for the
+Thus, there is no ``permissions`` parameter for the
 :meth:`.SlashCommandGroup.command` decorator. However, you can still set
 permissions for an entire tree of subcommands using the
 :meth:`.DiscordInteractions.command_group` function.
