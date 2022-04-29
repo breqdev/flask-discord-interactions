@@ -56,6 +56,8 @@ class DiscordInteractionsBlueprint:
         default_member_permissions=None,
         dm_permission=None,
         permissions=None,
+        name_localizations=None,
+        description_localizations=None,
     ):
         """
         Create and add a new :class:`ApplicationCommand`.
@@ -66,8 +68,12 @@ class DiscordInteractionsBlueprint:
             Function to execute when the command is run.
         name
             The name of the command, as displayed in the Discord client.
+        name_localizations
+            A dictionary of localizations for the name of the command.
         description
             The description of the command.
+        description_localizations
+            A dictionary of localizations for the description of the command.
         options
             A list of options for the command, overriding the function's
             keyword arguments.
@@ -96,6 +102,8 @@ class DiscordInteractionsBlueprint:
             default_member_permissions,
             dm_permission,
             permissions,
+            name_localizations,
+            description_localizations,
             self,
         )
         self.discord_commands[command.name] = command
@@ -125,6 +133,8 @@ class DiscordInteractionsBlueprint:
         default_member_permissions=None,
         dm_permission=None,
         permissions=None,
+        name_localizations=None,
+        description_localizations=None,
     ):
         """
         Decorator to create a new :class:`Command`.
@@ -133,8 +143,12 @@ class DiscordInteractionsBlueprint:
         ----------
         name
             The name of the command, as displayed in the Discord client.
+        name_localizations
+            A dictionary of localizations for the name of the command.
         description
             The description of the command.
+        description_localizations
+            A dictionary of localizations for the description of the command.
         options
             A list of options for the command, overriding the function's
             keyword arguments.
@@ -166,6 +180,8 @@ class DiscordInteractionsBlueprint:
                 default_member_permissions,
                 dm_permission,
                 permissions,
+                name_localizations,
+                description_localizations,
             )
             return command
 
@@ -180,6 +196,8 @@ class DiscordInteractionsBlueprint:
         default_member_permissions=None,
         dm_permission=None,
         permissions=None,
+        name_localizations=None,
+        description_localizations=None,
     ):
         """
         Create a new :class:`SlashCommandGroup`
@@ -189,8 +207,12 @@ class DiscordInteractionsBlueprint:
         ----------
         name
             The name of the command group, as displayed in the Discord client.
+        name_localizations
+            A dictionary of localizations for the name of the command group.
         description
             The description of the command group.
+        description_localizations
+            A dictionary of localizations for the description of the command group.
         is_async
             Whether the subgroup should be considered async (if subcommands
             get an :class:`.AsyncContext` instead of a :class:`Context`.)
@@ -212,6 +234,8 @@ class DiscordInteractionsBlueprint:
             default_member_permissions,
             dm_permission,
             permissions,
+            name_localizations,
+            description_localizations,
         )
         self.discord_commands[name] = group
         return group
@@ -329,9 +353,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 "expires_in": 604800,
                 "access_token": "DONT_REGISTER_WITH_DISCORD",
             }
-            app.discord_token["expires_on"] = (
-                time.time() + app.discord_token["expires_in"] / 2
-            )
+            app.discord_token["expires_on"] = time.time() + app.discord_token["expires_in"] / 2
             return
         response = requests.post(
             app.config["DISCORD_BASE_URL"] + "/oauth2/token",
@@ -345,9 +367,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         response.raise_for_status()
         app.discord_token = response.json()
-        app.discord_token["expires_on"] = (
-            time.time() + app.discord_token["expires_in"] / 2
-        )
+        app.discord_token["expires_on"] = time.time() + app.discord_token["expires_in"] / 2
 
     def auth_headers(self, app):
         """
@@ -393,25 +413,17 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 f"guilds/{guild_id}/commands"
             )
         else:
-            url = (
-                f"{app.config['DISCORD_BASE_URL']}/applications/"
-                f"{app.config['DISCORD_CLIENT_ID']}/commands"
-            )
+            url = f"{app.config['DISCORD_BASE_URL']}/applications/" f"{app.config['DISCORD_CLIENT_ID']}/commands"
 
         overwrite_data = [command.dump() for command in app.discord_commands.values()]
 
         if not app.config["DONT_REGISTER_WITH_DISCORD"]:
-            response = requests.put(
-                url, json=overwrite_data, headers=self.auth_headers(app)
-            )
+            response = requests.put(url, json=overwrite_data, headers=self.auth_headers(app))
 
             try:
                 response.raise_for_status()
             except requests.exceptions.HTTPError:
-                raise ValueError(
-                    f"Unable to register commands:"
-                    f"{response.status_code} {response.text}"
-                )
+                raise ValueError(f"Unable to register commands:" f"{response.status_code} {response.text}")
 
             self.throttle(response)
 
@@ -626,14 +638,10 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 return jsonify(self.run_autocomplete(request.json).dump())
 
             elif interaction_type == InteractionType.MODAL_SUBMIT:
-                return jsonify(
-                    self.run_handler(request.json, allow_modal=False).dump_handler()
-                )
+                return jsonify(self.run_handler(request.json, allow_modal=False).dump_handler())
 
             else:
-                raise RuntimeWarning(
-                    f"Interaction type {interaction_type} is not yet supported"
-                )
+                raise RuntimeWarning(f"Interaction type {interaction_type} is not yet supported")
 
     def set_route_async(self, route, app=None):
         """
@@ -655,9 +663,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             app = self.app
 
         if aiohttp is None:
-            raise ImportError(
-                "The aiohttp module is required for async usage of this " "library"
-            )
+            raise ImportError("The aiohttp module is required for async usage of this " "library")
 
         @app.route(route, methods=["POST"])
         async def interactions():
@@ -678,9 +684,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 result = self.run_handler(request.json, allow_modal=False)
 
             else:
-                raise RuntimeWarning(
-                    f"Interaction type {interaction_type} is not yet supported"
-                )
+                raise RuntimeWarning(f"Interaction type {interaction_type} is not yet supported")
 
             if inspect.isawaitable(result):
                 result = await result
@@ -690,9 +694,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         # Set up the aiohttp ClientSession
 
         async def create_session():
-            app.discord_client_session = aiohttp.ClientSession(
-                headers=self.auth_headers(app), raise_for_status=True
-            )
+            app.discord_client_session = aiohttp.ClientSession(headers=self.auth_headers(app), raise_for_status=True)
 
         async def close_session():
             await app.discord_client_session.close()
@@ -704,6 +706,4 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         else:
             # Flask apps
             app.before_first_request(create_session)
-            atexit.register(
-                lambda: asyncio.get_event_loop().run_until_complete(close_session())
-            )
+            atexit.register(lambda: asyncio.get_event_loop().run_until_complete(close_session()))
