@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from flask_discord_interactions.models import User, Member, Channel, Role
 
@@ -122,5 +122,31 @@ class Option:
             "min_value": self.min_value,
             "max_value": self.max_value,
             "autocomplete": self.autocomplete,
+        }
+        return data
+
+
+@dataclass
+class Choice:
+    """
+    Represents an option choice. These can be directly set in the command or returned as autocomplete results
+    name
+        Name of the choice
+    value
+        Value of the choice
+    name_localizations
+        A dict of localizations for the name of the choice.
+    """
+
+    name: str
+    value: Union[str, int]
+    name_localizations: Optional[dict] = None
+
+    def dump(self):
+        "Return this choice as a dict for registration with Discord."
+        data = {
+            "name": self.name,
+            "value": self.value,
+            "name_localizations": self.name_localizations,
         }
         return data

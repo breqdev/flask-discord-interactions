@@ -1,5 +1,6 @@
 from typing import Union
 from flask_discord_interactions.models.message import ResponseType
+from flask_discord_interactions.models.option import Choice
 
 
 class Autocomplete:
@@ -57,11 +58,9 @@ class AutocompleteResult:
             return value
         elif isinstance(value, dict):
             return AutocompleteResult([value])
-        elif isinstance(value, list) and all(
-            isinstance(choice, dict) for choice in value
-        ):
+        elif isinstance(value, list) and all(isinstance(choice, dict) for choice in value):
             return AutocompleteResult(value)
+        elif isinstance(value, list) and all(isinstance(choice, Choice) for choice in value):
+            return [AutocompleteResult(choice.dump()) for choice in value]
         elif isinstance(value, list):
-            return AutocompleteResult(
-                [{"name": str(choice), "value": choice} for choice in value]
-            )
+            return AutocompleteResult([{"name": str(choice), "value": choice} for choice in value])
