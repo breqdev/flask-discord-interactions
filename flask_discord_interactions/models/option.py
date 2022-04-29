@@ -27,11 +27,15 @@ class Option:
     ----------
     name
         The name of the option.
+    name_localizations
+        A dict of localizations for the name of the option.
     type
         The type of the option. Provide either a value of
         :class:`.CommandOptionType` or a type (e.g. ``str``).
     description
         The description of the option. Defaults to "No description."
+    description_localizations
+        A dict of localizations for the description of the option.
     required
         Whether the option is required. Defaults to ``False``.
     options:
@@ -66,6 +70,8 @@ class Option:
     channel_types: Optional[list] = None
     min_value: Optional[int] = None
     max_value: Optional[int] = None
+    name_localizations: Optional[dict] = None
+    description_localizations: Optional[dict] = None
 
     autocomplete: bool = False
 
@@ -105,8 +111,10 @@ class Option:
         "Return this option as as a dict for registration with Discord."
         data = {
             "name": self.name,
+            "name_localizations": self.name_localizations,
             "type": self.type,
             "description": self.description,
+            "description_localizations": self.description_localizations,
             "required": self.required,
             "options": self.options,
             "choices": self.choices,
