@@ -7,7 +7,8 @@ You can localize names, descriptions, options, choices and your responses.
 Defining a localized command
 ----------------------------
 
-Commands and options can be localized via the ``name_localizations`` and ``description_localizations`` fields. For choices, only ``name_localizations`` is settable.
+Commands and options can be localized with the ``name_localizations`` and ``description_localizations`` fields. For choices, only ``name_localizations`` is settable.
+A list of all available locales can be found `here <https://discord.com/developers/docs/reference#locales>`_.
 
 .. code-block:: python
 
