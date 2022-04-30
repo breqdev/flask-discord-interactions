@@ -17,7 +17,7 @@ Commands and options can be localized via the ``name_localizations`` and ``descr
             "fr": "nourrir"
         },
         description_localizations={
-            "de": "Füttere einen Tier",
+            "de": "Füttere ein Tier",
             "fr": "Nourrir un animal"
         }
         options=[
