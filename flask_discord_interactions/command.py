@@ -85,7 +85,7 @@ class Command:
         self.default_permission = default_permission
         self.default_member_permissions = default_member_permissions
         self.dm_permission = dm_permission
-        self.permissions = permissions or []
+        self.permissions = permissions
         self.discord = discord
 
         if self.name is None:
@@ -311,7 +311,7 @@ class SlashCommandSubgroup(Command):
         self.default_permission = None
         self.default_member_permissions = None
         self.dm_permission = None
-        self.permissions = []
+        self.permissions = None
 
         self.is_async = is_async
 
@@ -416,7 +416,7 @@ class SlashCommandGroup(SlashCommandSubgroup):
         self.default_permission = default_permission
         self.default_member_permissions = default_member_permissions
         self.dm_permission = dm_permission
-        self.permissions = permissions or []
+        self.permissions = permissions
 
         self.is_async = is_async
 
