@@ -424,7 +424,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         if guild_id:
             for command in app.discord_commands.values():
-                if not app.config["DONT_REGISTER_WITH_DISCORD"]:
+                if not app.config["DONT_REGISTER_WITH_DISCORD"] and command.permissions is not None:
                     response = requests.put(
                         url + "/" + command.id + "/permissions",
                         json={"permissions": command.dump_permissions()},
