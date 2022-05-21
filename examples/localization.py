@@ -21,11 +21,15 @@ answers_localized = {"de": "Welt", "fr": "monde", "da": "verden"}
 
 @discord.command(
     name_localizations={"de": "hallo", "fr": "bonjour", "da": "hej"},
-    description_localizations={"de": "Hallo Welt", "fr": "Bonjour le monde", "da": "Hej verden"},
+    description_localizations={
+        "de": "Hallo Welt",
+        "fr": "Bonjour le monde",
+        "da": "Hej verden",
+    },
 )
 def hello(ctx):
     """Hello world"""
-    return answers_localized.get(ctx.locale, __default="World")
+    return answers_localized.get(ctx.locale, "World")
 
 
 discord.set_route("/interactions")
