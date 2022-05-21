@@ -388,7 +388,7 @@ class Context(LoadableDataclass):
 
         updated = requests.patch(
             self.followup_url(message),
-            json=updated.dump_followup(),
+            **updated.dump_multipart(),
         )
         updated.raise_for_status()
 
