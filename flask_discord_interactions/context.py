@@ -389,7 +389,6 @@ class Context(LoadableDataclass):
         updated = requests.patch(
             self.followup_url(message),
             json=updated.dump_followup(),
-            headers=self.auth_headers,
         )
         updated.raise_for_status()
 
@@ -407,9 +406,7 @@ class Context(LoadableDataclass):
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
-        response = requests.delete(
-            self.followup_url(message), headers=self.auth_headers
-        )
+        response = requests.delete(self.followup_url(message))
         response.raise_for_status()
 
     def send(self, message):
@@ -427,9 +424,7 @@ class Context(LoadableDataclass):
 
         message = Message.from_return_value(message)
 
-        message = requests.post(
-            self.followup_url(), headers=self.auth_headers, **message.dump_multipart()
-        )
+        message = requests.post(self.followup_url(), **message.dump_multipart())
         message.raise_for_status()
         return message.json()["id"]
 
@@ -572,7 +567,7 @@ class AsyncContext(Context):
             return
 
         async with self.session.post(
-            self.followup_url(), headers=self.auth_headers, **message.dump_multipart()
+            self.followup_url(), **message.dump_multipart()
         ) as message:
             return (await message.json())["id"]
 
