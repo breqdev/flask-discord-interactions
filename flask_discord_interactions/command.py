@@ -53,8 +53,6 @@ class Command:
         Type for this command (depend on the action in the Discord client).
         The value is in ``ApplicationCommandType``. If omitted, set the default
         value to ``ApplicationCommandType.CHAT_INPUT``.
-    default_permission
-        Deprecated as of v1.5! Whether the command is enabled by default.
     default_member_permissions
         A permission integer defining the required permissions a user must have to run the command
     dm_permission
@@ -100,7 +98,10 @@ class Command:
             self.name = command.__name__
 
         if not 1 <= len(self.name) <= 32:
-            raise ValueError(f"Error adding command {self.name}: " "Command name must be between 1 and 32 characters.")
+            raise ValueError(
+                f"Error adding command {self.name}: "
+                "Command name must be between 1 and 32 characters."
+            )
         if self.type is ApplicationCommandType.CHAT_INPUT:
             if self.description is None:
                 self.description = command.__doc__ or "No description"
@@ -118,7 +119,8 @@ class Command:
                 )
             if not 1 <= len(self.description) <= 100:
                 raise ValueError(
-                    f"Error adding command {self.name}: " "Command description must be between 1 and 100 characters."
+                    f"Error adding command {self.name}: "
+                    "Command description must be between 1 and 100 characters."
                 )
         else:
             self.description = None
@@ -126,7 +128,9 @@ class Command:
         self.is_async = inspect.iscoroutinefunction(self.command)
 
         if self.options:
-            self.options = [(o.dump() if isinstance(o, Option) else o) for o in self.options]
+            self.options = [
+                (o.dump() if isinstance(o, Option) else o) for o in self.options
+            ]
 
         if self.type is ApplicationCommandType.CHAT_INPUT and self.options is None:
             sig = inspect.signature(self.command)
@@ -170,7 +174,9 @@ class Command:
 
                 option = {
                     "name": parameter.name,
-                    "description": self.annotations.get(parameter.name, "No description"),
+                    "description": self.annotations.get(
+                        parameter.name, "No description"
+                    ),
                     "type": ptype,
                     "required": (parameter.default == parameter.empty),
                     "autocomplete": autocomplete,
@@ -185,7 +191,9 @@ class Command:
                         value_type = str
 
                     for name, member in annotation.__members__.items():
-                        choices.append({"name": name, "value": value_type(member.value)})
+                        choices.append(
+                            {"name": name, "value": value_type(member.value)}
+                        )
 
                     option["choices"] = choices
 
@@ -252,16 +260,6 @@ class Command:
             "description_localizations": self.description_localizations,
         }
 
-        # Keeping this here not to break any bots using the old system
-        if self.default_permission is not None:
-            data["default_permission"] = self.default_permission
-            warnings.warn(
-                "Deprecated! As of v1.5, the old default_permission is deprecated in favor of "
-                "the new default_member_permissions",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
         if self.default_member_permissions is not None:
             data["default_member_permissions"] = str(self.default_member_permissions)
 
@@ -316,7 +314,14 @@ class SlashCommandSubgroup(Command):
         get an :class:`AsyncContext` instead of a :class:`Context`.)
     """
 
-    def __init__(self, name, description, name_localizations=None, description_localizations=None, is_async=False):
+    def __init__(
+        self,
+        name,
+        description,
+        name_localizations=None,
+        description_localizations=None,
+        is_async=False,
+    ):
         self.name = name
         self.description = description
         self.subcommands = {}
@@ -364,7 +369,13 @@ class SlashCommandSubgroup(Command):
         def decorator(func):
             nonlocal name, description, options, annotations
             subcommand = Command(
-                func, name, description, name_localizations, description_localizations, options, annotations
+                func,
+                name,
+                description,
+                name_localizations,
+                description_localizations,
+                options,
+                annotations,
             )
             self.subcommands[subcommand.name] = subcommand
             return func
@@ -485,6 +496,8 @@ class SlashCommandGroup(SlashCommandSubgroup):
             get an :class:`AsyncContext` instead of a :class:`Context`.)
         """
 
-        group = SlashCommandSubgroup(name, description, name_localizations, description_localizations, is_async)
+        group = SlashCommandSubgroup(
+            name, description, name_localizations, description_localizations, is_async
+        )
         self.subcommands[name] = group
         return group

@@ -82,8 +82,6 @@ class DiscordInteractionsBlueprint:
             options defined in the function's keyword arguments.
         type
             The ``ApplicationCommandType`` of the command.
-        default_permission
-            Deprecated as of v1.5! Whether the command is enabled by default.
         default_member_permissions
             A permission integer defining the required permissions a user must have to run the command
         dm_permission
@@ -108,19 +106,6 @@ class DiscordInteractionsBlueprint:
         )
         self.discord_commands[command.name] = command
         return command
-
-    def add_slash_command(self, *args, **kwargs):
-        """
-        Deprecated! As of v1.1.0, ``add_slash_command`` has been renamed to
-        :meth:`add_command`, as it can now add User and Message commands.
-        """
-        warnings.warn(
-            "Deprecated! As of v1.1.0, add_slash_command has been renamed to "
-            "add_command, as it can now add User and Message commands.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.add_command(*args, **kwargs)
 
     def command(
         self,
@@ -157,8 +142,6 @@ class DiscordInteractionsBlueprint:
             options defined in the function's keyword arguments.
         type
             The ``ApplicationCommandType`` of the command.
-        default_permission
-            Deprecated as of v1.5! Whether the command is enabled by default.
         default_member_permissions
             A permission integer defining the required permissions a user must have to run the command
         dm_permission
@@ -216,8 +199,6 @@ class DiscordInteractionsBlueprint:
         is_async
             Whether the subgroup should be considered async (if subcommands
             get an :class:`.AsyncContext` instead of a :class:`Context`.)
-        default_permission
-            Deprecated as of v1.5! Whether the command is enabled by default.
         default_member_permissions
             A permission integer defining the required permissions a user must have to run the command
         dm_permission
@@ -467,20 +448,6 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                         )
 
                     self.throttle(response)
-
-    def update_slash_commands(self, *args, **kwargs):
-        """
-        Deprecated! As of v1.1.0, ``update_slash_commands`` has been renamed to
-        ``update_commands``, as it updates User and Message commands as well.
-        """
-        warnings.warn(
-            "Deprecated! As of v1.1.0, update_slash_commands has been renamed "
-            "to update_commands, as it updates User and Message commands too.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
-        return self.update_commands(*args, **kwargs)
 
     def throttle(self, response):
         """
