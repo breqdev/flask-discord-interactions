@@ -117,12 +117,13 @@ class Option:
             "description_localizations": self.description_localizations,
             "required": self.required,
             "options": self.options,
-            "choices": self.choices,
             "channel_types": self.channel_types,
             "min_value": self.min_value,
             "max_value": self.max_value,
             "autocomplete": self.autocomplete,
         }
+        if self.choices is not None:
+            data["choices"] = [(c.dump() if isinstance(c, Choice) else c) for c in self.choices]                           return data
         return data
 
 
