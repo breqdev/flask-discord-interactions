@@ -72,6 +72,22 @@ def delay(ctx, duration: int):
     return Message(deferred=True)
 
 
+# This can be useful if you want to send files
+@discord.command()
+def sendfile(ctx):
+    def do_sendfile():
+        ctx.edit(
+            Message(
+                file=("README.md", open("README.md", "r"), "text/markdown"),
+            )
+        )
+
+    thread = threading.Thread(target=do_sendfile)
+    thread.start()
+
+    return Message(deferred=True)
+
+
 discord.set_route("/interactions")
 discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 
