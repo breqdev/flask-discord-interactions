@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 import inspect
 import itertools
 import warnings
@@ -68,6 +68,10 @@ class Context(LoadableDataclass):
     message
         The message that the invoked components are attached to.
         Only available on component interactions.
+    locale
+        The selected language of the invoking user.
+    guild_locale
+        The guild's preferred locale, if invoked in a guild
     """
 
     author: Union[Member, User] = None
@@ -86,6 +90,8 @@ class Context(LoadableDataclass):
     channels: List[Channel] = None
     roles: List[Role] = None
     message: Message = None
+    locale: Optional[str] = None
+    guild_locale: Optional[str] = None
 
     app: Any = None
     discord: Any = None
@@ -123,6 +129,8 @@ class Context(LoadableDataclass):
             command_id=data.get("data", {}).get("id"),
             custom_id=data.get("data", {}).get("custom_id") or "",
             target_id=data.get("data", {}).get("target_id"),
+            locale=data.get("locale"),
+            guild_locale=data.get("guild_locale"),
         )
 
         result.data = data

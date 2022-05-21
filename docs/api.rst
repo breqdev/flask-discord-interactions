@@ -15,3 +15,4 @@ API Reference
     components.rst
     quart.rst
     permissions.rst
+    localization.rst

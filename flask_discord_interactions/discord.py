@@ -56,6 +56,8 @@ class DiscordInteractionsBlueprint:
         default_member_permissions=None,
         dm_permission=None,
         permissions=None,
+        name_localizations=None,
+        description_localizations=None,
     ):
         """
         Create and add a new :class:`ApplicationCommand`.
@@ -66,8 +68,12 @@ class DiscordInteractionsBlueprint:
             Function to execute when the command is run.
         name
             The name of the command, as displayed in the Discord client.
+        name_localizations
+            A dictionary of localizations for the name of the command.
         description
             The description of the command.
+        description_localizations
+            A dictionary of localizations for the description of the command.
         options
             A list of options for the command, overriding the function's
             keyword arguments.
@@ -96,6 +102,8 @@ class DiscordInteractionsBlueprint:
             default_member_permissions,
             dm_permission,
             permissions,
+            name_localizations,
+            description_localizations,
             self,
         )
         self.discord_commands[command.name] = command
@@ -125,6 +133,8 @@ class DiscordInteractionsBlueprint:
         default_member_permissions=None,
         dm_permission=None,
         permissions=None,
+        name_localizations=None,
+        description_localizations=None,
     ):
         """
         Decorator to create a new :class:`Command`.
@@ -133,8 +143,12 @@ class DiscordInteractionsBlueprint:
         ----------
         name
             The name of the command, as displayed in the Discord client.
+        name_localizations
+            A dictionary of localizations for the name of the command.
         description
             The description of the command.
+        description_localizations
+            A dictionary of localizations for the description of the command.
         options
             A list of options for the command, overriding the function's
             keyword arguments.
@@ -166,6 +180,8 @@ class DiscordInteractionsBlueprint:
                 default_member_permissions,
                 dm_permission,
                 permissions,
+                name_localizations,
+                description_localizations,
             )
             return command
 
@@ -180,6 +196,8 @@ class DiscordInteractionsBlueprint:
         default_member_permissions=None,
         dm_permission=None,
         permissions=None,
+        name_localizations=None,
+        description_localizations=None,
     ):
         """
         Create a new :class:`SlashCommandGroup`
@@ -189,8 +207,12 @@ class DiscordInteractionsBlueprint:
         ----------
         name
             The name of the command group, as displayed in the Discord client.
+        name_localizations
+            A dictionary of localizations for the name of the command group.
         description
             The description of the command group.
+        description_localizations
+            A dictionary of localizations for the description of the command group.
         is_async
             Whether the subgroup should be considered async (if subcommands
             get an :class:`.AsyncContext` instead of a :class:`Context`.)
@@ -212,6 +234,8 @@ class DiscordInteractionsBlueprint:
             default_member_permissions,
             dm_permission,
             permissions,
+            name_localizations,
+            description_localizations,
         )
         self.discord_commands[name] = group
         return group
@@ -424,7 +448,10 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         if guild_id:
             for command in app.discord_commands.values():
-                if not app.config["DONT_REGISTER_WITH_DISCORD"] and command.permissions is not None:
+                if (
+                    not app.config["DONT_REGISTER_WITH_DISCORD"]
+                    and command.permissions is not None
+                ):
                     response = requests.put(
                         url + "/" + command.id + "/permissions",
                         json={"permissions": command.dump_permissions()},

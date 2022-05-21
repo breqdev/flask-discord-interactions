@@ -30,11 +30,15 @@ class Command:
     name
         Name for this command (appears in the Discord client). If omitted,
         infers the name based on the name of the function.
+    name_localizations
+        Localization dictionary for name field.
     description
         Description for this command (appears in the Discord client). If
         omitted, infers the description based on the docstring of the function,
         or sets the description to "No description", if ``ApplicationCommandType``
         is ``CHAT_INPUT``, else set description to ``None``.
+    description_localizations
+        Localization dictionary for description field.
     options
         Array of options that can be passed to this command. If omitted,
         infers the options based on the function parameters and type
@@ -74,6 +78,8 @@ class Command:
         default_member_permissions=None,
         dm_permission=None,
         permissions=None,
+        name_localizations=None,
+        description_localizations=None,
         discord=None,
     ):
         self.command = command
@@ -86,6 +92,8 @@ class Command:
         self.default_member_permissions = default_member_permissions
         self.dm_permission = dm_permission
         self.permissions = permissions
+        self.name_localizations = name_localizations
+        self.description_localizations = description_localizations
         self.discord = discord
 
         if self.name is None:
@@ -240,6 +248,8 @@ class Command:
             "name": self.name,
             "description": self.description,
             "options": self.options,
+            "name_localizations": self.name_localizations,
+            "description_localizations": self.description_localizations,
         }
 
         # Keeping this here not to break any bots using the old system
@@ -295,18 +305,24 @@ class SlashCommandSubgroup(Command):
     ----------
     name
         The name of this subgroup, shown in the Discord client.
+    name_localizations
+        A dict of localized names for this subgroup.
     description
         The description of this subgroup, shown in the Discord client.
+    description_localizations
+        A dict of localized descriptions for this subgroup.
     is_async
         Whether the subgroup should be considered async (if subcommands
         get an :class:`AsyncContext` instead of a :class:`Context`.)
     """
 
-    def __init__(self, name, description, is_async=False):
+    def __init__(self, name, description, name_localizations=None, description_localizations=None, is_async=False):
         self.name = name
         self.description = description
         self.subcommands = {}
         self.type = ApplicationCommandType.CHAT_INPUT
+        self.name_localizations = name_localizations
+        self.description_localizations = description_localizations
 
         self.default_permission = None
         self.default_member_permissions = None
@@ -315,7 +331,15 @@ class SlashCommandSubgroup(Command):
 
         self.is_async = is_async
 
-    def command(self, name=None, description=None, options=None, annotations=None):
+    def command(
+        self,
+        name=None,
+        description=None,
+        name_localizations=None,
+        description_localizations=None,
+        options=None,
+        annotations=None,
+    ):
         """
         Decorator to create a new Subcommand of this Subgroup.
 
@@ -323,8 +347,12 @@ class SlashCommandSubgroup(Command):
         ----------
         name
             The name of the command, as displayed in the Discord client.
+        name_localizations
+            A dict of localized names for the command.
         description
             The description of the command.
+        description_localizations
+            A dict of localized descriptions for the command.
         options
             A list of options for the command, overriding the function's
             keyword arguments.
@@ -335,7 +363,9 @@ class SlashCommandSubgroup(Command):
 
         def decorator(func):
             nonlocal name, description, options, annotations
-            subcommand = Command(func, name, description, options, annotations)
+            subcommand = Command(
+                func, name, description, name_localizations, description_localizations, options, annotations
+            )
             self.subcommands[subcommand.name] = subcommand
             return func
 
@@ -382,8 +412,12 @@ class SlashCommandGroup(SlashCommandSubgroup):
     ----------
     name
         The name of this subgroup, shown in the Discord client.
+    name_localizations
+        A dict of localized names for this subgroup.
     description
         The description of this subgroup, shown in the Discord client.
+    description_localizations
+        A dict of localized descriptions for this subgroup.
     is_async
         Whether the subgroup should be considered async (if subcommands
         get an :class:`AsyncContext` instead of a :class:`Context`.)
@@ -407,6 +441,8 @@ class SlashCommandGroup(SlashCommandSubgroup):
         default_member_permissions=None,
         dm_permission=None,
         permissions=None,
+        name_localizations=None,
+        description_localizations=None,
     ):
         self.name = name
         self.description = description
@@ -417,10 +453,19 @@ class SlashCommandGroup(SlashCommandSubgroup):
         self.default_member_permissions = default_member_permissions
         self.dm_permission = dm_permission
         self.permissions = permissions
+        self.name_localizations = name_localizations
+        self.description_localizations = description_localizations
 
         self.is_async = is_async
 
-    def subgroup(self, name, description="No description", is_async=False):
+    def subgroup(
+        self,
+        name,
+        description="No description",
+        name_localizations=None,
+        description_localizations=None,
+        is_async=False,
+    ):
         """
         Create a new :class:`SlashCommandSubroup`
         (which can contain multiple subcommands)
@@ -429,13 +474,17 @@ class SlashCommandGroup(SlashCommandSubgroup):
         ----------
         name
             The name of the subgroup, as displayed in the Discord client.
+        name_localizations
+            A dict of localized names for the subgroup.
         description
             The description of the subgroup. Defaults to "No description".
+        description_localizations
+            A dict of localized descriptions for the subgroup.
         is_async
             Whether the subgroup should be considered async (if subcommands
             get an :class:`AsyncContext` instead of a :class:`Context`.)
         """
 
-        group = SlashCommandSubgroup(name, description, is_async)
+        group = SlashCommandSubgroup(name, description, name_localizations, description_localizations, is_async)
         self.subcommands[name] = group
         return group

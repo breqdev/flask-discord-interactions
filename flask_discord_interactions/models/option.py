@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from flask_discord_interactions.models import User, Member, Channel, Role
 
@@ -27,11 +27,15 @@ class Option:
     ----------
     name
         The name of the option.
+    name_localizations
+        A dict of localizations for the name of the option.
     type
         The type of the option. Provide either a value of
         :class:`.CommandOptionType` or a type (e.g. ``str``).
     description
         The description of the option. Defaults to "No description."
+    description_localizations
+        A dict of localizations for the description of the option.
     required
         Whether the option is required. Defaults to ``False``.
     options:
@@ -66,6 +70,8 @@ class Option:
     channel_types: Optional[list] = None
     min_value: Optional[int] = None
     max_value: Optional[int] = None
+    name_localizations: Optional[dict] = None
+    description_localizations: Optional[dict] = None
 
     autocomplete: bool = False
 
@@ -105,8 +111,10 @@ class Option:
         "Return this option as as a dict for registration with Discord."
         data = {
             "name": self.name,
+            "name_localizations": self.name_localizations,
             "type": self.type,
             "description": self.description,
+            "description_localizations": self.description_localizations,
             "required": self.required,
             "options": self.options,
             "choices": self.choices,
@@ -114,5 +122,31 @@ class Option:
             "min_value": self.min_value,
             "max_value": self.max_value,
             "autocomplete": self.autocomplete,
+        }
+        return data
+
+
+@dataclass
+class Choice:
+    """
+    Represents an option choice. These can be directly set in the command or returned as autocomplete results
+    name
+        Name of the choice
+    value
+        Value of the choice
+    name_localizations
+        A dict of localizations for the name of the choice.
+    """
+
+    name: str
+    value: Union[str, int]
+    name_localizations: Optional[dict] = None
+
+    def dump(self):
+        "Return this choice as a dict for registration with Discord."
+        data = {
+            "name": self.name,
+            "value": self.value,
+            "name_localizations": self.name_localizations,
         }
         return data
