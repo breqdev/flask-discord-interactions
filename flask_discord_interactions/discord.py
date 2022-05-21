@@ -500,7 +500,11 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         # rate_limit_bucket = response.headers["X-RateLimit-Bucket"]
 
         if not rate_limit_remaining:
-            time.sleep(max(rate_limit_reset - time.time(), 0))
+            wait_time = rate_limit_reset - time.time()
+            warnings.warn(
+                f"You are being rate limited. Waiting {int(wait_time)} seconds..."
+            )
+            time.sleep(max(wait_time, 0))
 
     def register_blueprint(self, blueprint, app=None):
         """
