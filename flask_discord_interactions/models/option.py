@@ -123,7 +123,7 @@ class Option:
             "autocomplete": self.autocomplete,
         }
         if self.choices is not None:
-            data["choices"] = [(c.dump() if isinstance(c, Choice) else c) for c in self.choices]                           return data
+            data["choices"] = [(c.dump() if isinstance(c, Choice) else c) for c in self.choices]
         return data
 
 
