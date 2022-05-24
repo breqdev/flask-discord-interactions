@@ -13,6 +13,7 @@ from flask_discord_interactions.models import (
     Channel,
     Role,
     User,
+    Attachment,
     CommandOptionType,
     ApplicationCommandType,
     Message,
@@ -229,6 +230,11 @@ class Context(LoadableDataclass):
             for id, data in self.resolved.get("messages", {}).items()
         }
 
+        self.attachments = {
+            id: Attachment.from_dict(data)
+            for id, data in self.resolved.get("messages", {}).items()
+        }
+
     def parse_target(self):
         """
         Parse the target of the incoming interaction.
@@ -303,6 +309,11 @@ class Context(LoadableDataclass):
                 elif option["type"] == CommandOptionType.ROLE:
                     kwargs[option["name"]] = Role.from_dict(
                         resolved["roles"][option["value"]]
+                    )
+
+                elif option["type"] == CommandOptionType.ATTACHMENT:
+                    kwargs[option["name"]] = Attachment.from_dict(
+                        resolved["attachments"][option["value"]]
                     )
 
                 else:
