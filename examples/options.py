@@ -10,6 +10,7 @@ sys.path.insert(1, ".")
 from flask_discord_interactions import (
     DiscordInteractions,
     Message,
+    Attachment,
     Member,
     Channel,
     Role,
@@ -125,6 +126,24 @@ def channel_info(ctx, channel: Channel):
         embed={
             "title": channel.name,
             "fields": [{"name": "Channel ID", "value": channel.id}],
+        }
+    )
+
+
+@discord.command()
+def image(ctx, attachment: Attachment):
+    return Message(
+        embed={
+            "title": attachment.filename,
+            "description": "Image Info",
+            "fields": [
+                {
+                    "name": "File Size",
+                    "value": f"{attachment.size / 1024} KB",
+                },
+                {"name": "URL", "value": attachment.url},
+            ],
+            "image": {"url": attachment.url},
         }
     )
 
