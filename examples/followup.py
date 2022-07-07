@@ -7,7 +7,13 @@ from flask import Flask
 
 sys.path.insert(1, ".")
 
-from flask_discord_interactions import DiscordInteractions, Message
+from flask_discord_interactions import (
+    DiscordInteractions,
+    Message,
+    ActionRow,
+    Button,
+    ButtonStyles,
+)
 
 
 app = Flask(__name__)
@@ -86,6 +92,70 @@ def sendfile(ctx):
     thread.start()
 
     return Message(deferred=True)
+
+
+# Followups can also be used to edit any message components
+@discord.custom_handler()
+def timed_button_handler(ctx, click_count: int):
+    click_count += 1
+
+    return Message(
+        content=f"The button has been clicked {click_count} times",
+        components=[
+            ActionRow(
+                components=[
+                    Button(
+                        style=ButtonStyles.PRIMARY,
+                        custom_id=[timed_button_handler, click_count],
+                        label="Click me before time is up!",
+                    )
+                ]
+            )
+        ],
+        update=True,
+    )
+
+
+@discord.command()
+def timed_button(ctx, duration: int):
+    def do_delay():
+        time.sleep(duration)
+
+        ctx.edit(
+            Message(
+                content="Time's up!",
+                components=[
+                    ActionRow(
+                        components=[
+                            Button(
+                                style=ButtonStyles.PRIMARY,
+                                custom_id=[timed_button_handler, 0],
+                                label="Time's up!",
+                                disabled=True,
+                            )
+                        ]
+                    )
+                ],
+            )
+        )
+
+    thread = threading.Thread(target=do_delay)
+    thread.start()
+
+    return Message(
+        content=f"You have {duration} seconds to click the button...",
+        components=[
+            ActionRow(
+                components=[
+                    Button(
+                        style=ButtonStyles.PRIMARY,
+                        custom_id=[timed_button_handler, 0],
+                        label="Click me before time is up!",
+                    )
+                ]
+            )
+        ],
+    )
 
 
 discord.set_route("/interactions")
