@@ -2,7 +2,9 @@ import os
 import sys
 import enum
 import math
+import threading
 
+import requests
 from flask import Flask
 
 sys.path.insert(1, ".")
@@ -10,6 +12,7 @@ sys.path.insert(1, ".")
 from flask_discord_interactions import (
     DiscordInteractions,
     Message,
+    Attachment,
     Member,
     Channel,
     Role,
@@ -127,6 +130,60 @@ def channel_info(ctx, channel: Channel):
             "fields": [{"name": "Channel ID", "value": channel.id}],
         }
     )
+
+
+# The Attachment object has some information about the attachment, including the URL
+@discord.command()
+def image(ctx, attachment: Attachment):
+    return Message(
+        embed={
+            "title": attachment.filename,
+            "description": "Image Info",
+            "fields": [
+                {
+                    "name": "File Size",
+                    "value": f"{attachment.size / 1024} KB",
+                },
+                {"name": "URL", "value": attachment.url},
+            ],
+            "image": {"url": attachment.url},
+        }
+    )
+
+
+# To handle the attachment body itself, use a library like `requests` to fetch the resource
+@discord.command()
+def textfile(ctx, attachment: Attachment):
+    response = requests.get(attachment.url)
+    response.raise_for_status()
+
+    return response.text
+
+
+# For large files, this might take a while, so you may want to use a background thread
+# if the file could be slow to download or if you perform heavy processing
+# (remember, Discord enforces that you give an initial response within 3 seconds)
+@discord.command()
+def hexdump(ctx, attachment: Attachment):
+    def do_read():
+        response = requests.get(attachment.url)
+        response.raise_for_status()
+
+        dump = "```\n"
+        for line in response.iter_content(chunk_size=16):
+            dump += " ".join(f"{x:02x}" for x in line) + "\n"
+
+            if len(dump) > 1900:
+                dump += "...\n"
+                break
+
+        dump += "```"
+        ctx.edit(dump)
+
+    thread = threading.Thread(target=do_read)
+    thread.start()
+
+    return Message(deferred=True)
 
 
 # You can also pass in a list of Option objects

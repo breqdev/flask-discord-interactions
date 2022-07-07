@@ -43,7 +43,7 @@ number, and boolean options.
 Discord Models
 --------------
 
-For User, Channel, and Role options, you can receive an object with context
+For User, Channel, Role and Attachment options, you can receive an object with context
 information about the option:
 
 .. code-block:: python
@@ -140,6 +140,11 @@ Full API
 |
 
 .. autoclass:: flask_discord_interactions.Channel(**kwargs)
+    :members:
+
+|
+
+.. autoclass:: flask_discord_interactions.Attachment
     :members:
 
 |

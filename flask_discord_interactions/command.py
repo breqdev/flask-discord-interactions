@@ -16,6 +16,7 @@ from flask_discord_interactions.models import (
     Role,
     Autocomplete,
     Option,
+    Attachment,
 )
 
 
@@ -158,6 +159,8 @@ class Command:
                     ptype = CommandOptionType.CHANNEL
                 elif annotation == Role:
                     ptype = CommandOptionType.ROLE
+                elif annotation == Attachment:
+                    ptype = CommandOptionType.ATTACHMENT
 
                 # Enums (Used with choices)
                 elif issubclass(annotation, enum.IntEnum):
