@@ -72,7 +72,9 @@ class Context(LoadableDataclass):
     locale
         The selected language of the invoking user.
     guild_locale
-        The guild's preferred locale, if invoked in a guild
+        The guild's preferred locale, if invoked in a guild.
+    app_permissions
+        Bitwise set of permissions the app or bot has within the channel the interaction was sent from.
     """
 
     author: Union[Member, User] = None
@@ -93,7 +95,7 @@ class Context(LoadableDataclass):
     message: Message = None
     locale: Optional[str] = None
     guild_locale: Optional[str] = None
-
+    app_permissions: Optional[str] = None
     app: Any = None
     discord: Any = None
 
@@ -132,6 +134,7 @@ class Context(LoadableDataclass):
             target_id=data.get("data", {}).get("target_id"),
             locale=data.get("locale"),
             guild_locale=data.get("guild_locale"),
+            app_permissions=data.get("app_permissions"),
         )
 
         result.data = data
