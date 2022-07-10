@@ -61,7 +61,16 @@ class User(LoadableDataclass):
     @property
     def avatar_url(self):
         "The URL of the user's profile picture."
-        return "https://cdn.discordapp.com/avatars/" f"{self.id}/{self.avatar_hash}.png"
+        if self.avatar_hash is None:
+            return f"https://cdn.discordapp.com/embed/avatars/{int(self.discriminator) % 5}.png"
+        elif str(self.avatar_hash).startswith("a_"):
+            return (
+                f"https://cdn.discordapp.com/avatars/{self.id}/{self.avatar_hash}.gif"
+            )
+        else:
+            return (
+                f"https://cdn.discordapp.com/avatars/{self.id}/{self.avatar_hash}.png"
+            )
 
 
 @dataclasses.dataclass
