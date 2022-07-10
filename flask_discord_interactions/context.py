@@ -246,7 +246,10 @@ class Context(LoadableDataclass):
         message. This method sets the `ctx.target` field.
         """
         if self.type == ApplicationCommandType.USER:
-            self.target = self.members[self.target_id]
+            if self.target_id in self.members:
+                self.target = self.members[self.target_id]
+            else:
+                self.target = self.users[self.target_id]
         elif self.type == ApplicationCommandType.MESSAGE:
             self.target = self.messages[self.target_id]
         else:
