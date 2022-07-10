@@ -1,3 +1,5 @@
+import json
+
 from dataclasses import dataclass
 from typing import List, Union
 
@@ -59,12 +61,12 @@ class Modal(LoadableDataclass):
         "Returns the message components as a list of dicts."
         return [c.dump() for c in self.components]
 
-    def dump(self):
+    def encode(self, followup=False):
         """
         Return this ``Modal`` as a dict to be sent in response to an
         incoming webhook.
         """
-        return {
+        payload = {
             "type": ResponseType.MODAL,
             "data": {
                 "custom_id": self.custom_id,
@@ -73,6 +75,4 @@ class Modal(LoadableDataclass):
             },
         }
 
-    def dump_handler(self):
-        "Return a modal in component handlers."
-        return self.dump()
+        return (json.dumps(payload), "application/json")
