@@ -4,6 +4,7 @@ import inspect
 from typing import List, Union
 import json
 from datetime import datetime
+import requests_toolbelt
 
 from flask_discord_interactions.models.utils import LoadableDataclass
 from flask_discord_interactions.models.component import Component
@@ -101,22 +102,20 @@ class Message(LoadableDataclass):
 
         if self.update:
             if self.deferred:
-                self.Message_type = ResponseType.DEFERRED_UPDATE_MESSAGE
+                self.response_type = ResponseType.DEFERRED_UPDATE_MESSAGE
             else:
-                self.Message_type = ResponseType.UPDATE_MESSAGE
+                self.response_type = ResponseType.UPDATE_MESSAGE
         else:
             if self.deferred:
-                self.Message_type = ResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
+                self.response_type = ResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
             else:
-                self.Message_type = ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
+                self.response_type = ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
 
         if isinstance(self.timestamp, str):
             self.timestamp = datetime.fromisoformat(self.timestamp)
 
-
         if isinstance(self.edited_timestamp, str):
             self.edited_timestamp = datetime.fromisoformat(self.edited_timestamp)
-
 
         if isinstance(self.author, dict):
             self.author = Member.from_dict(self.author)
@@ -166,105 +165,52 @@ class Message(LoadableDataclass):
         else:
             return cls(str(result))
 
-    def dump(self):
+    def encode(self, followup=False):
         """
-        Return this ``Message`` as a dict to be sent in Message to an
-        incoming webhook.
-        """
+        Return this ``Message`` as a string/mimetype pair.
 
-        if (
-            self.content is None
-            and self.embeds is None
-            and self.files is None
-            and not self.deferred
-        ):
-            raise ValueError(
-                "Supply at least one of content, embeds, files, or deferred."
-            )
+        Parameters
+        ----------
+        followup: bool
+            Whether this is a followup message.
 
-        if self.files:
-            raise ValueError("files are not allowed in an initial Interaction Message")
-
-        if self.update:
-            raise ValueError("update is only valid for custom ID handlers")
-
-        return {
-            "type": self.Message_type,
-            "data": {
-                "content": self.content,
-                "tts": self.tts,
-                "embeds": self.dump_embeds(),
-                "allowed_mentions": self.allowed_mentions,
-                "flags": self.flags,
-                "components": self.dump_components(),
-            },
-        }
-
-    def dump_handler(self):
-        """
-        Return this ``Message`` as a dict to be sent in reply to a Message
-        Component interaction.
+        Returns
+        -------
+        string
+            A string containing the message data (either JSON or multipart).
+        string
+            The mimetype of the message data.
         """
 
-        if self.files:
-            raise ValueError("files are not allowed in a custom handler Message")
-
-        return {
-            "type": self.Message_type,
-            "data": {
-                "content": self.content,
-                "tts": self.tts,
-                "embeds": self.dump_embeds(),
-                "allowed_mentions": self.allowed_mentions,
-                "flags": self.flags,
-                "components": self.dump_components(),
-            },
-        }
-
-    def dump_followup(self):
-        """
-        Return this ``Message`` as a dict to be sent to an outgoing webhook.
-        """
-
-        if (
-            self.content is None
-            and self.embeds is None
-            and self.files is None
-            and not self.deferred
-        ):
-            raise ValueError(
-                "Supply at least one of content, embeds, files, or deferred."
-            )
-
-        if self.ephemeral or self.deferred or self.update:
-            raise ValueError(
-                "ephemeral and deferred are not valid in followup Messages"
-            )
-
-        return {
+        payload = {
             "content": self.content,
             "tts": self.tts,
             "embeds": self.dump_embeds(),
             "allowed_mentions": self.allowed_mentions,
+            "flags": self.flags,
             "components": self.dump_components(),
         }
 
-    def dump_multipart(self):
-        """
-        Return this ``Message`` to be sent to an outgoing webhook.
-        Handles multipart encoding for file attachments.
+        if not followup:
+            payload = {
+                "type": self.response_type,
+                "data": payload,
+            }
 
-        Returns an object that may have ``data``, ``files``, or ``json``
-        fields.
-        """
+        payload_json = json.dumps(payload)
 
         if self.files:
-            payload_json = json.dumps(self.dump_followup())
+            fields = [
+                ("payload_json", (None, payload_json.encode(), "application/json"))
+            ]
 
-            multipart = []
-            for file in self.files:
-                multipart.append(("file", file))
+            for i, file in enumerate(self.files):
+                fields.append((f"files[{i}]", file))
 
-            return {"data": {"payload_json": payload_json}, "files": multipart}
+            multipart = requests_toolbelt.MultipartEncoder(
+                fields=fields,
+            )
+
+            return (multipart.to_string().decode(), multipart.content_type)
         else:
-            return {"json": self.dump_followup()}
+            return (payload_json, "application/json")
