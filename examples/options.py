@@ -190,7 +190,12 @@ def hexdump(ctx, attachment: Attachment):
 @discord.command(
     options=[
         Option(
-            name="message", type=str, description="The message to repeat", required=True
+            name="message",
+            type=str,
+            description="The message to repeat",
+            required=True,
+            min_length=2,
+            max_length=8,
         ),
         Option(
             name="times",
