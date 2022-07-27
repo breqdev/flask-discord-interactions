@@ -320,7 +320,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             The Flask app to initialize.
         """
 
-        app.config.setdefault("DISCORD_BASE_URL", "https://discord.com/api/v9")
+        app.config.setdefault("DISCORD_BASE_URL", "https://discord.com/api/v10")
         app.config.setdefault("DISCORD_CLIENT_ID", "")
         app.config.setdefault("DISCORD_PUBLIC_KEY", "")
         app.config.setdefault("DISCORD_CLIENT_SECRET", "")
