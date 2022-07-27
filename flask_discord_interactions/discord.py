@@ -55,7 +55,6 @@ class DiscordInteractionsBlueprint:
         default_permission=None,
         default_member_permissions=None,
         dm_permission=None,
-        permissions=None,
         name_localizations=None,
         description_localizations=None,
     ):
@@ -88,8 +87,6 @@ class DiscordInteractionsBlueprint:
             A permission integer defining the required permissions a user must have to run the command
         dm_permission
             Indicates whether the command can be used in DMs
-        permissions
-            List of permission overwrites.
         """
         command = Command(
             command,
@@ -101,7 +98,6 @@ class DiscordInteractionsBlueprint:
             default_permission,
             default_member_permissions,
             dm_permission,
-            permissions,
             name_localizations,
             description_localizations,
             self,
@@ -132,7 +128,6 @@ class DiscordInteractionsBlueprint:
         default_permission=None,
         default_member_permissions=None,
         dm_permission=None,
-        permissions=None,
         name_localizations=None,
         description_localizations=None,
     ):
@@ -163,8 +158,6 @@ class DiscordInteractionsBlueprint:
             A permission integer defining the required permissions a user must have to run the command
         dm_permission
             Indicates whether the command can be used in DMs
-        permissions
-            List of permission overwrites.
         """
 
         def decorator(func):
@@ -179,7 +172,6 @@ class DiscordInteractionsBlueprint:
                 default_permission,
                 default_member_permissions,
                 dm_permission,
-                permissions,
                 name_localizations,
                 description_localizations,
             )
@@ -195,7 +187,6 @@ class DiscordInteractionsBlueprint:
         default_permission=None,
         default_member_permissions=None,
         dm_permission=None,
-        permissions=None,
         name_localizations=None,
         description_localizations=None,
     ):
@@ -222,8 +213,6 @@ class DiscordInteractionsBlueprint:
             A permission integer defining the required permissions a user must have to run the command
         dm_permission
             Indicates whether the command canbe used in DMs
-        permissions
-            List of permission overwrites. These apply to the entire group.
         """
 
         group = SlashCommandGroup(
@@ -233,7 +222,6 @@ class DiscordInteractionsBlueprint:
             default_permission,
             default_member_permissions,
             dm_permission,
-            permissions,
             name_localizations,
             description_localizations,
         )
@@ -446,28 +434,6 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         else:
             for command in app.discord_commands.values():
                 command.id = command.name
-
-        if guild_id:
-            for command in app.discord_commands.values():
-                if (
-                    not app.config["DONT_REGISTER_WITH_DISCORD"]
-                    and command.permissions is not None
-                ):
-                    response = requests.put(
-                        url + "/" + command.id + "/permissions",
-                        json={"permissions": command.dump_permissions()},
-                        headers=self.auth_headers(app),
-                    )
-
-                    try:
-                        response.raise_for_status()
-                    except requests.exceptions.HTTPError:
-                        raise ValueError(
-                            f"Unable to register permissions for {command.id}:"
-                            f"{response.status_code} {response.text}"
-                        )
-
-                    self.throttle(response)
 
     def update_slash_commands(self, *args, **kwargs):
         """
