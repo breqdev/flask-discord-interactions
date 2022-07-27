@@ -324,7 +324,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         app.config.setdefault("DISCORD_CLIENT_ID", "")
         app.config.setdefault("DISCORD_PUBLIC_KEY", "")
         app.config.setdefault("DISCORD_CLIENT_SECRET", "")
-        app.config.setdefault("DISCORD_SCOPE", "applications.commands.update applications.commands.permissions.update")
+        app.config.setdefault("DISCORD_SCOPE", "applications.commands.update")
         app.config.setdefault("DONT_VALIDATE_SIGNATURE", False)
         app.config.setdefault("DONT_REGISTER_WITH_DISCORD", False)
         app.discord_commands = self.discord_commands
