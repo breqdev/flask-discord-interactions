@@ -463,36 +463,6 @@ class Context(LoadableDataclass):
             except KeyError:
                 raise ValueError(f"Unknown command: {command_name}")
 
-    def overwrite_permissions(self, permissions, command=None):
-        """
-        Overwrite the permission overwrites for this command.
-
-        Parameters
-        ----------
-        permissions
-            The new list of permission overwrites.
-        command
-            The name of the command to overwrite permissions for. If omitted,
-            overwrites for the invoking command.
-        """
-
-        url = (
-            f"{self.app.config['DISCORD_BASE_URL']}/"
-            f"applications/{self.app.config['DISCORD_CLIENT_ID']}/"
-            f"guilds/{self.guild_id}/"
-            f"commands/{self.get_command(command)}/permissions"
-        )
-
-        data = [permission.dump() for permission in permissions]
-
-        if self.app.config["DONT_REGISTER_WITH_DISCORD"]:
-            return
-
-        response = requests.put(
-            url, headers=self.auth_headers, json={"permissions": data}
-        )
-        response.raise_for_status()
-
     def freeze(self):
         "Return a copy of this Context that can be pickled for RQ and Celery."
 
@@ -595,35 +565,6 @@ class AsyncContext(Context):
             self.followup_url(), **message.dump_multipart()
         ) as message:
             return (await message.json())["id"]
-
-    async def overwrite_permissions(self, permissions, command=None):
-        """
-        Overwrite the permission overwrites for this command.
-
-        Parameters
-        ----------
-        permissions
-            The new list of permission overwrites.
-        command
-            The name of the command to overwrite permissions for. If omitted,
-            overwrites for the invoking command.
-        """
-
-        url = (
-            f"{self.app.config['DISCORD_BASE_URL']}/"
-            f"applications/{self.app.config['DISCORD_CLIENT_ID']}/"
-            f"guilds/{self.guild_id}/"
-            f"commands/{self.get_command(command)}/permissions"
-        )
-
-        data = [permission.dump() for permission in permissions]
-
-        if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
-            return
-
-        await self.session.put(
-            url, headers=self.auth_headers, json={"permissions": data}
-        )
 
     async def close(self):
         """
