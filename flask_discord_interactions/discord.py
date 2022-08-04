@@ -305,6 +305,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         app.config.setdefault("DISCORD_CLIENT_ID", "")
         app.config.setdefault("DISCORD_PUBLIC_KEY", "")
         app.config.setdefault("DISCORD_CLIENT_SECRET", "")
+        app.config.setdefault("DISCORD_SCOPE", "applications.commands.update applications.commands.permissions.update")
         app.config.setdefault("DONT_VALIDATE_SIGNATURE", False)
         app.config.setdefault("DONT_REGISTER_WITH_DISCORD", False)
         app.discord_commands = self.discord_commands
@@ -330,7 +331,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         if app.config["DONT_REGISTER_WITH_DISCORD"]:
             app.discord_token = {
                 "token_type": "Bearer",
-                "scope": "applications.commands.update applications.commands.permissions.update",
+                "scope": app.config["DISCORD_SCOPE"],
                 "expires_in": 604800,
                 "access_token": "DONT_REGISTER_WITH_DISCORD",
             }
@@ -342,7 +343,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             app.config["DISCORD_BASE_URL"] + "/oauth2/token",
             data={
                 "grant_type": "client_credentials",
-                "scope": "applications.commands.update applications.commands.permissions.update",
+                "scope": app.config["DISCORD_SCOPE"],
             },
             headers={"Content-Type": "application/x-www-form-urlencoded"},
             auth=(app.config["DISCORD_CLIENT_ID"], app.config["DISCORD_CLIENT_SECRET"]),

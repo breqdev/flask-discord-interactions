@@ -16,6 +16,7 @@ from flask_discord_interactions.models import (
     Role,
     Autocomplete,
     Option,
+    Attachment,
 )
 
 
@@ -102,6 +103,7 @@ class Command:
                 f"Error adding command {self.name}: "
                 "Command name must be between 1 and 32 characters."
             )
+
         if self.type is ApplicationCommandType.CHAT_INPUT:
             if self.description is None:
                 self.description = command.__doc__ or "No description"
@@ -162,6 +164,8 @@ class Command:
                     ptype = CommandOptionType.CHANNEL
                 elif annotation == Role:
                     ptype = CommandOptionType.ROLE
+                elif annotation == Attachment:
+                    ptype = CommandOptionType.ATTACHMENT
 
                 # Enums (Used with choices)
                 elif issubclass(annotation, enum.IntEnum):
@@ -367,15 +371,14 @@ class SlashCommandSubgroup(Command):
         """
 
         def decorator(func):
-            nonlocal name, description, options, annotations
             subcommand = Command(
                 func,
                 name,
                 description,
-                name_localizations,
-                description_localizations,
-                options,
-                annotations,
+                name_localizations=name_localizations,
+                description_localizations=description_localizations,
+                options=options,
+                annotations=annotations,
             )
             self.subcommands[subcommand.name] = subcommand
             return func

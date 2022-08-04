@@ -65,7 +65,7 @@ class AutocompleteResult:
         elif isinstance(value, list) and all(
             isinstance(choice, Choice) for choice in value
         ):
-            return [AutocompleteResult(choice.dump()) for choice in value]
+            return AutocompleteResult([choice.dump() for choice in value])
         elif isinstance(value, list):
             return AutocompleteResult(
                 [{"name": str(choice), "value": choice} for choice in value]

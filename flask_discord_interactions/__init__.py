@@ -16,6 +16,7 @@ from flask_discord_interactions.models import (
     User,
     Role,
     Channel,
+    Attachment,
     Message,
     ResponseType,
     Component,

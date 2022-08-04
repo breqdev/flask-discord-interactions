@@ -13,6 +13,7 @@ from flask_discord_interactions.models import (
     Channel,
     Role,
     User,
+    Attachment,
     CommandOptionType,
     ApplicationCommandType,
     Message,
@@ -71,7 +72,9 @@ class Context(LoadableDataclass):
     locale
         The selected language of the invoking user.
     guild_locale
-        The guild's preferred locale, if invoked in a guild
+        The guild's preferred locale, if invoked in a guild.
+    app_permissions
+        Bitwise set of permissions the app or bot has within the channel the interaction was sent from.
     """
 
     author: Union[Member, User] = None
@@ -92,7 +95,7 @@ class Context(LoadableDataclass):
     message: Message = None
     locale: Optional[str] = None
     guild_locale: Optional[str] = None
-
+    app_permissions: Optional[str] = None
     app: Any = None
     discord: Any = None
 
@@ -131,6 +134,7 @@ class Context(LoadableDataclass):
             target_id=data.get("data", {}).get("target_id"),
             locale=data.get("locale"),
             guild_locale=data.get("guild_locale"),
+            app_permissions=data.get("app_permissions"),
         )
 
         result.data = data
@@ -229,6 +233,11 @@ class Context(LoadableDataclass):
             for id, data in self.resolved.get("messages", {}).items()
         }
 
+        self.attachments = {
+            id: Attachment.from_dict(data)
+            for id, data in self.resolved.get("messages", {}).items()
+        }
+
     def parse_target(self):
         """
         Parse the target of the incoming interaction.
@@ -237,7 +246,10 @@ class Context(LoadableDataclass):
         message. This method sets the `ctx.target` field.
         """
         if self.type == ApplicationCommandType.USER:
-            self.target = self.members[self.target_id]
+            if self.target_id in self.members:
+                self.target = self.members[self.target_id]
+            else:
+                self.target = self.users[self.target_id]
         elif self.type == ApplicationCommandType.MESSAGE:
             self.target = self.messages[self.target_id]
         else:
@@ -303,6 +315,11 @@ class Context(LoadableDataclass):
                 elif option["type"] == CommandOptionType.ROLE:
                     kwargs[option["name"]] = Role.from_dict(
                         resolved["roles"][option["value"]]
+                    )
+
+                elif option["type"] == CommandOptionType.ATTACHMENT:
+                    kwargs[option["name"]] = Attachment.from_dict(
+                        resolved["attachments"][option["value"]]
                     )
 
                 else:

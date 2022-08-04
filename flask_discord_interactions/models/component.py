@@ -75,7 +75,7 @@ class ActionRow(Component):
         - 1 Select Menu
     """
 
-    components: List[Component] = None
+    components: List[CustomIdComponent] = None
 
     type: int = ComponentType.ACTION_ROW
 
@@ -204,6 +204,8 @@ class SelectMenu(CustomIdComponent):
         The maximum number of options that can be selected.
     disabled: bool
         Whether the select menu is disabled.
+    values: list
+        Selected options. Only present when receiving components from a modal.
     """
 
     options: List[SelectMenuOption] = None
@@ -212,16 +214,17 @@ class SelectMenu(CustomIdComponent):
     min_values: int = 1
     max_values: int = 1
     disabled: bool = False
+    values: list = None
 
     type: int = ComponentType.SELECT_MENU
 
     def __post_init__(self):
         super().__post_init__()
 
-        if len(self.options) > 25:
+        if self.options and len(self.options) > 25:
             raise ValueError("Select is limited to 25 options")
 
-        if len(self.placeholder) > 100:
+        if self.placeholder and len(self.placeholder) > 100:
             raise ValueError("Placeholder is max 100 characters")
 
         if self.min_values > self.max_values:

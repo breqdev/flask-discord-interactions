@@ -16,6 +16,7 @@ class CommandOptionType:
     ROLE = 8
     MENTIONABLE = 9
     NUMBER = 10
+    ATTACHMENT = 11
 
 
 @dataclass
@@ -48,6 +49,10 @@ class Option:
         The minimum value of the option if the option is numeric.
     max_value
         The maximum value of the option if the option is numeric.
+    min_length
+        Minimum allowed length for string type options.
+    max_value
+        Maximum allowed length for string type options.
     autocomplete
         Whether the option should be autocompleted. Defaults to ``False``.
         Set to ``True`` if you have an autocomplete handler for this command.
@@ -70,6 +75,8 @@ class Option:
     channel_types: Optional[list] = None
     min_value: Optional[int] = None
     max_value: Optional[int] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
     name_localizations: Optional[dict] = None
     description_localizations: Optional[dict] = None
 
@@ -117,12 +124,15 @@ class Option:
             "description_localizations": self.description_localizations,
             "required": self.required,
             "options": self.options,
-            "choices": self.choices,
             "channel_types": self.channel_types,
             "min_value": self.min_value,
             "max_value": self.max_value,
+            "min_length": self.min_length,
+            "max_length": self.max_length,
             "autocomplete": self.autocomplete,
         }
+        if self.choices is not None:
+            data["choices"] = [(c.dump() if isinstance(c, Choice) else c) for c in self.choices]
         return data
 
 
