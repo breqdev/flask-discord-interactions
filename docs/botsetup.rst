@@ -110,19 +110,6 @@ You need to provide Discord with your public URL so they can send you interactio
 
 Click the "Save Changes" box at the bottom. Note that if your bot is not configured properly, the Developer Portal will not allow you to save the URL.
 
-If your application is in a team
---------------------------------
-
-When your app is in a team you can't use the ``applications.commands.permissions.update`` scope, team applications are limited to the ``identify`` and ``applications.commands.update`` scopes, because teams are not bound to a specific user.
-https://discord.com/developers/docs/topics/oauth2#client-credentials-grant
-
-You can override scopes with
-
-.. code-block:: python
-
-        app.config["DISCORD_SCOPE"] = "applications.commands.update"
-
-
 That's all!
 -----------
 
