@@ -1,7 +1,7 @@
 class PermissionType:
-    ROLE = 0
-    USER = 1
-    CHANNEL = 2
+    ROLE = 1
+    USER = 2
+    CHANNEL = 3
 
 
 class Permission:
@@ -20,7 +20,7 @@ class Permission:
     """
 
     def __init__(self, role=None, user=None, channel=None, allow=True):
-        if map(bool, [role, user, channel]).count(True) != 1:
+        if [bool(role), bool(user), bool(channel)].count(True) != 1:
             raise ValueError("specify only one of role, user, or channel")
 
         if role:
@@ -38,3 +38,14 @@ class Permission:
     def dump(self):
         "Returns a dict representation of the permission"
         return {"type": self.type, "id": self.id, "permission": self.permission}
+
+    @classmethod
+    def from_dict(cls, data):
+        if data["type"] == PermissionType.ROLE:
+            return cls(role=data["id"], allow=data["permission"])
+        elif data["type"] == PermissionType.USER:
+            return cls(user=data["id"], allow=data["permission"])
+        elif data["type"] == PermissionType.CHANNEL:
+            return cls(channel=data["id"], allow=data["permission"])
+        else:
+            raise ValueError("invalid permission type")

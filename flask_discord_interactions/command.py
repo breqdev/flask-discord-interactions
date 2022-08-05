@@ -92,6 +92,7 @@ class Command:
         self.name_localizations = name_localizations
         self.description_localizations = description_localizations
         self.discord = discord
+        self.id = None
 
         if self.name is None:
             self.name = command.__name__

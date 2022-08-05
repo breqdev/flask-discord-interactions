@@ -21,7 +21,8 @@ except ImportError:
 
 from flask_discord_interactions.command import Command, SlashCommandGroup
 from flask_discord_interactions.context import Context, ApplicationCommandType
-from flask_discord_interactions.models import Message, Modal, ResponseType
+from flask_discord_interactions.models import Message, Modal, ResponseType, Permission
+from flask_discord_interactions.utils import static_or_instance
 
 
 class InteractionType:
@@ -320,6 +321,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         app.autocomplete_handlers = self.autocomplete_handlers
         app.discord_token = None
 
+    @static_or_instance
     def fetch_token(self, app=None):
         """
         Fetch an OAuth2 token from Discord using the ``CLIENT_ID`` and
@@ -362,7 +364,8 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             time.time() + app.discord_token["expires_in"] / 2
         )
 
-    def auth_headers(self, app):
+    @staticmethod
+    def auth_headers(app):
         """
         Get the Authorization header required for HTTP requests to the
         Discord API.
@@ -374,7 +377,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         """
 
         if app.discord_token is None or time.time() > app.discord_token["expires_on"]:
-            self.fetch_token(app)
+            DiscordInteractions.fetch_token(app)
         return {"Authorization": f"Bearer {app.discord_token['access_token']}"}
 
     def update_commands(self, app=None, guild_id=None):
@@ -448,6 +451,146 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         )
 
         return self.update_commands(*args, **kwargs)
+
+    @static_or_instance
+    def get_permission_overwrites(
+        self,
+        command=None,
+        *,
+        guild_id,
+        command_id=None,
+        token=None,
+        app=None,
+        application_id=None,
+        base_url=None,
+    ):
+        """
+        Get the list of permission overwrites in a specific guild for a
+        specific command. You must supply a Bearer token from a user with
+        "Manage Roles" and "Manage Server" permissions in the given guild.
+
+        This method requires access to the application ID and base URL. For
+        convenience, it can be called as either an instance method (using the
+        bound app's configuration) or a static method.
+
+        Parameters
+        ----------
+        guild_id
+            The ID of the guild to retrieve permissions from.
+        command_id
+            The ID of the command to retrieve permissions for.
+        token
+            A bearer token from an admin of the guild (not including the
+            leading ``Bearer `` word).
+        app
+            The Flask app with the relevant Discord application ID.
+        """
+
+        if not app and self and self.app:
+            app = self.app
+
+        if not application_id or not base_url:
+            if app:
+                application_id = app.config["DISCORD_CLIENT_ID"]
+                base_url = app.config["DISCORD_BASE_URL"]
+            else:
+                raise ValueError(
+                    "This method requires the application ID and base URL."
+                    " Either provide these as arguments or provide an app "
+                    " instance with the relevant configuration."
+                )
+
+        if command_id is None:
+            if command:
+                command_id = command.id
+            else:
+                raise ValueError("You must supply a command ID or command.")
+
+        url = f"{base_url}/applications/{application_id}/guilds/{guild_id}/commands/{command_id}/permissions"
+
+        response = requests.get(
+            url,
+            headers=(
+                {"Authorization": f"Bearer {token}"}
+                if token
+                else DiscordInteractions.auth_headers(app)
+            ),
+        )
+        response.raise_for_status()
+
+        return [Permission.from_dict(perm) for perm in response.json()]
+
+    @static_or_instance
+    def set_permission_overwrites(
+        self,
+        permissions,
+        command=None,
+        *,
+        guild_id,
+        command_id=None,
+        token=None,
+        app=None,
+        application_id=None,
+        base_url=None,
+    ):
+        """
+        Overwrite the list of permission overwrites in a specific guild for a
+        specific command. You must supply a Bearer token from a user with
+        "Manage Roles" and "Manage Server" permissions in the given guild.
+
+        This method requires access to the application ID and base URL. For
+        convenience, it can be called as either an instance method (using the
+        bound app's configuration) or a static method.
+
+        Parameters
+        ----------
+        permissions
+            A list of :class:`Permission` objects to set.
+        guild_id
+            The ID of the guild to retrieve permissions from.
+        command_id
+            The ID of the command to retrieve permissions for.
+        token
+            A bearer token from an admin of the guild (not including the
+            leading ``Bearer `` word).
+        app
+            The Flask app with the relevant Discord application ID.
+        """
+
+        if not app and self and self.app:
+            app = self.app
+
+        if not application_id or not base_url:
+            if app:
+                application_id = app.config["DISCORD_CLIENT_ID"]
+                base_url = app.config["DISCORD_BASE_URL"]
+            else:
+                raise ValueError(
+                    "This method requires the application ID and base URL."
+                    " Either provide these as arguments or provide an app "
+                    " instance with the relevant configuration."
+                )
+
+        if not command_id:
+            if command:
+                command_id = command.id
+            else:
+                raise ValueError("You must supply a command ID or command.")
+
+        url = f"{base_url}/applications/{application_id}/guilds/{guild_id}/commands/{command_id}/permissions"
+
+        response = requests.put(
+            url,
+            headers=(
+                {"Authorization": f"Bearer {token}"}
+                if token
+                else DiscordInteractions.auth_headers(app)
+            ),
+            json={"permissions": [perm.dump() for perm in permissions]},
+        )
+        print([perm.dump() for perm in permissions])
+        print(response.text)
+        response.raise_for_status()
 
     def throttle(self, response):
         """
