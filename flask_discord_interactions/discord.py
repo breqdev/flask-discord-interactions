@@ -52,7 +52,6 @@ class DiscordInteractionsBlueprint:
         options=None,
         annotations=None,
         type=ApplicationCommandType.CHAT_INPUT,
-        default_permission=None,
         default_member_permissions=None,
         dm_permission=None,
         permissions=None,
@@ -96,7 +95,6 @@ class DiscordInteractionsBlueprint:
             options,
             annotations,
             type,
-            default_permission,
             default_member_permissions,
             dm_permission,
             permissions,
@@ -114,7 +112,6 @@ class DiscordInteractionsBlueprint:
         options=None,
         annotations=None,
         type=ApplicationCommandType.CHAT_INPUT,
-        default_permission=None,
         default_member_permissions=None,
         dm_permission=None,
         permissions=None,
@@ -159,7 +156,6 @@ class DiscordInteractionsBlueprint:
                 options,
                 annotations,
                 type,
-                default_permission,
                 default_member_permissions,
                 dm_permission,
                 permissions,
@@ -175,7 +171,6 @@ class DiscordInteractionsBlueprint:
         name,
         description="No description",
         is_async=False,
-        default_permission=None,
         default_member_permissions=None,
         dm_permission=None,
         permissions=None,
@@ -211,7 +206,6 @@ class DiscordInteractionsBlueprint:
             name,
             description,
             is_async,
-            default_permission,
             default_member_permissions,
             dm_permission,
             permissions,
@@ -305,7 +299,10 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         app.config.setdefault("DISCORD_CLIENT_ID", "")
         app.config.setdefault("DISCORD_PUBLIC_KEY", "")
         app.config.setdefault("DISCORD_CLIENT_SECRET", "")
-        app.config.setdefault("DISCORD_SCOPE", "applications.commands.update applications.commands.permissions.update")
+        app.config.setdefault(
+            "DISCORD_SCOPE",
+            "applications.commands.update applications.commands.permissions.update",
+        )
         app.config.setdefault("DONT_VALIDATE_SIGNATURE", False)
         app.config.setdefault("DONT_REGISTER_WITH_DISCORD", False)
         app.discord_commands = self.discord_commands

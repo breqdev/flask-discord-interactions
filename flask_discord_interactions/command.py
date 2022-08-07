@@ -73,7 +73,6 @@ class Command:
         options,
         annotations,
         command_type=ApplicationCommandType.CHAT_INPUT,
-        default_permission=None,
         default_member_permissions=None,
         dm_permission=None,
         permissions=None,
@@ -87,7 +86,6 @@ class Command:
         self.options = options
         self.annotations = annotations or {}
         self.type = command_type
-        self.default_permission = default_permission
         self.default_member_permissions = default_member_permissions
         self.dm_permission = dm_permission
         self.permissions = permissions
@@ -333,7 +331,6 @@ class SlashCommandSubgroup(Command):
         self.name_localizations = name_localizations
         self.description_localizations = description_localizations
 
-        self.default_permission = None
         self.default_member_permissions = None
         self.dm_permission = None
         self.permissions = None
@@ -435,8 +432,6 @@ class SlashCommandGroup(SlashCommandSubgroup):
     is_async
         Whether the subgroup should be considered async (if subcommands
         get an :class:`AsyncContext` instead of a :class:`Context`.)
-    default_permission
-        Whether the subgroup is enabled by default. Default is True.
     default_member_permissions:
         Permission integer setting permission defaults for a command
     dm_permission
@@ -451,7 +446,6 @@ class SlashCommandGroup(SlashCommandSubgroup):
         name,
         description,
         is_async=False,
-        default_permission=None,
         default_member_permissions=None,
         dm_permission=None,
         permissions=None,
@@ -463,7 +457,6 @@ class SlashCommandGroup(SlashCommandSubgroup):
         self.subcommands = {}
         self.type = ApplicationCommandType.CHAT_INPUT
 
-        self.default_permission = default_permission
         self.default_member_permissions = default_member_permissions
         self.dm_permission = dm_permission
         self.permissions = permissions
