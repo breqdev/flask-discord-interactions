@@ -167,7 +167,13 @@ class Message(LoadableDataclass):
 
     def encode(self, followup=False):
         """
-        Return this ``Message`` as a string/mimetype pair.
+        Return this ``Message`` as a string/mimetype pair for sending to Discord.
+
+        If the message contains no files, the string will be a serialized
+        JSON object and the mimetype will be ``application/json``.
+
+        If the message contains attachments, the string will be a multipart
+        encoded response and the mimetype will be ``multipart/form-data``.
 
         Parameters
         ----------
