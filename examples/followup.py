@@ -85,7 +85,7 @@ def sendfile(ctx):
     def do_sendfile():
         ctx.edit(
             Message(
-                file=("README.md", open("README.md", "r"), "text/markdown"),
+                file=("README.md", open("README.md", "rb"), "text/markdown"),
             )
         )
 
