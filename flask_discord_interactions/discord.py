@@ -516,7 +516,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         There are a many ways to call this method, here are a few:
 
-        .. code-block:: python3
+        .. code-block:: python
 
             # Without the app or instance, useful in a background worker
             DiscordInteractions.get_permission_overwrites(
@@ -552,7 +552,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             The ID of the command to retrieve permissions for.
         token
             A bearer token from an admin of the guild (not including the
-            leading ``Bearer `` word). If omitted, the bot's token will be
+            leading ``Bearer`` word). If omitted, the bot's token will be
             used instead.
         app
             The Flask app with the relevant Discord application ID.
@@ -560,6 +560,11 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             The ID of the Discord application to retrieve permissions from.
         base_url
             The base URL of the Discord API.
+
+        Returns
+        -------
+        List[Permission]
+            A list of permission overwrites for the given command.
         """
 
         url = DiscordInteractions.build_permission_overwrite_url(
@@ -617,7 +622,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             The ID of the command to retrieve permissions for.
         token
             A bearer token from an admin of the guild (not including the
-            leading ``Bearer `` word). If omitted, the bot's token will be
+            leading ``Bearer`` word). If omitted, the bot's token will be
             used instead.
         app
             The Flask app with the relevant Discord application ID.

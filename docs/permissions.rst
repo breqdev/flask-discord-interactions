@@ -39,10 +39,65 @@ Setting specific overwrites
 
 .. warning::
    The methods below will require an extra oauth scope granted by a server admin as of discord's rewrite of slash command permissions.
-   It's highly recommended to use the ``default_member_permissions`` field instead.
+   If you can, it's recommended to use the ``default_member_permissions`` field instead.
+
+This library provides methods to get and set permission overwrites: :meth:`.DiscordInteractions.get_permission_overwrites` and :meth:`.DiscordInteractions.set_permission_overwrites`, respectively.
+
+Setting the permission overwrites requires the application ID, guild ID, command ID, Bearer token, and relevant :class:`.Permission` list.
+To accommodate a variety of application architectures, there are several ways to pass in these parameters.
+
+- The Application ID can be either retrieved from a :class:`flask.Flask` object bound to the :class:`.DiscordInteractions` instance, the ``app`` parameter, or by manually providing ``application_id`` and ``base_url``.
+- The Guild ID must be specified with ``guild_id``.
+- The Command ID can be either retrieved from a :class:`.Command` or by manually providing ``command_id``.
+- The Bearer token can be either provided with ``token``, or the bot's token can be used if the method has access to the :class:`flask.Flask` app. Note that there are some :ref:`caveats <overwrite-token-caveats>` to this.
+- For the setting method, the :class:`.Permission` objects must be supplied with the ``permissions`` parameter.
+
+
+.. code-block:: python
+
+    # Without the app or instance, useful in a background worker
+    DiscordInteractions.get_permission_overwrites(
+        guild_id=...,
+        command_id=...,
+        token=...,
+        application_id=...,
+        base_url=...,
+    )
+
+    # With the instance and app passed in, useful in an app-factory project
+    discord.get_permission_overwrites(
+        guild_id=...,
+        command=...,
+        token=...,
+        app=...,
+    )
+
+    # With the instance and a bound app, using an implicit token
+    # useful in most small projects
+    discord.get_permission_overwrites(
+        guild_id=...,
+        command=...,
+    )
+
+.. _overwrite-token-caveats:
+
+Caveats of using the bot's own token for permission overwrites
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If the token is omitted, the bot's token will be used.
+Note that this only works if the bot's developer account is an admin in the guild.
+This is handy for small bots on your own servers, but you shouldn't rely on this for anything you want others to use in their servers.
+
+You'll also need to explicitly add the ``applications.commands.permissions.update`` scope:
+
+.. code-block:: python
+
+    app.config[
+        "DISCORD_SCOPE"
+    ] = "applications.commands.update applications.commands.permissions.update"
 
 Permission class
-^^^^^^^^^^^^^^^^
+----------------
 
 The :class:`.Permission` class accepts a role ID, user ID, or channel ID, and
 represents a permissions override for that role, user, or channel.
