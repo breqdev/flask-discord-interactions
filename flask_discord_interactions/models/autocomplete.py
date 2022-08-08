@@ -1,3 +1,4 @@
+import json
 from typing import Union
 from flask_discord_interactions.models.message import ResponseType
 from flask_discord_interactions.models.option import Choice
@@ -31,12 +32,14 @@ class AutocompleteResult:
     def __init__(self, choices=[]):
         self.choices = choices
 
-    def dump(self):
+    def encode(self):
         "Return this result as a complete interaction response."
-        return {
+        data = {
             "type": ResponseType.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
             "data": {"choices": self.choices},
         }
+
+        return json.dumps(data), "application/json"
 
     @staticmethod
     def from_return_value(value: Union[dict, list, "AutocompleteResult"]):
