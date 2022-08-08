@@ -490,7 +490,14 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                     "You must supply either a command ID or a Command instance."
                 )
 
-        return f"{base_url}/applications/{application_id}/guilds/{guild_id}/commands/{command_id}/permissions"
+        url = f"{base_url}/applications/{application_id}/guilds/{guild_id}/commands/{command_id}/permissions"
+        auth = (
+            {"Authorization": f"Bearer {token}"}
+            if token
+            else DiscordInteractions.auth_headers(app)
+        )
+
+        return url, auth
 
     @static_or_instance
     def get_permission_overwrites(
@@ -567,7 +574,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             A list of permission overwrites for the given command.
         """
 
-        url = DiscordInteractions.build_permission_overwrite_url(
+        url, auth = DiscordInteractions.build_permission_overwrite_url(
             self,
             command,
             guild_id=guild_id,
@@ -580,11 +587,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         response = requests.get(
             url,
-            headers=(
-                {"Authorization": f"Bearer {token}"}
-                if token
-                else DiscordInteractions.auth_headers(app)
-            ),
+            headers=auth,
         )
         response.raise_for_status()
 
@@ -632,7 +635,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             The base URL of the Discord API.
         """
 
-        url = DiscordInteractions.build_permission_overwrite_url(
+        url, auth = DiscordInteractions.build_permission_overwrite_url(
             self,
             command,
             guild_id=guild_id,
@@ -645,15 +648,9 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         response = requests.put(
             url,
-            headers=(
-                {"Authorization": f"Bearer {token}"}
-                if token
-                else DiscordInteractions.auth_headers(app)
-            ),
+            headers=auth,
             json={"permissions": [perm.dump() for perm in permissions]},
         )
-        print([perm.dump() for perm in permissions])
-        print(response.text)
         response.raise_for_status()
 
     def throttle(self, response):

@@ -57,6 +57,22 @@ def unlock_command(ctx):
     return "Unlocked!"
 
 
+# Permissions can be set on command groups at the top level,
+# and will apply to all subcommands.
+
+admin = discord.command_group("admin", default_member_permissions=8)
+
+
+@admin.command()
+def restrict_user(ctx, user: Member):
+    return f"{user.username} has been restricted!"
+
+
+@admin.command()
+def release_user(ctx, user: Member):
+    return f"{user.username} has been released!"
+
+
 discord.set_route("/interactions")
 
 discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
