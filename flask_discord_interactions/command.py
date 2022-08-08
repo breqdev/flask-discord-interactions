@@ -19,6 +19,8 @@ from flask_discord_interactions.models import (
     Attachment,
 )
 
+_type = type
+
 
 class Command:
     """
@@ -139,7 +141,7 @@ class Command:
                 annotation = parameter.annotation
                 autocomplete = False
 
-                if type(annotation) == Autocomplete:
+                if _type(annotation) == Autocomplete:
                     annotation = annotation.t
                     autocomplete = True
 
@@ -486,7 +488,11 @@ class SlashCommandGroup(SlashCommandSubgroup):
         """
 
         group = SlashCommandSubgroup(
-            name, description, name_localizations, description_localizations, is_async
+            name,
+            description,
+            name_localizations=name_localizations,
+            description_localizations=description_localizations,
+            is_async=is_async,
         )
         self.subcommands[name] = group
         return group
