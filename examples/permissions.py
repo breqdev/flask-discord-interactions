@@ -28,7 +28,7 @@ def blacklist(ctx, user: Member):
 
 
 @discord.command(
-    default_member_permissions=0,
+    default_member_permissions=8,
 )
 def command_with_perms(ctx):
     "You need a certain role to access this command"
@@ -36,7 +36,7 @@ def command_with_perms(ctx):
     return "You have permissions!"
 
 
-@discord.command(default_member_permissions=0)
+@discord.command(default_member_permissions=8)
 def locked_command(ctx):
     "Secret command that has to be unlocked"
 
