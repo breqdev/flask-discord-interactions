@@ -68,6 +68,7 @@ class Command:
         command,
         name,
         description,
+        *,
         options,
         annotations,
         command_type=ApplicationCommandType.CHAT_INPUT,
@@ -198,7 +199,7 @@ class Command:
 
                 self.options.append(option)
 
-    def make_context_and_run(self, discord, app, data):
+    def make_context_and_run(self, *, discord, app, data):
         """
         Creates the :class:`Context` object for an invocation of this
         command, then invokes itself.
@@ -314,6 +315,7 @@ class SlashCommandSubgroup(Command):
         self,
         name,
         description,
+        *,
         name_localizations=None,
         description_localizations=None,
         is_async=False,
@@ -334,6 +336,7 @@ class SlashCommandSubgroup(Command):
         self,
         name=None,
         description=None,
+        *,
         name_localizations=None,
         description_localizations=None,
         options=None,
@@ -435,6 +438,7 @@ class SlashCommandGroup(SlashCommandSubgroup):
         self,
         name,
         description,
+        *,
         is_async=False,
         default_member_permissions=None,
         dm_permission=None,
@@ -457,6 +461,7 @@ class SlashCommandGroup(SlashCommandSubgroup):
         self,
         name,
         description="No description",
+        *,
         name_localizations=None,
         description_localizations=None,
         is_async=False,
