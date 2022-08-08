@@ -1,3 +1,5 @@
+import json
+
 from flask_discord_interactions import (
     Message,
     ResponseType,
@@ -38,7 +40,9 @@ def test_action_row(discord, client):
         },
     }
 
-    assert client.run("action_row").dump() == expected
+    result, mimetype = client.run("action_row").encode()
+    assert json.loads(result) == expected
+    assert mimetype == "application/json"
 
 
 def test_button(discord, client):
@@ -84,7 +88,9 @@ def test_button(discord, client):
         },
     }
 
-    assert client.run("button").dump() == expected
+    result, mimetype = client.run("button").encode()
+    assert json.loads(result) == expected
+    assert mimetype == "application/json"
 
 
 def test_select_menu(discord, client):
@@ -146,4 +152,6 @@ def test_select_menu(discord, client):
         },
     }
 
-    assert client.run("selectmenu").dump() == expected
+    result, mimetype = client.run("selectmenu").encode()
+    assert json.loads(result) == expected
+    assert mimetype == "application/json"

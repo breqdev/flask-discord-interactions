@@ -415,9 +415,11 @@ class Context(LoadableDataclass):
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
+        response, mimetype = updated.encode(followup=True)
         updated = requests.patch(
             self.followup_url(message),
-            **updated.dump_multipart(),
+            data=response,
+            headers={"Content-Type": mimetype},
         )
         updated.raise_for_status()
 
@@ -453,7 +455,10 @@ class Context(LoadableDataclass):
 
         message = Message.from_return_value(message)
 
-        message = requests.post(self.followup_url(), **message.dump_multipart())
+        response, mimetype = message.encode(followup=True)
+        message = requests.post(
+            self.followup_url(), data=response, headers={"Content-Type": mimetype}
+        )
         message.raise_for_status()
         return message.json()["id"]
 
@@ -560,8 +565,11 @@ class AsyncContext(Context):
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
+        response, mimetype = updated.encode(followup=True)
         await self.session.patch(
-            self.followup_url(message), json=updated.dump_followup()
+            self.followup_url(message),
+            data=response,
+            headers={"Content-Type": mimetype},
         )
 
     async def delete(self, message="@original"):
@@ -595,8 +603,11 @@ class AsyncContext(Context):
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
+        response, mimetype = message.encode(followup=True)
         async with self.session.post(
-            self.followup_url(), **message.dump_multipart()
+            self.followup_url(),
+            data=response,
+            headers={"Content-Type": mimetype},
         ) as message:
             return (await message.json())["id"]
 

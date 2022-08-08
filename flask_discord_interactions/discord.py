@@ -7,7 +7,7 @@ import warnings
 
 import requests
 
-from flask import current_app, request, jsonify, abort
+from flask import Response, current_app, request, jsonify, abort
 
 from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
@@ -585,6 +585,29 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         if not request.json:
             abort(400, "Request JSON required")
 
+    def handle_request(self):
+        """
+        Verify the signature in the incoming request and return the Message
+        result from the given command.
+        """
+        self.verify_signature(request)
+
+        interaction_type = request.json.get("type")
+        if interaction_type == InteractionType.PING:
+            abort(jsonify({"type": ResponseType.PONG}))
+        elif interaction_type == InteractionType.APPLICATION_COMMAND:
+            return self.run_command(request.json)
+        elif interaction_type == InteractionType.MESSAGE_COMPONENT:
+            return self.run_handler(request.json)
+        elif interaction_type == InteractionType.APPLICATION_COMMAND_AUTOCOMPLETE:
+            return self.run_autocomplete(request.json)
+        elif interaction_type == InteractionType.MODAL_SUBMIT:
+            return self.run_handler(request.json, allow_modal=False)
+        else:
+            raise RuntimeWarning(
+                f"Interaction type {interaction_type} is not yet supported"
+            )
+
     def set_route(self, route, app=None):
         """
         Add a route handler to the Flask app that handles incoming
@@ -606,30 +629,9 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         @app.route(route, methods=["POST"])
         def interactions():
-            self.verify_signature(request)
-
-            interaction_type = request.json.get("type")
-            if interaction_type == InteractionType.PING:
-                return jsonify({"type": ResponseType.PONG})
-
-            elif interaction_type == InteractionType.APPLICATION_COMMAND:
-                return jsonify(self.run_command(request.json).dump())
-
-            elif interaction_type == InteractionType.MESSAGE_COMPONENT:
-                return jsonify(self.run_handler(request.json).dump_handler())
-
-            elif interaction_type == InteractionType.APPLICATION_COMMAND_AUTOCOMPLETE:
-                return jsonify(self.run_autocomplete(request.json).dump())
-
-            elif interaction_type == InteractionType.MODAL_SUBMIT:
-                return jsonify(
-                    self.run_handler(request.json, allow_modal=False).dump_handler()
-                )
-
-            else:
-                raise RuntimeWarning(
-                    f"Interaction type {interaction_type} is not yet supported"
-                )
+            result = self.handle_request()
+            response, mimetype = result.encode()
+            return Response(response, mimetype=mimetype)
 
     def set_route_async(self, route, app=None):
         """
@@ -657,31 +659,13 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         @app.route(route, methods=["POST"])
         async def interactions():
-            self.verify_signature(request)
-
-            interaction_type = request.json.get("type")
-            if interaction_type == InteractionType.PING:
-                return jsonify({"type": ResponseType.PONG})
-
-            elif interaction_type == InteractionType.APPLICATION_COMMAND:
-                result = self.run_command(request.json)
-            elif interaction_type == InteractionType.MESSAGE_COMPONENT:
-                result = self.run_handler(request.json)
-            elif interaction_type == InteractionType.APPLICATION_COMMAND_AUTOCOMPLETE:
-                result = self.run_autocomplete(request.json)
-
-            elif interaction_type == InteractionType.MODAL_SUBMIT:
-                result = self.run_handler(request.json, allow_modal=False)
-
-            else:
-                raise RuntimeWarning(
-                    f"Interaction type {interaction_type} is not yet supported"
-                )
+            result = self.handle_request()
 
             if inspect.isawaitable(result):
                 result = await result
 
-            return jsonify(result.dump())
+            response, mimetype = result.encode()
+            return Response(response, mimetype=mimetype)
 
         # Set up the aiohttp ClientSession
 

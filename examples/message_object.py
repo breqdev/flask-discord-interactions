@@ -124,6 +124,15 @@ def ephemeral_embed(ctx):
     )
 
 
+@discord.command()
+def readme(ctx):
+    "Send the content of the readme.md file"
+    return Message(
+        content="Sending a file",
+        file=("README.md", open("README.md", "rb"), "text/markdown"),
+    )
+
+
 discord.set_route("/interactions")
 discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
 

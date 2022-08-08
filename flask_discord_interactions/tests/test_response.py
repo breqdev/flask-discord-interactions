@@ -47,32 +47,6 @@ def test_class_embed(discord, client):
     assert client.run("multiple").dump_embeds() == [output, output]
 
 
-def test_improper_immediate(discord, client):
-    fp = open("README.md", "r")
-
-    @discord.command()
-    def improper_immediate(ctx):
-        return Message(file=("README.md", fp, "text/markdown"))
-
-    result = client.run("improper_immediate")
-
-    with pytest.raises(ValueError):
-        result.dump()
-
-    fp.close()
-
-
-def test_improper_followup(discord, client):
-    @discord.command()
-    def improper_followup(ctx):
-        return Message("hi", ephemeral=True)
-
-    result = client.run("improper_followup")
-
-    with pytest.raises(ValueError):
-        result.dump_followup()
-
-
 def test_ephemeral(discord, client):
     @discord.command()
     def ephemeral(ctx):
@@ -99,7 +73,9 @@ def test_dump_immediate(discord, client):
         },
     }
 
-    assert client.run("use_response").dump() == expected
+    result, mimetype = client.run("use_response").encode()
+    assert json.loads(result) == expected
+    assert mimetype == "application/json"
 
 
 def test_dump_followup():
@@ -114,35 +90,9 @@ def test_dump_followup():
         "tts": False,
         "allowed_mentions": {"parse": ["roles", "users", "everyone"]},
         "components": None,
+        "flags": 0,
     }
 
-    assert resp.dump_followup() == expected
-
-
-def test_dump_multipart():
-    fp = open("README.md", "r")
-    resp = Message(
-        content="Followup",
-        embed=Embed(title="hello!"),
-        file=("README.md", fp, "text/markdown"),
-    )
-
-    expected = {
-        "data": {
-            "payload_json": json.dumps(
-                {
-                    "content": "Followup",
-                    "tts": False,
-                    "embeds": [{"title": "hello!"}],
-                    "allowed_mentions": {"parse": ["roles", "users", "everyone"]},
-                    "components": None,
-                }
-            )
-        },
-        "files": [("file", ("README.md", fp, "text/markdown"))],
-    }
-
-    try:
-        assert resp.dump_multipart() == expected
-    finally:
-        fp.close()
+    result, mimetype = resp.encode(followup=True)
+    assert json.loads(result) == expected
+    assert mimetype == "application/json"
