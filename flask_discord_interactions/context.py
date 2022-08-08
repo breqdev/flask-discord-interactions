@@ -36,6 +36,8 @@ class Context(LoadableDataclass):
     id
         The unique ID (snowflake) of this interaction.
     type
+        The :class:`InteractionType` of this interaction.
+    command_type
         The :class:`ApplicationCommandType` of this interaction.
     token
         The token to use when sending followup messages.
@@ -80,6 +82,7 @@ class Context(LoadableDataclass):
     author: Union[Member, User] = None
     id: str = None
     type: int = None
+    command_type: int = None
     token: str = None
     channel_id: str = None
     guild_id: str = None
@@ -120,7 +123,9 @@ class Context(LoadableDataclass):
             app=app,
             discord=discord,
             id=data.get("id"),
-            type=data.get("data", {}).get("type") or ApplicationCommandType.CHAT_INPUT,
+            type=data.get("type"),
+            command_type=data.get("data", {}).get("type")
+            or ApplicationCommandType.CHAT_INPUT,
             token=data.get("token"),
             channel_id=data.get("channel_id"),
             guild_id=data.get("guild_id"),
@@ -245,12 +250,12 @@ class Context(LoadableDataclass):
         For User and Message commands, the target is the relevant user or
         message. This method sets the `ctx.target` field.
         """
-        if self.type == ApplicationCommandType.USER:
+        if self.command_type == ApplicationCommandType.USER:
             if self.target_id in self.members:
                 self.target = self.members[self.target_id]
             else:
                 self.target = self.users[self.target_id]
-        elif self.type == ApplicationCommandType.MESSAGE:
+        elif self.command_type == ApplicationCommandType.MESSAGE:
             self.target = self.messages[self.target_id]
         else:
             self.target = None
@@ -263,11 +268,11 @@ class Context(LoadableDataclass):
         Create the arguments which will be passed to the function when the
         :class:`Command` is invoked.
         """
-        if self.type == ApplicationCommandType.CHAT_INPUT:
+        if self.command_type == ApplicationCommandType.CHAT_INPUT:
             return self.create_args_chat_input()
-        elif self.type == ApplicationCommandType.USER:
+        elif self.command_type == ApplicationCommandType.USER:
             return [self.target], {}
-        elif self.type == ApplicationCommandType.MESSAGE:
+        elif self.command_type == ApplicationCommandType.MESSAGE:
             return [self.target], {}
 
     def create_args_chat_input(self):
@@ -411,9 +416,11 @@ class Context(LoadableDataclass):
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
+        response, mimetype = updated.encode(followup=True)
         updated = requests.patch(
             self.followup_url(message),
-            **updated.dump_multipart(),
+            data=response,
+            headers={"Content-Type": mimetype},
         )
         updated.raise_for_status()
 
@@ -449,7 +456,10 @@ class Context(LoadableDataclass):
 
         message = Message.from_return_value(message)
 
-        message = requests.post(self.followup_url(), **message.dump_multipart())
+        response, mimetype = message.encode(followup=True)
+        message = requests.post(
+            self.followup_url(), data=response, headers={"Content-Type": mimetype}
+        )
         message.raise_for_status()
         return message.json()["id"]
 
@@ -526,8 +536,11 @@ class AsyncContext(Context):
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
+        response, mimetype = updated.encode(followup=True)
         await self.session.patch(
-            self.followup_url(message), json=updated.dump_followup()
+            self.followup_url(message),
+            data=response,
+            headers={"Content-Type": mimetype},
         )
 
     async def delete(self, message="@original"):
@@ -561,25 +574,39 @@ class AsyncContext(Context):
         if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
             return
 
+        response, mimetype = message.encode(followup=True)
         async with self.session.post(
-            self.followup_url(), **message.dump_multipart()
+            self.followup_url(),
+            data=response,
+            headers={"Content-Type": mimetype},
         ) as message:
             return (await message.json())["id"]
 
-    async def close(self):
+    async def overwrite_permissions(self, permissions, command=None):
         """
-        Deprecated as of v1.0.2.
+        Overwrite the permission overwrites for this command.
 
-        Previously, this closed the AsyncContext's aiohttp ClientSession that
-        was used to send followup messages. This is no longer necessary, as
-        this library now maintains a single ClientSession for the entire
-        application.
+        Parameters
+        ----------
+        permissions
+            The new list of permission overwrites.
+        command
+            The name of the command to overwrite permissions for. If omitted,
+            overwrites for the invoking command.
         """
 
-        warnings.warn(
-            "Deprecated! AsyncContext.close is a no-op. "
-            "Since v1.0.2, only one aiohttp ClientSession is created "
-            "for all requests to Discord for the app. "
-            "Thus, there is no need to close the AsyncContext. ",
-            DeprecationWarning,
+        url = (
+            f"{self.app.config['DISCORD_BASE_URL']}/"
+            f"applications/{self.app.config['DISCORD_CLIENT_ID']}/"
+            f"guilds/{self.guild_id}/"
+            f"commands/{self.get_command(command)}/permissions"
+        )
+
+        data = [permission.dump() for permission in permissions]
+
+        if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
+            return
+
+        await self.session.put(
+            url, headers=self.auth_headers, json={"permissions": data}
         )

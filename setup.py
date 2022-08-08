@@ -7,7 +7,7 @@ with open("README.md") as file:
 
 setup(
     name="Flask-Discord-Interactions",
-    version="1.7.3",
+    version="2.0.0rc1",
     url="https://github.com/Breq16/flask-discord-interactions",
     author="Brooke Chalmers",
     author_email="breq@breq.dev",
@@ -18,7 +18,7 @@ setup(
     zip_safe=False,
     include_package_data=True,
     platforms="any",
-    install_requires=["Flask", "requests", "PyNaCl"],
+    install_requires=["Flask", "requests", "PyNaCl", "requests-toolbelt"],
     extras_require={"async": ["Quart", "aiohttp"]},
     tests_require=["pytest"],
     classifiers=[

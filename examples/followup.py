@@ -27,7 +27,7 @@ discord.update_commands()
 
 
 # You can continue to send followup messages from background processes
-# You can also send files now (although you can't with the initial message)
+# You can also send files
 @discord.command()
 def followup(ctx):
     def do_followup():
@@ -42,7 +42,7 @@ def followup(ctx):
         ctx.send(
             Message(
                 content="Sending a file",
-                file=("README.md", open("README.md", "r"), "text/markdown"),
+                file=("README.md", open("README.md", "rb"), "text/markdown"),
             )
         )
         time.sleep(5)
@@ -78,13 +78,14 @@ def delay(ctx, duration: int):
     return Message(deferred=True)
 
 
-# This can be useful if you want to send files
+# This can be useful if you want to send files without worrying about the
+# Discord timeout
 @discord.command()
 def sendfile(ctx):
     def do_sendfile():
         ctx.edit(
             Message(
-                file=("README.md", open("README.md", "r"), "text/markdown"),
+                file=("README.md", open("README.md", "rb"), "text/markdown"),
             )
         )
 

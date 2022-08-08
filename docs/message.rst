@@ -56,7 +56,7 @@ response ephemeral:
 
 Note that this only works with the initial response, not for followup messages.
 
-For followup messages (*not* the initial response), you can also attach files:
+You can also attach files:
 
 .. code-block:: python
 
