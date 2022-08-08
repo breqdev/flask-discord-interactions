@@ -50,7 +50,7 @@ class Command:
         annotations. Do not use with ``options``. If omitted, and if
         ``options`` is not provided, option descriptions default to
         "No description".
-    command_type
+    type
         Type for this command (depend on the action in the Discord client).
         The value is in ``ApplicationCommandType``. If omitted, set the default
         value to ``ApplicationCommandType.CHAT_INPUT``.
@@ -71,7 +71,7 @@ class Command:
         *,
         options,
         annotations,
-        command_type=ApplicationCommandType.CHAT_INPUT,
+        type=ApplicationCommandType.CHAT_INPUT,
         default_member_permissions=None,
         dm_permission=None,
         name_localizations=None,
@@ -83,7 +83,7 @@ class Command:
         self.description = description
         self.options = options
         self.annotations = annotations or {}
-        self.type = command_type
+        self.type = type
         self.default_member_permissions = default_member_permissions
         self.dm_permission = dm_permission
         self.name_localizations = name_localizations

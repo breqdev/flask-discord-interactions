@@ -88,17 +88,17 @@ class DiscordInteractionsBlueprint:
             Indicates whether the command can be used in DMs
         """
         command = Command(
-            command,
-            name,
-            description,
-            options,
-            annotations,
-            type,
-            default_member_permissions,
-            dm_permission,
-            name_localizations,
-            description_localizations,
-            self,
+            command=command,
+            name=name,
+            description=description,
+            options=options,
+            annotations=annotations,
+            type=type,
+            default_member_permissions=default_member_permissions,
+            dm_permission=dm_permission,
+            name_localizations=name_localizations,
+            description_localizations=description_localizations,
+            discord=self,
         )
         self.discord_commands[command.name] = command
         return command
@@ -147,15 +147,15 @@ class DiscordInteractionsBlueprint:
             nonlocal name, description, type, options
             command = self.add_command(
                 func,
-                name,
-                description,
-                options,
-                annotations,
-                type,
-                default_member_permissions,
-                dm_permission,
-                name_localizations,
-                description_localizations,
+                name=name,
+                description=description,
+                options=options,
+                annotations=annotations,
+                type=type,
+                default_member_permissions=default_member_permissions,
+                dm_permission=dm_permission,
+                name_localizations=name_localizations,
+                description_localizations=description_localizations,
             )
             return command
 
@@ -196,13 +196,13 @@ class DiscordInteractionsBlueprint:
         """
 
         group = SlashCommandGroup(
-            name,
-            description,
-            is_async,
-            default_member_permissions,
-            dm_permission,
-            name_localizations,
-            description_localizations,
+            name=name,
+            description=description,
+            is_async=is_async,
+            default_member_permissions=default_member_permissions,
+            dm_permission=dm_permission,
+            name_localizations=name_localizations,
+            description_localizations=description_localizations,
         )
         self.discord_commands[name] = group
         return group
@@ -696,7 +696,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         if command is None:
             raise ValueError(f"Invalid command name: {command_name}")
 
-        return command.make_context_and_run(self, current_app, data)
+        return command.make_context_and_run(discord=self, app=current_app, data=data)
 
     def run_handler(self, data, *, allow_modal=True):
         """
