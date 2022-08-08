@@ -58,8 +58,6 @@ class Command:
         A permission integer defining the required permissions a user must have to run the command
     dm_permission
         Indicates whether the command can be used in DMs
-    permissions
-        List of permission overwrites.
     discord
         DiscordInteractionsBlueprint instance which this Command is associated
         with.
@@ -75,7 +73,6 @@ class Command:
         command_type=ApplicationCommandType.CHAT_INPUT,
         default_member_permissions=None,
         dm_permission=None,
-        permissions=None,
         name_localizations=None,
         description_localizations=None,
         discord=None,
@@ -88,10 +85,10 @@ class Command:
         self.type = command_type
         self.default_member_permissions = default_member_permissions
         self.dm_permission = dm_permission
-        self.permissions = permissions
         self.name_localizations = name_localizations
         self.description_localizations = description_localizations
         self.discord = discord
+        self.id = None
 
         if self.name is None:
             self.name = command.__name__
@@ -270,9 +267,6 @@ class Command:
 
         return data
 
-    def dump_permissions(self):
-        return [permission.dump() for permission in self.permissions]
-
     def autocomplete(self):
         """
         Register an autocomplete handler function for this command.
@@ -333,7 +327,6 @@ class SlashCommandSubgroup(Command):
 
         self.default_member_permissions = None
         self.dm_permission = None
-        self.permissions = None
 
         self.is_async = is_async
 
@@ -436,9 +429,6 @@ class SlashCommandGroup(SlashCommandSubgroup):
         Permission integer setting permission defaults for a command
     dm_permission
         Indicates whether the command can be used in DMs
-    permissions
-        List of permission overwrites. These apply to all subcommands of this
-        group.
     """
 
     def __init__(
@@ -448,7 +438,6 @@ class SlashCommandGroup(SlashCommandSubgroup):
         is_async=False,
         default_member_permissions=None,
         dm_permission=None,
-        permissions=None,
         name_localizations=None,
         description_localizations=None,
     ):
@@ -459,7 +448,6 @@ class SlashCommandGroup(SlashCommandSubgroup):
 
         self.default_member_permissions = default_member_permissions
         self.dm_permission = dm_permission
-        self.permissions = permissions
         self.name_localizations = name_localizations
         self.description_localizations = description_localizations
 

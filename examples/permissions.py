@@ -14,6 +14,9 @@ discord = DiscordInteractions(app)
 app.config["DISCORD_CLIENT_ID"] = os.environ["DISCORD_CLIENT_ID"]
 app.config["DISCORD_PUBLIC_KEY"] = os.environ["DISCORD_PUBLIC_KEY"]
 app.config["DISCORD_CLIENT_SECRET"] = os.environ["DISCORD_CLIENT_SECRET"]
+app.config[
+    "DISCORD_SCOPE"
+] = "applications.commands.update applications.commands.permissions.update"
 
 discord.update_commands()
 
@@ -25,7 +28,7 @@ def blacklist(ctx, user: Member):
 
 
 @discord.command(
-    default_permission=False, permissions=[Permission(role="786840072891662336")]
+    default_member_permissions=8,
 )
 def command_with_perms(ctx):
     "You need a certain role to access this command"
@@ -33,7 +36,7 @@ def command_with_perms(ctx):
     return "You have permissions!"
 
 
-@discord.command(default_permission=False)
+@discord.command(default_member_permissions=8)
 def locked_command(ctx):
     "Secret command that has to be unlocked"
 
@@ -44,40 +47,41 @@ def locked_command(ctx):
 def unlock_command(ctx):
     "Unlock the secret command"
 
-    ctx.overwrite_permissions([Permission(user=ctx.author.id)], "locked_command")
+    DiscordInteractions.set_permission_overwrites(
+        permissions=[Permission(user=ctx.author.id)],
+        command_id=locked_command.id,
+        guild_id=ctx.guild_id,
+        app=app,
+    )
 
     return "Unlocked!"
 
 
-# Command groups can have permissions at the top level
+# Permissions can be set on command groups at the top level,
+# and will apply to all subcommands.
 
-group = discord.command_group(
-    "group",
-    default_permission=False,
-    permissions=[Permission(role="786840072891662336")],
-)
+admin = discord.command_group("admin", default_member_permissions=8)
 
 
-@group.command()
-def locked_subcommand(ctx):
-    "Locked subcommand"
-
-    return "You have unlocked the secret subcommand!"
+@admin.command()
+def restrict_user(ctx, user: Member):
+    return f"{user.username} has been restricted!"
 
 
-@group.command()
-def lock_me_out(ctx):
-    "Lock me out of this group"
-
-    ctx.overwrite_permissions([Permission(user=ctx.author.id, allow=False)])
-
-    return "Locked!"
+@admin.command()
+def release_user(ctx, user: Member):
+    return f"{user.username} has been released!"
 
 
 discord.set_route("/interactions")
 
-
 discord.update_commands(guild_id=os.environ["TESTING_GUILD"])
+
+discord.set_permission_overwrites(
+    [Permission(role="786840072891662336")],
+    command_with_perms,
+    guild_id=int(os.environ["TESTING_GUILD"]),
+)
 
 
 if __name__ == "__main__":

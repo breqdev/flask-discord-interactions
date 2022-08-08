@@ -44,7 +44,7 @@ class CustomIdComponent(Component):
     """
     Represents a Message Component with a Custom ID.
 
-    Attributes
+    Parameters
     ----------
     custom_id: str | List
         The custom ID of the component. Strings represent a single ID, lists
@@ -66,7 +66,7 @@ class ActionRow(Component):
     """
     Represents an ActionRow message component.
 
-    Attributes
+    Parameters
     ----------
     components: List[Component]
         The message components to display in the action row.
@@ -122,7 +122,7 @@ class Button(CustomIdComponent):
     """
     Represents a Button message component.
 
-    Attributes
+    Parameters
     ----------
     style: int
         The style of the button (see :class:`ButtonStyles`).
@@ -165,7 +165,7 @@ class SelectMenuOption:
     """
     Represents an option in a SelectMenu message component.
 
-    Attributes
+    Parameters
     ----------
     label: str
         The label displayed on the option.
@@ -192,7 +192,7 @@ class SelectMenu(CustomIdComponent):
     """
     Represents a SelectMenu message component.
 
-    Attributes
+    Parameters
     ----------
     options: List[SelectMenuOption]
         The options to display in the select menu.
@@ -245,7 +245,7 @@ class TextInput(CustomIdComponent):
     """
     Represents a TextInput modal component.
 
-    Attributes
+    Parameters
     ----------
     label: str
         The label displayed for the field.

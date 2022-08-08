@@ -24,7 +24,7 @@ class Option:
     """
     Represents an option provided to a slash command.
 
-    Attributes
+    Parameters
     ----------
     name
         The name of the option.
@@ -132,7 +132,9 @@ class Option:
             "autocomplete": self.autocomplete,
         }
         if self.choices is not None:
-            data["choices"] = [(c.dump() if isinstance(c, Choice) else c) for c in self.choices]
+            data["choices"] = [
+                (c.dump() if isinstance(c, Choice) else c) for c in self.choices
+            ]
         return data
 
 

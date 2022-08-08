@@ -8,7 +8,7 @@ class Autocomplete:
     """
     Represents the type of an option that can be autocompleted.
 
-    Attributes
+    Parameters
     ----------
     t
         The underlying type of the option.
@@ -22,7 +22,7 @@ class AutocompleteResult:
     """
     Represents the result of an autocomplete handler.
 
-    Attributes
+    Parameters
     ----------
     choices
         A dict mapping the displayed name of each choice to its value passed to
@@ -47,8 +47,8 @@ class AutocompleteResult:
         Converts the return value of an autocomplete handler to an
         AutocompleteResult.
 
-        Paramters
-        ---------
+        Parameters
+        ----------
         value
             The return value of an autocomplete handler.
 

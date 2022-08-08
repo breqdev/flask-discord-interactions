@@ -32,7 +32,8 @@ extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon", "sphinx.ext.intersphi
 
 intersphinx_mapping = {
     "py": ("https://docs.python.org/3", None),
-    "requests": ("https://docs.python-requests.org/en/master/", None),
+    "requests": ("https://requests.readthedocs.io/en/latest/", None),
+    "flask": ("https://flask.palletsprojects.com/", None),
 }
 
 # Add any paths that contain templates here, relative to this directory.

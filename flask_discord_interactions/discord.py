@@ -21,7 +21,8 @@ except ImportError:
 
 from flask_discord_interactions.command import Command, SlashCommandGroup
 from flask_discord_interactions.context import Context, ApplicationCommandType
-from flask_discord_interactions.models import Message, Modal, ResponseType
+from flask_discord_interactions.models import Message, Modal, ResponseType, Permission
+from flask_discord_interactions.utils import static_or_instance
 
 
 class InteractionType:
@@ -54,7 +55,6 @@ class DiscordInteractionsBlueprint:
         type=ApplicationCommandType.CHAT_INPUT,
         default_member_permissions=None,
         dm_permission=None,
-        permissions=None,
         name_localizations=None,
         description_localizations=None,
     ):
@@ -85,8 +85,6 @@ class DiscordInteractionsBlueprint:
             A permission integer defining the required permissions a user must have to run the command
         dm_permission
             Indicates whether the command can be used in DMs
-        permissions
-            List of permission overwrites.
         """
         command = Command(
             command,
@@ -97,7 +95,6 @@ class DiscordInteractionsBlueprint:
             type,
             default_member_permissions,
             dm_permission,
-            permissions,
             name_localizations,
             description_localizations,
             self,
@@ -114,7 +111,6 @@ class DiscordInteractionsBlueprint:
         type=ApplicationCommandType.CHAT_INPUT,
         default_member_permissions=None,
         dm_permission=None,
-        permissions=None,
         name_localizations=None,
         description_localizations=None,
     ):
@@ -143,8 +139,6 @@ class DiscordInteractionsBlueprint:
             A permission integer defining the required permissions a user must have to run the command
         dm_permission
             Indicates whether the command can be used in DMs
-        permissions
-            List of permission overwrites.
         """
 
         def decorator(func):
@@ -158,7 +152,6 @@ class DiscordInteractionsBlueprint:
                 type,
                 default_member_permissions,
                 dm_permission,
-                permissions,
                 name_localizations,
                 description_localizations,
             )
@@ -173,7 +166,6 @@ class DiscordInteractionsBlueprint:
         is_async=False,
         default_member_permissions=None,
         dm_permission=None,
-        permissions=None,
         name_localizations=None,
         description_localizations=None,
     ):
@@ -198,8 +190,6 @@ class DiscordInteractionsBlueprint:
             A permission integer defining the required permissions a user must have to run the command
         dm_permission
             Indicates whether the command canbe used in DMs
-        permissions
-            List of permission overwrites. These apply to the entire group.
         """
 
         group = SlashCommandGroup(
@@ -208,7 +198,6 @@ class DiscordInteractionsBlueprint:
             is_async,
             default_member_permissions,
             dm_permission,
-            permissions,
             name_localizations,
             description_localizations,
         )
@@ -299,10 +288,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         app.config.setdefault("DISCORD_CLIENT_ID", "")
         app.config.setdefault("DISCORD_PUBLIC_KEY", "")
         app.config.setdefault("DISCORD_CLIENT_SECRET", "")
-        app.config.setdefault(
-            "DISCORD_SCOPE",
-            "applications.commands.update applications.commands.permissions.update",
-        )
+        app.config.setdefault("DISCORD_SCOPE", "applications.commands.update")
         app.config.setdefault("DONT_VALIDATE_SIGNATURE", False)
         app.config.setdefault("DONT_REGISTER_WITH_DISCORD", False)
         app.discord_commands = self.discord_commands
@@ -310,6 +296,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         app.autocomplete_handlers = self.autocomplete_handlers
         app.discord_token = None
 
+    @static_or_instance
     def fetch_token(self, app=None):
         """
         Fetch an OAuth2 token from Discord using the ``CLIENT_ID`` and
@@ -352,7 +339,8 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             time.time() + app.discord_token["expires_in"] / 2
         )
 
-    def auth_headers(self, app):
+    @staticmethod
+    def auth_headers(app):
         """
         Get the Authorization header required for HTTP requests to the
         Discord API.
@@ -364,7 +352,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         """
 
         if app.discord_token is None or time.time() > app.discord_token["expires_on"]:
-            self.fetch_token(app)
+            DiscordInteractions.fetch_token(app)
         return {"Authorization": f"Bearer {app.discord_token['access_token']}"}
 
     def update_commands(self, app=None, guild_id=None):
@@ -425,27 +413,220 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             for command in app.discord_commands.values():
                 command.id = command.name
 
-        if guild_id:
-            for command in app.discord_commands.values():
-                if (
-                    not app.config["DONT_REGISTER_WITH_DISCORD"]
-                    and command.permissions is not None
-                ):
-                    response = requests.put(
-                        url + "/" + command.id + "/permissions",
-                        json={"permissions": command.dump_permissions()},
-                        headers=self.auth_headers(app),
-                    )
+    def update_slash_commands(self, *args, **kwargs):
+        """
+        Deprecated! As of v1.1.0, ``update_slash_commands`` has been renamed to
+        ``update_commands``, as it updates User and Message commands as well.
+        """
+        warnings.warn(
+            "Deprecated! As of v1.1.0, update_slash_commands has been renamed "
+            "to update_commands, as it updates User and Message commands too.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
-                    try:
-                        response.raise_for_status()
-                    except requests.exceptions.HTTPError:
-                        raise ValueError(
-                            f"Unable to register permissions for {command.id}:"
-                            f"{response.status_code} {response.text}"
-                        )
+        return self.update_commands(*args, **kwargs)
 
-                    self.throttle(response)
+    @staticmethod
+    def build_permission_overwrite_url(
+        self,
+        command=None,
+        *,
+        guild_id,
+        command_id=None,
+        token=None,
+        app=None,
+        application_id=None,
+        base_url=None,
+    ):
+        """
+        Build the URL for getting or setting permission overwrites for a
+        specific guild and command.
+        """
+        if not app and self and self.app:
+            app = self.app
+
+        if not application_id or not base_url:
+            if app:
+                application_id = app.config["DISCORD_CLIENT_ID"]
+                base_url = app.config["DISCORD_BASE_URL"]
+            else:
+                raise ValueError(
+                    "This method requires the application ID and base URL."
+                    " Either provide these as arguments or provide an app "
+                    " instance with the relevant configuration."
+                )
+
+        if command_id is None:
+            if command:
+                command_id = command.id
+            else:
+                raise ValueError(
+                    "You must supply either a command ID or a Command instance."
+                )
+
+        url = f"{base_url}/applications/{application_id}/guilds/{guild_id}/commands/{command_id}/permissions"
+        auth = (
+            {"Authorization": f"Bearer {token}"}
+            if token
+            else DiscordInteractions.auth_headers(app)
+        )
+
+        return url, auth
+
+    @static_or_instance
+    def get_permission_overwrites(
+        self,
+        command=None,
+        *,
+        guild_id,
+        command_id=None,
+        token=None,
+        app=None,
+        application_id=None,
+        base_url=None,
+    ):
+        """
+        Get the list of permission overwrites in a specific guild for a
+        specific command. You must supply a Bearer token from a user with
+        "Manage Roles" and "Manage Server" permissions in the given guild.
+
+        If the token is omitted, the bot's token will be used. Note that this
+        only works if the bot's developer account is an admin in the guild.
+        This is handy for small bots on your own servers, but you shouldn't
+        rely on this for anything you want others to use in their servers.
+
+        There are a many ways to call this method, here are a few:
+
+        .. code-block:: python
+
+            # Without the app or instance, useful in a background worker
+            DiscordInteractions.get_permission_overwrites(
+                guild_id=...,
+                command_id=...,
+                token=...,
+                application_id=...,
+                base_url=...,
+            )
+
+            # With the instance and app passed in, useful in an app-factory project
+            discord.get_permission_overwrites(
+                guild_id=...,
+                command=...,
+                token=...,
+                app=...,
+            )
+
+            # With the instance and a bound app, using an implicit token
+            # useful in most small projects
+            discord.get_permission_overwrites(
+                guild_id=...,
+                command=...,
+            )
+
+        Parameters
+        ----------
+        command
+            The :class:`.Command` to retrieve permissions for.
+        guild_id
+            The ID of the guild to retrieve permissions from.
+        command_id
+            The ID of the command to retrieve permissions for.
+        token
+            A bearer token from an admin of the guild (not including the
+            leading ``Bearer`` word). If omitted, the bot's token will be
+            used instead.
+        app
+            The Flask app with the relevant Discord application ID.
+        application_id
+            The ID of the Discord application to retrieve permissions from.
+        base_url
+            The base URL of the Discord API.
+
+        Returns
+        -------
+        List[Permission]
+            A list of permission overwrites for the given command.
+        """
+
+        url, auth = DiscordInteractions.build_permission_overwrite_url(
+            self,
+            command,
+            guild_id=guild_id,
+            command_id=command_id,
+            token=token,
+            app=app,
+            application_id=application_id,
+            base_url=base_url,
+        )
+
+        response = requests.get(
+            url,
+            headers=auth,
+        )
+        response.raise_for_status()
+
+        return [Permission.from_dict(perm) for perm in response.json()]
+
+    @static_or_instance
+    def set_permission_overwrites(
+        self,
+        permissions,
+        command=None,
+        *,
+        guild_id,
+        command_id=None,
+        token=None,
+        app=None,
+        application_id=None,
+        base_url=None,
+    ):
+        """
+        Overwrite the list of permission overwrites in a specific guild for a
+        specific command. You must supply a Bearer token from a user with
+        "Manage Roles" and "Manage Server" permissions in the given guild.
+
+        This method requires access to the application ID and base URL. For
+        convenience, it can be called as either an instance method (using the
+        bound app's configuration) or a static method.
+
+        Parameters
+        ----------
+        command
+            The :class:`.Command` to retrieve permissions for.
+        guild_id
+            The ID of the guild to retrieve permissions from.
+        command_id
+            The ID of the command to retrieve permissions for.
+        token
+            A bearer token from an admin of the guild (not including the
+            leading ``Bearer`` word). If omitted, the bot's token will be
+            used instead.
+        app
+            The Flask app with the relevant Discord application ID.
+        application_id
+            The ID of the Discord application to retrieve permissions from.
+        base_url
+            The base URL of the Discord API.
+        """
+
+        url, auth = DiscordInteractions.build_permission_overwrite_url(
+            self,
+            command,
+            guild_id=guild_id,
+            command_id=command_id,
+            token=token,
+            app=app,
+            application_id=application_id,
+            base_url=base_url,
+        )
+
+        response = requests.put(
+            url,
+            headers=auth,
+            json={"permissions": [perm.dump() for perm in permissions]},
+        )
+        response.raise_for_status()
 
     def throttle(self, response):
         """
