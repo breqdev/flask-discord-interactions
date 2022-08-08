@@ -54,8 +54,6 @@ class Command:
         Type for this command (depend on the action in the Discord client).
         The value is in ``ApplicationCommandType``. If omitted, set the default
         value to ``ApplicationCommandType.CHAT_INPUT``.
-    default_permission
-        Deprecated as of v1.5! Whether the command is enabled by default.
     default_member_permissions
         A permission integer defining the required permissions a user must have to run the command
     dm_permission
@@ -75,7 +73,6 @@ class Command:
         options,
         annotations,
         command_type=ApplicationCommandType.CHAT_INPUT,
-        default_permission=None,
         default_member_permissions=None,
         dm_permission=None,
         permissions=None,
@@ -89,7 +86,6 @@ class Command:
         self.options = options
         self.annotations = annotations or {}
         self.type = command_type
-        self.default_permission = default_permission
         self.default_member_permissions = default_member_permissions
         self.dm_permission = dm_permission
         self.permissions = permissions
@@ -266,16 +262,6 @@ class Command:
             "description_localizations": self.description_localizations,
         }
 
-        # Keeping this here not to break any bots using the old system
-        if self.default_permission is not None:
-            data["default_permission"] = self.default_permission
-            warnings.warn(
-                "Deprecated! As of v1.5, the old default_permission is deprecated in favor of "
-                "the new default_member_permissions",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
         if self.default_member_permissions is not None:
             data["default_member_permissions"] = str(self.default_member_permissions)
 
@@ -345,7 +331,6 @@ class SlashCommandSubgroup(Command):
         self.name_localizations = name_localizations
         self.description_localizations = description_localizations
 
-        self.default_permission = None
         self.default_member_permissions = None
         self.dm_permission = None
         self.permissions = None
@@ -447,8 +432,6 @@ class SlashCommandGroup(SlashCommandSubgroup):
     is_async
         Whether the subgroup should be considered async (if subcommands
         get an :class:`AsyncContext` instead of a :class:`Context`.)
-    default_permission
-        Whether the subgroup is enabled by default. Default is True.
     default_member_permissions:
         Permission integer setting permission defaults for a command
     dm_permission
@@ -463,7 +446,6 @@ class SlashCommandGroup(SlashCommandSubgroup):
         name,
         description,
         is_async=False,
-        default_permission=None,
         default_member_permissions=None,
         dm_permission=None,
         permissions=None,
@@ -475,7 +457,6 @@ class SlashCommandGroup(SlashCommandSubgroup):
         self.subcommands = {}
         self.type = ApplicationCommandType.CHAT_INPUT
 
-        self.default_permission = default_permission
         self.default_member_permissions = default_member_permissions
         self.dm_permission = dm_permission
         self.permissions = permissions

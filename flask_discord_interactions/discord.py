@@ -52,7 +52,6 @@ class DiscordInteractionsBlueprint:
         options=None,
         annotations=None,
         type=ApplicationCommandType.CHAT_INPUT,
-        default_permission=None,
         default_member_permissions=None,
         dm_permission=None,
         permissions=None,
@@ -82,8 +81,6 @@ class DiscordInteractionsBlueprint:
             options defined in the function's keyword arguments.
         type
             The ``ApplicationCommandType`` of the command.
-        default_permission
-            Deprecated as of v1.5! Whether the command is enabled by default.
         default_member_permissions
             A permission integer defining the required permissions a user must have to run the command
         dm_permission
@@ -98,7 +95,6 @@ class DiscordInteractionsBlueprint:
             options,
             annotations,
             type,
-            default_permission,
             default_member_permissions,
             dm_permission,
             permissions,
@@ -109,19 +105,6 @@ class DiscordInteractionsBlueprint:
         self.discord_commands[command.name] = command
         return command
 
-    def add_slash_command(self, *args, **kwargs):
-        """
-        Deprecated! As of v1.1.0, ``add_slash_command`` has been renamed to
-        :meth:`add_command`, as it can now add User and Message commands.
-        """
-        warnings.warn(
-            "Deprecated! As of v1.1.0, add_slash_command has been renamed to "
-            "add_command, as it can now add User and Message commands.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.add_command(*args, **kwargs)
-
     def command(
         self,
         name=None,
@@ -129,7 +112,6 @@ class DiscordInteractionsBlueprint:
         options=None,
         annotations=None,
         type=ApplicationCommandType.CHAT_INPUT,
-        default_permission=None,
         default_member_permissions=None,
         dm_permission=None,
         permissions=None,
@@ -157,8 +139,6 @@ class DiscordInteractionsBlueprint:
             options defined in the function's keyword arguments.
         type
             The ``ApplicationCommandType`` of the command.
-        default_permission
-            Deprecated as of v1.5! Whether the command is enabled by default.
         default_member_permissions
             A permission integer defining the required permissions a user must have to run the command
         dm_permission
@@ -176,7 +156,6 @@ class DiscordInteractionsBlueprint:
                 options,
                 annotations,
                 type,
-                default_permission,
                 default_member_permissions,
                 dm_permission,
                 permissions,
@@ -192,7 +171,6 @@ class DiscordInteractionsBlueprint:
         name,
         description="No description",
         is_async=False,
-        default_permission=None,
         default_member_permissions=None,
         dm_permission=None,
         permissions=None,
@@ -216,8 +194,6 @@ class DiscordInteractionsBlueprint:
         is_async
             Whether the subgroup should be considered async (if subcommands
             get an :class:`.AsyncContext` instead of a :class:`Context`.)
-        default_permission
-            Deprecated as of v1.5! Whether the command is enabled by default.
         default_member_permissions
             A permission integer defining the required permissions a user must have to run the command
         dm_permission
@@ -230,7 +206,6 @@ class DiscordInteractionsBlueprint:
             name,
             description,
             is_async,
-            default_permission,
             default_member_permissions,
             dm_permission,
             permissions,
@@ -324,7 +299,10 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         app.config.setdefault("DISCORD_CLIENT_ID", "")
         app.config.setdefault("DISCORD_PUBLIC_KEY", "")
         app.config.setdefault("DISCORD_CLIENT_SECRET", "")
-        app.config.setdefault("DISCORD_SCOPE", "applications.commands.update applications.commands.permissions.update")
+        app.config.setdefault(
+            "DISCORD_SCOPE",
+            "applications.commands.update applications.commands.permissions.update",
+        )
         app.config.setdefault("DONT_VALIDATE_SIGNATURE", False)
         app.config.setdefault("DONT_REGISTER_WITH_DISCORD", False)
         app.discord_commands = self.discord_commands
@@ -468,20 +446,6 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                         )
 
                     self.throttle(response)
-
-    def update_slash_commands(self, *args, **kwargs):
-        """
-        Deprecated! As of v1.1.0, ``update_slash_commands`` has been renamed to
-        ``update_commands``, as it updates User and Message commands as well.
-        """
-        warnings.warn(
-            "Deprecated! As of v1.1.0, update_slash_commands has been renamed "
-            "to update_commands, as it updates User and Message commands too.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
-        return self.update_commands(*args, **kwargs)
 
     def throttle(self, response):
         """
