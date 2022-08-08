@@ -452,8 +452,8 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         return self.update_commands(*args, **kwargs)
 
-    @static_or_instance
-    def get_permission_overwrites(
+    @staticmethod
+    def build_permission_overwrite_url(
         self,
         command=None,
         *,
@@ -465,27 +465,9 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         base_url=None,
     ):
         """
-        Get the list of permission overwrites in a specific guild for a
-        specific command. You must supply a Bearer token from a user with
-        "Manage Roles" and "Manage Server" permissions in the given guild.
-
-        This method requires access to the application ID and base URL. For
-        convenience, it can be called as either an instance method (using the
-        bound app's configuration) or a static method.
-
-        Parameters
-        ----------
-        guild_id
-            The ID of the guild to retrieve permissions from.
-        command_id
-            The ID of the command to retrieve permissions for.
-        token
-            A bearer token from an admin of the guild (not including the
-            leading ``Bearer `` word).
-        app
-            The Flask app with the relevant Discord application ID.
+        Build the URL for getting or setting permission overwrites for a
+        specific guild and command.
         """
-
         if not app and self and self.app:
             app = self.app
 
@@ -504,9 +486,92 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             if command:
                 command_id = command.id
             else:
-                raise ValueError("You must supply a command ID or command.")
+                raise ValueError(
+                    "You must supply either a command ID or a Command instance."
+                )
 
-        url = f"{base_url}/applications/{application_id}/guilds/{guild_id}/commands/{command_id}/permissions"
+        return f"{base_url}/applications/{application_id}/guilds/{guild_id}/commands/{command_id}/permissions"
+
+    @static_or_instance
+    def get_permission_overwrites(
+        self,
+        command=None,
+        *,
+        guild_id,
+        command_id=None,
+        token=None,
+        app=None,
+        application_id=None,
+        base_url=None,
+    ):
+        """
+        Get the list of permission overwrites in a specific guild for a
+        specific command. You must supply a Bearer token from a user with
+        "Manage Roles" and "Manage Server" permissions in the given guild.
+
+        If the token is omitted, the bot's token will be used. Note that this
+        only works if the bot's developer account is an admin in the guild.
+        This is handy for small bots on your own servers, but you shouldn't
+        rely on this for anything you want others to use in their servers.
+
+        There are a many ways to call this method, here are a few:
+
+        .. code-block:: python3
+
+            # Without the app or instance, useful in a background worker
+            DiscordInteractions.get_permission_overwrites(
+                guild_id=...,
+                command_id=...,
+                token=...,
+                application_id=...,
+                base_url=...,
+            )
+
+            # With the instance and app passed in, useful in an app-factory project
+            discord.get_permission_overwrites(
+                guild_id=...,
+                command=...,
+                token=...,
+                app=...,
+            )
+
+            # With the instance and a bound app, using an implicit token
+            # useful in most small projects
+            discord.get_permission_overwrites(
+                guild_id=...,
+                command=...,
+            )
+
+        Parameters
+        ----------
+        command
+            The :class:`.Command` to retrieve permissions for.
+        guild_id
+            The ID of the guild to retrieve permissions from.
+        command_id
+            The ID of the command to retrieve permissions for.
+        token
+            A bearer token from an admin of the guild (not including the
+            leading ``Bearer `` word). If omitted, the bot's token will be
+            used instead.
+        app
+            The Flask app with the relevant Discord application ID.
+        application_id
+            The ID of the Discord application to retrieve permissions from.
+        base_url
+            The base URL of the Discord API.
+        """
+
+        url = DiscordInteractions.build_permission_overwrite_url(
+            self,
+            command,
+            guild_id=guild_id,
+            command_id=command_id,
+            token=token,
+            app=app,
+            application_id=application_id,
+            base_url=base_url,
+        )
 
         response = requests.get(
             url,
@@ -544,40 +609,34 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         Parameters
         ----------
-        permissions
-            A list of :class:`Permission` objects to set.
+        command
+            The :class:`.Command` to retrieve permissions for.
         guild_id
             The ID of the guild to retrieve permissions from.
         command_id
             The ID of the command to retrieve permissions for.
         token
             A bearer token from an admin of the guild (not including the
-            leading ``Bearer `` word).
+            leading ``Bearer `` word). If omitted, the bot's token will be
+            used instead.
         app
             The Flask app with the relevant Discord application ID.
+        application_id
+            The ID of the Discord application to retrieve permissions from.
+        base_url
+            The base URL of the Discord API.
         """
 
-        if not app and self and self.app:
-            app = self.app
-
-        if not application_id or not base_url:
-            if app:
-                application_id = app.config["DISCORD_CLIENT_ID"]
-                base_url = app.config["DISCORD_BASE_URL"]
-            else:
-                raise ValueError(
-                    "This method requires the application ID and base URL."
-                    " Either provide these as arguments or provide an app "
-                    " instance with the relevant configuration."
-                )
-
-        if not command_id:
-            if command:
-                command_id = command.id
-            else:
-                raise ValueError("You must supply a command ID or command.")
-
-        url = f"{base_url}/applications/{application_id}/guilds/{guild_id}/commands/{command_id}/permissions"
+        url = DiscordInteractions.build_permission_overwrite_url(
+            self,
+            command,
+            guild_id=guild_id,
+            command_id=command_id,
+            token=token,
+            app=app,
+            application_id=application_id,
+            base_url=base_url,
+        )
 
         response = requests.put(
             url,
