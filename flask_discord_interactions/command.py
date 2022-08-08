@@ -19,6 +19,8 @@ from flask_discord_interactions.models import (
     Attachment,
 )
 
+_type = type
+
 
 class Command:
     """
@@ -50,7 +52,7 @@ class Command:
         annotations. Do not use with ``options``. If omitted, and if
         ``options`` is not provided, option descriptions default to
         "No description".
-    command_type
+    type
         Type for this command (depend on the action in the Discord client).
         The value is in ``ApplicationCommandType``. If omitted, set the default
         value to ``ApplicationCommandType.CHAT_INPUT``.
@@ -68,9 +70,10 @@ class Command:
         command,
         name,
         description,
+        *,
         options,
         annotations,
-        command_type=ApplicationCommandType.CHAT_INPUT,
+        type=ApplicationCommandType.CHAT_INPUT,
         default_member_permissions=None,
         dm_permission=None,
         name_localizations=None,
@@ -82,7 +85,7 @@ class Command:
         self.description = description
         self.options = options
         self.annotations = annotations or {}
-        self.type = command_type
+        self.type = type
         self.default_member_permissions = default_member_permissions
         self.dm_permission = dm_permission
         self.name_localizations = name_localizations
@@ -138,7 +141,7 @@ class Command:
                 annotation = parameter.annotation
                 autocomplete = False
 
-                if type(annotation) == Autocomplete:
+                if _type(annotation) == Autocomplete:
                     annotation = annotation.t
                     autocomplete = True
 
@@ -198,7 +201,7 @@ class Command:
 
                 self.options.append(option)
 
-    def make_context_and_run(self, discord, app, data):
+    def make_context_and_run(self, *, discord, app, data):
         """
         Creates the :class:`Context` object for an invocation of this
         command, then invokes itself.
@@ -314,6 +317,7 @@ class SlashCommandSubgroup(Command):
         self,
         name,
         description,
+        *,
         name_localizations=None,
         description_localizations=None,
         is_async=False,
@@ -334,6 +338,7 @@ class SlashCommandSubgroup(Command):
         self,
         name=None,
         description=None,
+        *,
         name_localizations=None,
         description_localizations=None,
         options=None,
@@ -435,6 +440,7 @@ class SlashCommandGroup(SlashCommandSubgroup):
         self,
         name,
         description,
+        *,
         is_async=False,
         default_member_permissions=None,
         dm_permission=None,
@@ -457,6 +463,7 @@ class SlashCommandGroup(SlashCommandSubgroup):
         self,
         name,
         description="No description",
+        *,
         name_localizations=None,
         description_localizations=None,
         is_async=False,
@@ -481,7 +488,11 @@ class SlashCommandGroup(SlashCommandSubgroup):
         """
 
         group = SlashCommandSubgroup(
-            name, description, name_localizations, description_localizations, is_async
+            name,
+            description,
+            name_localizations=name_localizations,
+            description_localizations=description_localizations,
+            is_async=is_async,
         )
         self.subcommands[name] = group
         return group
