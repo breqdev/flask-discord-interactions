@@ -36,6 +36,8 @@ class Context(LoadableDataclass):
     id
         The unique ID (snowflake) of this interaction.
     type
+        The :class:`InteractionType` of this interaction.
+    command_type
         The :class:`ApplicationCommandType` of this interaction.
     token
         The token to use when sending followup messages.
@@ -80,6 +82,7 @@ class Context(LoadableDataclass):
     author: Union[Member, User] = None
     id: str = None
     type: int = None
+    command_type: int = None
     token: str = None
     channel_id: str = None
     guild_id: str = None
@@ -120,7 +123,8 @@ class Context(LoadableDataclass):
             app=app,
             discord=discord,
             id=data.get("id"),
-            type=data.get("data", {}).get("type") or ApplicationCommandType.CHAT_INPUT,
+            type=data.get("type"),
+            command_type=data.get("data", {}).get("type") or ApplicationCommandType.CHAT_INPUT,
             token=data.get("token"),
             channel_id=data.get("channel_id"),
             guild_id=data.get("guild_id"),
@@ -263,11 +267,11 @@ class Context(LoadableDataclass):
         Create the arguments which will be passed to the function when the
         :class:`Command` is invoked.
         """
-        if self.type == ApplicationCommandType.CHAT_INPUT:
+        if self.command_type == ApplicationCommandType.CHAT_INPUT:
             return self.create_args_chat_input()
-        elif self.type == ApplicationCommandType.USER:
+        elif self.command_type == ApplicationCommandType.USER:
             return [self.target], {}
-        elif self.type == ApplicationCommandType.MESSAGE:
+        elif self.command_type == ApplicationCommandType.MESSAGE:
             return [self.target], {}
 
     def create_args_chat_input(self):
