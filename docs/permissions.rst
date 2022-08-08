@@ -14,6 +14,9 @@ guild with the "Manage Roles" and "Manage Guild" permissions. Handling this is
 mostly outside the scope of this library, although a few helpers are provided.
 Consult the `Discord documentation <https://discord.com/developers/docs/interactions/application-commands#permissions>`_ for more information.
 
+Permissions can only be set on top-level commands. If you set a permission
+on a command group, it will be applied to all subgroups and subcommands within.
+
 Default member Permissions
 --------------------------
 
