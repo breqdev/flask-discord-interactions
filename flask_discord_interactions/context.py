@@ -124,7 +124,8 @@ class Context(LoadableDataclass):
             discord=discord,
             id=data.get("id"),
             type=data.get("type"),
-            command_type=data.get("data", {}).get("type") or ApplicationCommandType.CHAT_INPUT,
+            command_type=data.get("data", {}).get("type")
+            or ApplicationCommandType.CHAT_INPUT,
             token=data.get("token"),
             channel_id=data.get("channel_id"),
             guild_id=data.get("guild_id"),
@@ -249,12 +250,12 @@ class Context(LoadableDataclass):
         For User and Message commands, the target is the relevant user or
         message. This method sets the `ctx.target` field.
         """
-        if self.type == ApplicationCommandType.USER:
+        if self.command_type == ApplicationCommandType.USER:
             if self.target_id in self.members:
                 self.target = self.members[self.target_id]
             else:
                 self.target = self.users[self.target_id]
-        elif self.type == ApplicationCommandType.MESSAGE:
+        elif self.command_type == ApplicationCommandType.MESSAGE:
             self.target = self.messages[self.target_id]
         else:
             self.target = None
