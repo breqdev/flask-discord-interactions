@@ -78,7 +78,8 @@ def delay(ctx, duration: int):
     return Message(deferred=True)
 
 
-# This can be useful if you want to send files
+# This can be useful if you want to send files without worrying about the
+# Discord timeout
 @discord.command()
 def sendfile(ctx):
     def do_sendfile():
