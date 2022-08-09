@@ -17,6 +17,17 @@ class Permission:
 
     ``Permission(role='3456', allow=False)`` denies users with role ID 3456
     from using the command
+
+    Parameters
+    ----------
+    role: str
+        The role ID to apply the permission to.
+    user: str
+        The user ID to apply the permission to.
+    channel: str
+        The channel ID to apply the permission to.
+    allow: bool
+        Whether use of the command is allowed or denied for the specified criteria.
     """
 
     def __init__(self, role=None, user=None, channel=None, allow=True):
@@ -36,11 +47,26 @@ class Permission:
         self.permission = allow
 
     def dump(self):
-        "Returns a dict representation of the permission"
+        """
+        Returns a dict representation of the permission.
+
+        Returns
+        -------
+        dict
+            A dict representation of the permission.
+        """
         return {"type": self.type, "id": self.id, "permission": self.permission}
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data: dict):
+        """
+        Returns a Permission object loaded from a dict.
+
+        Parameters
+        ----------
+        data: dict
+            A dict representation of the permission.
+        """
         if data["type"] == PermissionType.ROLE:
             return cls(role=data["id"], allow=data["permission"])
         elif data["type"] == PermissionType.USER:

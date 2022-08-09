@@ -125,17 +125,36 @@ class Message(LoadableDataclass):
         """
         The flags sent with this Message, determined by whether it is
         ephemeral.
+
+        Returns
+        -------
+        int
+            Integer representation of the flags.
         """
         return 64 if self.ephemeral else 0
 
     def dump_embeds(self):
-        "Returns the embeds of this Message as a list of dicts."
+        """
+        Returns the embeds of this Message as a list of dicts.
+
+        Returns
+        -------
+        List[dict]
+            A list of dicts representing the embeds.
+        """
         return (
             [embed.dump() for embed in self.embeds] if self.embeds is not None else None
         )
 
     def dump_components(self):
-        "Returns the message components as a list of dicts."
+        """
+        Returns the message components as a list of dicts.
+
+        Returns
+        -------
+        List[dict]
+            A list of dicts representing the components.
+        """
         return (
             [c.dump() for c in self.components] if self.components is not None else None
         )
@@ -151,6 +170,11 @@ class Message(LoadableDataclass):
         ----------
         result
             The function return value to convert into a ``Message`` object.
+
+        Returns
+        -------
+        Message
+            A ``Message`` object representing the return value.
         """
 
         async def construct_async(result):

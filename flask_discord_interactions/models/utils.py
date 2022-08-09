@@ -10,7 +10,7 @@ class LoadableDataclass:
 
         Parameters
         ----------
-        data
+        data: dict
             A dictionary of fields to set on the dataclass.
         """
         return cls(

@@ -33,7 +33,16 @@ class AutocompleteResult:
         self.choices = choices
 
     def encode(self):
-        "Return this result as a complete interaction response."
+        """
+        Return this result as a complete interaction response.
+
+        Returns
+        -------
+        str
+            The encoded JSON object.
+        str
+            The mimetype of the response (``application/json``).
+        """
         data = {
             "type": ResponseType.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
             "data": {"choices": self.choices},

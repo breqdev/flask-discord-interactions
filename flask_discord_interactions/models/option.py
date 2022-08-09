@@ -105,8 +105,10 @@ class Option:
                 raise ValueError(f"Unknown type {self.type}")
 
     @classmethod
-    def from_data(cls, data):
-        "Load this option from incoming Interaction data."
+    def from_data(cls, data: dict):
+        """
+        Load this option from incoming Interaction data.
+        """
         return cls(
             name=data["name"],
             type=data["type"],
@@ -115,7 +117,14 @@ class Option:
         )
 
     def dump(self):
-        "Return this option as as a dict for registration with Discord."
+        """
+        Return this option as as a dict for registration with Discord.
+
+        Returns
+        -------
+        dict
+            A dict representing this option.
+        """
         data = {
             "name": self.name,
             "name_localizations": self.name_localizations,
@@ -155,7 +164,14 @@ class Choice:
     name_localizations: Optional[dict] = None
 
     def dump(self):
-        "Return this choice as a dict for registration with Discord."
+        """
+        Return this choice as a dict for registration with Discord.
+
+        Returns
+        -------
+        dict
+            A dict representing this choice.
+        """
         data = {
             "name": self.name,
             "value": self.value,
