@@ -93,7 +93,14 @@ class Embed(LoadableDataclass):
     fields: List[Field] = None
 
     def dump(self):
-        "Returns this Embed as a dictionary, removing fields which are None."
+        """
+        Returns this Embed as a dictionary, removing fields which are None.
+
+        Returns
+        -------
+        dict
+            A dictionary representation of this Embed.
+        """
 
         def filter_none(d):
             if isinstance(d, dict):

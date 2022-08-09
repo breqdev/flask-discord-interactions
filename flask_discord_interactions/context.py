@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from typing import Any, List, Optional, Union
+from typing import Callable, List, Optional, Union, TYPE_CHECKING
 import inspect
 import itertools
-import warnings
 import types
 
 import requests
+from flask import Flask
 
 from flask_discord_interactions.models import (
     LoadableDataclass,
@@ -20,6 +20,9 @@ from flask_discord_interactions.models import (
     Component,
     Option,
 )
+
+if TYPE_CHECKING:
+    from flask_discord_interactions.discord import DiscordInteractions
 
 
 @dataclass
@@ -99,8 +102,8 @@ class Context(LoadableDataclass):
     locale: Optional[str] = None
     guild_locale: Optional[str] = None
     app_permissions: Optional[str] = None
-    app: Any = None
-    discord: Any = None
+    app: Flask = None
+    discord: "DiscordInteractions" = None
 
     custom_id: str = None
     primary_id: str = None
@@ -110,7 +113,9 @@ class Context(LoadableDataclass):
     target: Union[User, Message] = None
 
     @classmethod
-    def from_data(cls, discord=None, app=None, data={}):
+    def from_data(
+        cls, discord: "DiscordInteractions" = None, app: Flask = None, data={}
+    ):
         if data is None:
             data = {}
 
@@ -159,7 +164,7 @@ class Context(LoadableDataclass):
         else:
             return self.frozen_auth_headers
 
-    def parse_author(self, data):
+    def parse_author(self, data: dict):
         """
         Parse the author (invoking user) of this interaction.
 
@@ -179,7 +184,7 @@ class Context(LoadableDataclass):
         else:
             self.author = None
 
-    def parse_message(self, data):
+    def parse_message(self, data: dict):
         """
         Parse the message out of in interaction.
 
@@ -334,14 +339,14 @@ class Context(LoadableDataclass):
 
         return create_args_recursive({"options": self.options}, self.resolved)
 
-    def create_handler_args(self, handler):
+    def create_handler_args(self, handler: Callable):
         """
         Create the arguments which will be passed to the function when a
         custom ID handler is invoked.
 
         Parameters
         ----------
-        handler
+        handler: Callable
             The custom ID handler to create arguments for.
         """
 
@@ -376,14 +381,14 @@ class Context(LoadableDataclass):
     def create_autocomplete_args(self):
         return [Option.from_data(option) for option in self.options]
 
-    def followup_url(self, message=None):
+    def followup_url(self, message: str = None):
         """
         Return the followup URL for this interaction. This URL can be used to
         send a new message, or to edit or delete an existing message.
 
         Parameters
         ----------
-        message
+        message: str
             The ID of the message to edit or delete.
             If None, sends a new message.
             If "@original", refers to the original message.
@@ -398,15 +403,15 @@ class Context(LoadableDataclass):
 
         return url
 
-    def edit(self, updated, message="@original"):
+    def edit(self, updated: Union[Message, str], message: str = "@original"):
         """
         Edit an existing message.
 
         Parameters
         ----------
-        updated
+        updated: Union[Message, str]
             The updated Message to edit the message to.
-        message
+        message: str
             The ID of the message to edit.
             If omitted, edits the original message.
         """
@@ -424,13 +429,13 @@ class Context(LoadableDataclass):
         )
         updated.raise_for_status()
 
-    def delete(self, message="@original"):
+    def delete(self, message: str = "@original"):
         """
         Delete an existing message.
 
         Parameters
         ----------
-        message
+        message: str
             The ID of the message to delete.
             If omitted, deletes the original message.
         """
@@ -441,13 +446,13 @@ class Context(LoadableDataclass):
         response = requests.delete(self.followup_url(message))
         response.raise_for_status()
 
-    def send(self, message):
+    def send(self, message: Union[Message, str]):
         """
         Send a new followup message.
 
         Parameters
         ----------
-        message
+        message: Union[Message, str]
             The :class:`Message` to send as a followup message.
         """
 
@@ -463,8 +468,15 @@ class Context(LoadableDataclass):
         message.raise_for_status()
         return message.json()["id"]
 
-    def get_command(self, command_name=None):
-        "Get the ID of a command by name."
+    def get_command(self, command_name: str = None):
+        """
+        Get the ID of a command by name.
+
+        Parameters
+        ----------
+        command_name: str
+            The name of the command to get the ID of.
+        """
         if command_name is None:
             return self.command_id
         else:
@@ -492,8 +504,15 @@ class Context(LoadableDataclass):
         return new_context
 
     def get_component(self, component_id: str):
-        """Get a Component, only available for Modal Contexts.
-        If the component was not found, raises a LookupError."""
+        """
+        Get a Component, only available for Modal Contexts.
+        If the component was not found, raises a LookupError.
+
+        Parameters
+        ----------
+        component_id: str
+            The ID of the component to look up.
+        """
         if not self.components:
             raise ValueError("This Context does not have any components.")
         for action_row in self.components:
@@ -518,15 +537,15 @@ class AsyncContext(Context):
 
         self.session = self.app.discord_client_session
 
-    async def edit(self, updated, message="@original"):
+    async def edit(self, updated: Union[str, Message], message: str = "@original"):
         """
         Edit an existing message.
 
         Parameters
         ----------
-        updated
+        updated: Union[str, Message]
             The updated Message to edit the message to.
-        message
+        message: str
             The ID of the message to edit.
             If omitted, edits the original message.
         """
@@ -543,13 +562,13 @@ class AsyncContext(Context):
             headers={"Content-Type": mimetype},
         )
 
-    async def delete(self, message="@original"):
+    async def delete(self, message: str = "@original"):
         """
         Delete an existing message.
 
         Parameters
         ----------
-        message
+        message: str
             The ID of the message to delete.
             If omitted, deletes the original message.
         """
@@ -559,13 +578,13 @@ class AsyncContext(Context):
 
         await self.session.delete(self.followup_url(message))
 
-    async def send(self, message):
+    async def send(self, message: Union[Message, str]):
         """
         Send a new followup message.
 
         Parameters
         ----------
-        message
+        message: Union[Message, str]
             The Message object to send as a followup message.
         """
 
@@ -581,32 +600,3 @@ class AsyncContext(Context):
             headers={"Content-Type": mimetype},
         ) as message:
             return (await message.json())["id"]
-
-    async def overwrite_permissions(self, permissions, command=None):
-        """
-        Overwrite the permission overwrites for this command.
-
-        Parameters
-        ----------
-        permissions
-            The new list of permission overwrites.
-        command
-            The name of the command to overwrite permissions for. If omitted,
-            overwrites for the invoking command.
-        """
-
-        url = (
-            f"{self.app.config['DISCORD_BASE_URL']}/"
-            f"applications/{self.app.config['DISCORD_CLIENT_ID']}/"
-            f"guilds/{self.guild_id}/"
-            f"commands/{self.get_command(command)}/permissions"
-        )
-
-        data = [permission.dump() for permission in permissions]
-
-        if not self.app or self.app.config["DONT_REGISTER_WITH_DISCORD"]:
-            return
-
-        await self.session.put(
-            url, headers=self.auth_headers, json={"permissions": data}
-        )

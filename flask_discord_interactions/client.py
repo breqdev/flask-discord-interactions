@@ -79,7 +79,7 @@ class Client:
             command.run(self.current_context, self.current_context.target)
         )
 
-    def run_handler(self, custom_id, *args):
+    def run_handler(self, custom_id: str, *args):
         """
         Run a specified custom ID handler.
 

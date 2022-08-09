@@ -1,5 +1,6 @@
 import time
 import inspect
+from typing import Callable, Dict, List
 import uuid
 import atexit
 import asyncio
@@ -7,12 +8,13 @@ import warnings
 
 import requests
 
-from flask import Response, current_app, request, jsonify, abort
+from flask import Flask, Response, current_app, request, jsonify, abort
 
 from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
 
 from flask_discord_interactions.models.autocomplete import AutocompleteResult
+from flask_discord_interactions.models.option import Option
 
 try:
     import aiohttp
@@ -47,45 +49,45 @@ class DiscordInteractionsBlueprint:
 
     def add_command(
         self,
-        command,
-        name=None,
-        description=None,
+        command: Callable,
+        name: str = None,
+        description: str = None,
         *,
-        options=None,
-        annotations=None,
-        type=ApplicationCommandType.CHAT_INPUT,
-        default_member_permissions=None,
-        dm_permission=None,
-        name_localizations=None,
-        description_localizations=None,
+        options: List[Option] = None,
+        annotations: Dict[str, str] = None,
+        type: int = ApplicationCommandType.CHAT_INPUT,
+        default_member_permissions: int = None,
+        dm_permission: bool = None,
+        name_localizations: Dict[str, str] = None,
+        description_localizations: Dict[str, str] = None,
     ):
         """
         Create and add a new :class:`ApplicationCommand`.
 
         Parameters
         ----------
-        command
+        command: Callable
             Function to execute when the command is run.
-        name
+        name: str
             The name of the command, as displayed in the Discord client.
-        name_localizations
+        name_localizations: Dict[str, str]
             A dictionary of localizations for the name of the command.
-        description
+        description: str
             The description of the command.
-        description_localizations
+        description_localizations: Dict[str, str]
             A dictionary of localizations for the description of the command.
-        options
+        options: List[Option]
             A list of options for the command, overriding the function's
             keyword arguments.
-        annotations
+        annotations: Dict[str, str]
             If ``options`` is not provided, descriptions for each of the
             options defined in the function's keyword arguments.
-        type
-            The ``ApplicationCommandType`` of the command.
-        default_member_permissions
-            A permission integer defining the required permissions a user must have to run the command
-        dm_permission
-            Indicates whether the command can be used in DMs
+        type: int
+            The class:`.ApplicationCommandType` of the command.
+        default_member_permissions: int
+            A permission integer defining the required permissions a user must have to run the command.
+        dm_permission: bool
+            Indicates whether the command can be used in DMs.
         """
         command = Command(
             command=command,
@@ -105,42 +107,46 @@ class DiscordInteractionsBlueprint:
 
     def command(
         self,
-        name=None,
-        description=None,
+        name: str = None,
+        description: str = None,
         *,
-        options=None,
-        annotations=None,
-        type=ApplicationCommandType.CHAT_INPUT,
-        default_member_permissions=None,
-        dm_permission=None,
-        name_localizations=None,
-        description_localizations=None,
+        options: List[Option] = None,
+        annotations: Dict[str, str] = None,
+        type: int = ApplicationCommandType.CHAT_INPUT,
+        default_member_permissions: int = None,
+        dm_permission: bool = None,
+        name_localizations: Dict[str, str] = None,
+        description_localizations: Dict[str, str] = None,
     ):
         """
         Decorator to create a new :class:`Command`.
 
         Parameters
         ----------
-        name
+        name: str
             The name of the command, as displayed in the Discord client.
-        name_localizations
+        name_localizations: Dict[str, str]
             A dictionary of localizations for the name of the command.
-        description
+        description: str
             The description of the command.
-        description_localizations
+        description_localizations: Dict[str, str]
             A dictionary of localizations for the description of the command.
-        options
+        options: List[Option]
             A list of options for the command, overriding the function's
             keyword arguments.
-        annotations
+        annotations: Dict[str, str]
             If ``options`` is not provided, descriptions for each of the
             options defined in the function's keyword arguments.
-        type
+        type: int
             The ``ApplicationCommandType`` of the command.
-        default_member_permissions
+        default_member_permissions: int
             A permission integer defining the required permissions a user must have to run the command
-        dm_permission
+        dm_permission: bool
             Indicates whether the command can be used in DMs
+
+        Returns
+        -------
+        Callable[Callable, Command]
         """
 
         def decorator(func):
@@ -163,14 +169,14 @@ class DiscordInteractionsBlueprint:
 
     def command_group(
         self,
-        name,
-        description="No description",
+        name: str,
+        description: str = "No description",
         *,
-        is_async=False,
-        default_member_permissions=None,
-        dm_permission=None,
-        name_localizations=None,
-        description_localizations=None,
+        is_async: bool = False,
+        default_member_permissions: int = None,
+        dm_permission: bool = None,
+        name_localizations: Dict[str, str] = None,
+        description_localizations: Dict[str, str] = None,
     ):
         """
         Create a new :class:`SlashCommandGroup`
@@ -178,21 +184,26 @@ class DiscordInteractionsBlueprint:
 
         Parameters
         ----------
-        name
+        name: str
             The name of the command group, as displayed in the Discord client.
-        name_localizations
+        name_localizations: Dict[str, str]
             A dictionary of localizations for the name of the command group.
-        description
+        description: str
             The description of the command group.
-        description_localizations
+        description_localizations: Dict[str, str]
             A dictionary of localizations for the description of the command group.
-        is_async
+        is_async: bool
             Whether the subgroup should be considered async (if subcommands
             get an :class:`.AsyncContext` instead of a :class:`Context`.)
-        default_member_permissions
+        default_member_permissions: int
             A permission integer defining the required permissions a user must have to run the command
-        dm_permission
+        dm_permission: bool
             Indicates whether the command canbe used in DMs
+
+        Returns
+        -------
+        SlashCommandGroup
+            The newly created command group.
         """
 
         group = SlashCommandGroup(
@@ -207,15 +218,15 @@ class DiscordInteractionsBlueprint:
         self.discord_commands[name] = group
         return group
 
-    def add_custom_handler(self, handler, custom_id=None):
+    def add_custom_handler(self, handler: Callable, custom_id: str = None):
         """
         Add a handler for an incoming interaction with the specified custom ID.
 
         Parameters
         ----------
-        handler
+        handler: Callable
             The function to call to handle the incoming interaction.
-        custom_id
+        custom_id: str
             The custom ID to respond to. If not specified, the ID will be
             generated randomly.
 
@@ -230,7 +241,7 @@ class DiscordInteractionsBlueprint:
         self.custom_id_handlers[custom_id] = handler
         return custom_id
 
-    def custom_handler(self, custom_id=None):
+    def custom_handler(self, custom_id: str = None):
         """
         Returns a decorator to register a handler for a custom ID.
 
@@ -239,6 +250,10 @@ class DiscordInteractionsBlueprint:
         custom_id
             The custom ID to respond to. If not specified, the ID will be
             generated randomly.
+
+        Returns
+        -------
+        Callable[Callable, str]
         """
 
         def decorator(func):
@@ -248,15 +263,15 @@ class DiscordInteractionsBlueprint:
 
         return decorator
 
-    def add_autocomplete_handler(self, handler, command_name):
+    def add_autocomplete_handler(self, handler: Callable, command_name: str):
         """
         Add a handler for an incoming autocomplete request.
 
         Parameters
         ----------
-        handler
+        handler: Callable
             The function to call to handle the incoming autocomplete request.
-        command_name
+        command_name: str
             The name of the command to autocomplete.
         """
         self.autocomplete_handlers[command_name] = handler
@@ -267,23 +282,28 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
     Handles registering a collection of :class:`Command` s, receiving
     incoming interaction data, and sending/editing/deleting messages via
     webhook.
+
+    Parameters
+    ----------
+    app: Flask
+        The Flask application to bind to.
     """
 
-    def __init__(self, app=None):
+    def __init__(self, app: Flask = None):
         super().__init__()
 
         self.app = app
         if app is not None:
             self.init_app(app)
 
-    def init_app(self, app):
+    def init_app(self, app: Flask):
         """
         Initialize a Flask app with Discord-specific configuration and
         attributes.
 
         Parameters
         ----------
-        app
+        app: Flask
             The Flask app to initialize.
         """
 
@@ -300,7 +320,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         app.discord_token = None
 
     @static_or_instance
-    def fetch_token(self, app=None):
+    def fetch_token(self, app: Flask = None):
         """
         Fetch an OAuth2 token from Discord using the ``CLIENT_ID`` and
         ``CLIENT_SECRET`` with the ``applications.commands.update`` scope. This
@@ -326,6 +346,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 time.time() + app.discord_token["expires_in"] / 2
             )
             return
+
         response = requests.post(
             app.config["DISCORD_BASE_URL"] + "/oauth2/token",
             data={
@@ -343,22 +364,27 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         )
 
     @staticmethod
-    def auth_headers(app):
+    def auth_headers(app: Flask):
         """
         Get the Authorization header required for HTTP requests to the
         Discord API.
 
         Parameters
         ----------
-        app
+        app: Flask
             The Flask app with the relevant access token.
+
+        Returns
+        -------
+        Dict[str, str]
+            The Authorization header.
         """
 
         if app.discord_token is None or time.time() > app.discord_token["expires_on"]:
             DiscordInteractions.fetch_token(app)
         return {"Authorization": f"Bearer {app.discord_token['access_token']}"}
 
-    def update_commands(self, app=None, guild_id=None):
+    def update_commands(self, app: Flask = None, guild_id: str = None):
         """
         Update the list of commands registered with Discord.
         This method will overwrite all existing commands.
@@ -370,9 +396,9 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         Parameters
         ----------
-        app
+        app: Flask
             The Flask app with the relevant Discord access token.
-        guild_id
+        guild_id: str
             The ID of the Discord guild to register commands to. If omitted,
             the commands are registered globally.
         """
@@ -416,31 +442,17 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             for command in app.discord_commands.values():
                 command.id = command.name
 
-    def update_slash_commands(self, *args, **kwargs):
-        """
-        Deprecated! As of v1.1.0, ``update_slash_commands`` has been renamed to
-        ``update_commands``, as it updates User and Message commands as well.
-        """
-        warnings.warn(
-            "Deprecated! As of v1.1.0, update_slash_commands has been renamed "
-            "to update_commands, as it updates User and Message commands too.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
-        return self.update_commands(*args, **kwargs)
-
     @staticmethod
     def build_permission_overwrite_url(
         self,
-        command=None,
+        command: Command = None,
         *,
-        guild_id,
-        command_id=None,
-        token=None,
-        app=None,
-        application_id=None,
-        base_url=None,
+        guild_id: str,
+        command_id: str = None,
+        token: str = None,
+        app: Flask = None,
+        application_id: str = None,
+        base_url: str = None,
     ):
         """
         Build the URL for getting or setting permission overwrites for a
@@ -480,14 +492,14 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
     @static_or_instance
     def get_permission_overwrites(
         self,
-        command=None,
+        command: Command = None,
         *,
-        guild_id,
-        command_id=None,
-        token=None,
-        app=None,
-        application_id=None,
-        base_url=None,
+        guild_id: str,
+        command_id: str = None,
+        token: str = None,
+        app: Flask = None,
+        application_id: str = None,
+        base_url: str = None,
     ):
         """
         Get the list of permission overwrites in a specific guild for a
@@ -529,21 +541,21 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         Parameters
         ----------
-        command
+        command: Command
             The :class:`.Command` to retrieve permissions for.
-        guild_id
+        guild_id: str
             The ID of the guild to retrieve permissions from.
-        command_id
+        command_id: str
             The ID of the command to retrieve permissions for.
-        token
+        token: str
             A bearer token from an admin of the guild (not including the
             leading ``Bearer`` word). If omitted, the bot's token will be
             used instead.
-        app
+        app: Flask
             The Flask app with the relevant Discord application ID.
-        application_id
+        application_id: str
             The ID of the Discord application to retrieve permissions from.
-        base_url
+        base_url: str
             The base URL of the Discord API.
 
         Returns
@@ -574,15 +586,15 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
     @static_or_instance
     def set_permission_overwrites(
         self,
-        permissions,
-        command=None,
+        permissions: List[Permission],
+        command: Command = None,
         *,
-        guild_id,
-        command_id=None,
-        token=None,
-        app=None,
-        application_id=None,
-        base_url=None,
+        guild_id: str,
+        command_id: str = None,
+        token: str = None,
+        app: Flask = None,
+        application_id: str = None,
+        base_url: str = None,
     ):
         """
         Overwrite the list of permission overwrites in a specific guild for a
@@ -595,21 +607,21 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         Parameters
         ----------
-        command
+        command: Command
             The :class:`.Command` to retrieve permissions for.
-        guild_id
+        guild_id: str
             The ID of the guild to retrieve permissions from.
-        command_id
+        command_id: str
             The ID of the command to retrieve permissions for.
-        token
+        token: str
             A bearer token from an admin of the guild (not including the
             leading ``Bearer`` word). If omitted, the bot's token will be
             used instead.
-        app
+        app: Flask
             The Flask app with the relevant Discord application ID.
-        application_id
+        application_id: str
             The ID of the Discord application to retrieve permissions from.
-        base_url
+        base_url: str
             The base URL of the Discord API.
         """
 
@@ -631,7 +643,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         )
         response.raise_for_status()
 
-    def throttle(self, response):
+    def throttle(self, response: requests.Response):
         """
         Throttle the number of HTTP requests made to Discord
         using the ``X-RateLimit`` headers
@@ -639,7 +651,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         Parameters
         ----------
-        response
+        response: requests.Response
             Response object from a previous HTTP request
         """
 
@@ -655,7 +667,9 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             )
             time.sleep(max(wait_time, 0))
 
-    def register_blueprint(self, blueprint, app=None):
+    def register_blueprint(
+        self, blueprint: DiscordInteractionsBlueprint, app: Flask = None
+    ):
         """
         Register a :class:`DiscordInteractionsBlueprint` to this
         DiscordInteractions class. Updates this instance's list of
@@ -664,10 +678,10 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         Parameters
         ----------
-        blueprint
+        blueprint: DiscordInteractionsBlueprint
             The :class:`DiscordInteractionsBlueprint` to add
             :class:`Command` s from.
-        app
+        app: Flask
             The Flask app with the relevant Discord commands.
         """
 
@@ -678,7 +692,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         app.custom_id_handlers.update(blueprint.custom_id_handlers)
         app.autocomplete_handlers.update(blueprint.autocomplete_handlers)
 
-    def run_command(self, data):
+    def run_command(self, data: dict):
         """
         Run the corresponding :class:`Command` given incoming interaction
         data.
@@ -687,6 +701,11 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         ----------
         data
             Incoming interaction data.
+
+        Returns
+        -------
+        Message
+            The resulting message from the command.
         """
 
         command_name = data["data"]["name"]
@@ -698,7 +717,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         return command.make_context_and_run(discord=self, app=current_app, data=data)
 
-    def run_handler(self, data, *, allow_modal=True):
+    def run_handler(self, data: dict, *, allow_modal: bool = True):
         """
         Run the corresponding custom ID handler given incoming interaction
         data.
@@ -707,6 +726,11 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         ----------
         data
             Incoming interaction data.
+
+        Returns
+        -------
+        Message
+            The resulting message.
         """
 
         context = Context.from_data(self, current_app, data)
@@ -722,7 +746,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         return Message.from_return_value(result)
 
-    def run_autocomplete(self, data):
+    def run_autocomplete(self, data: dict):
         """
         Run the corresponding autocomplete handler given incoming interaction
         data.
@@ -731,6 +755,11 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         ----------
         data
             Incoming interaction data.
+
+        Returns
+        -------
+        AutocompleteResult
+            The result of the autocomplete handler.
         """
 
         context = Context.from_data(self, current_app, data)
@@ -773,6 +802,11 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
         """
         Verify the signature in the incoming request and return the Message
         result from the given command.
+
+        Returns
+        -------
+        Message
+            The resulting message from the command.
         """
         self.verify_signature(request)
 
@@ -792,7 +826,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
                 f"Interaction type {interaction_type} is not yet supported"
             )
 
-    def set_route(self, route, app=None):
+    def set_route(self, route: str, app: Flask = None):
         """
         Add a route handler to the Flask app that handles incoming
         interaction data.
@@ -802,9 +836,9 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         Parameters
         ----------
-        route
+        route: str
             The URL path to receive interactions on.
-        app
+        app: Flask
             The Flask app to add the route to.
         """
 
@@ -817,7 +851,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
             response, mimetype = result.encode()
             return Response(response, mimetype=mimetype)
 
-    def set_route_async(self, route, app=None):
+    def set_route_async(self, route: str, app: Flask = None):
         """
         Add a route handler to a Quart app that handles incoming interaction
         data using asyncio.
@@ -827,10 +861,10 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         Parameters
         ----------
-        route
+        route: str
             The URL path to receive interactions on.
-        app
-            The Flask app to add the route to.
+        app: Flask
+            The Quart app to add the route to.
         """
 
         if app is None:
@@ -838,7 +872,7 @@ class DiscordInteractions(DiscordInteractionsBlueprint):
 
         if aiohttp is None:
             raise ImportError(
-                "The aiohttp module is required for async usage of this " "library"
+                "The aiohttp module is required for async usage of this library"
             )
 
         @app.route(route, methods=["POST"])

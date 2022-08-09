@@ -58,13 +58,32 @@ class Modal(LoadableDataclass):
                 raise ValueError("Only Action Row components are supported for Modals")
 
     def dump_components(self):
-        "Returns the message components as a list of dicts."
+        """
+        Returns the message components as a list of dicts.
+
+        Returns
+        -------
+        List[dict]
+            The message components as a list of dicts.
+        """
         return [c.dump() for c in self.components]
 
-    def encode(self, followup=False):
+    def encode(self, followup: bool = False):
         """
         Return this ``Modal`` as a dict to be sent in response to an
         incoming webhook.
+
+        Parameters
+        ----------
+        followup: bool
+            Whether this is a followup to a previous modal.
+
+        Returns
+        -------
+        str
+            The JSON-encoded modal.
+        str
+            The mimetype of the response (``application/json``).
         """
         payload = {
             "type": ResponseType.MODAL,

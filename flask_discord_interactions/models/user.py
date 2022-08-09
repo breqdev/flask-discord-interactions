@@ -55,12 +55,26 @@ class User(LoadableDataclass):
 
     @property
     def display_name(self):
-        "The displayed name of the user (the username)."
+        """
+        The displayed name of the user (the username).
+
+        Returns
+        -------
+        str
+            The displayed name of the user.
+        """
         return self.username
 
     @property
     def avatar_url(self):
-        "The URL of the user's profile picture."
+        """
+        The URL of the user's profile picture.
+
+        Returns
+        -------
+        str
+            The URL of the user's profile picture.
+        """
         if self.avatar_hash is None:
             return f"https://cdn.discordapp.com/embed/avatars/{int(self.discriminator) % 5}.png"
         elif str(self.avatar_hash).startswith("a_"):
@@ -117,5 +131,10 @@ class Member(User):
         """
         The displayed name of the user (their nickname, or if none exists,
         their username).
+
+        Returns
+        -------
+        str
+            The displayed name of the user.
         """
         return self.nick or self.username

@@ -2,7 +2,10 @@ import re
 import enum
 import inspect
 import itertools
-import warnings
+
+from typing import Callable, List, Dict, TYPE_CHECKING
+
+from flask import Flask
 
 from flask_discord_interactions.context import Context, AsyncContext
 from flask_discord_interactions.models import (
@@ -19,6 +22,9 @@ from flask_discord_interactions.models import (
     Attachment,
 )
 
+if TYPE_CHECKING:
+    from flask_discord_interactions.discord import DiscordInteractions
+
 _type = type
 
 
@@ -28,57 +34,57 @@ class Command:
 
     Attributes
     ----------
-    command
+    command: Callable
         Function to call when the command is invoked.
-    name
+    name: str
         Name for this command (appears in the Discord client). If omitted,
         infers the name based on the name of the function.
-    name_localizations
+    name_localizations: Dict[str, str]
         Localization dictionary for name field.
-    description
+    description: str
         Description for this command (appears in the Discord client). If
         omitted, infers the description based on the docstring of the function,
         or sets the description to "No description", if ``ApplicationCommandType``
         is ``CHAT_INPUT``, else set description to ``None``.
-    description_localizations
+    description_localizations: Dict[str, str]
         Localization dictionary for description field.
-    options
+    options: List[Option]
         Array of options that can be passed to this command. If omitted,
         infers the options based on the function parameters and type
         annotations.
-    annotations
+    annotations: Dict[str, str]
         Dictionary of descriptions for each option provided. Use this only if
         you want the options to be inferred from the parameters and type
         annotations. Do not use with ``options``. If omitted, and if
         ``options`` is not provided, option descriptions default to
         "No description".
-    type
+    type: int
         Type for this command (depend on the action in the Discord client).
         The value is in ``ApplicationCommandType``. If omitted, set the default
         value to ``ApplicationCommandType.CHAT_INPUT``.
-    default_member_permissions
+    default_member_permissions: int
         A permission integer defining the required permissions a user must have to run the command
-    dm_permission
+    dm_permission: bool
         Indicates whether the command can be used in DMs
-    discord
+    discord: DiscordInteractions
         DiscordInteractionsBlueprint instance which this Command is associated
         with.
     """
 
     def __init__(
         self,
-        command,
-        name,
-        description,
+        command: Callable,
+        name: str,
+        description: str,
         *,
-        options,
-        annotations,
-        type=ApplicationCommandType.CHAT_INPUT,
-        default_member_permissions=None,
-        dm_permission=None,
-        name_localizations=None,
-        description_localizations=None,
-        discord=None,
+        options: List[Option],
+        annotations: Dict[str, str],
+        type: int = ApplicationCommandType.CHAT_INPUT,
+        default_member_permissions: int = None,
+        dm_permission: bool = None,
+        name_localizations: Dict[str, str] = None,
+        description_localizations: Dict[str, str] = None,
+        discord: "DiscordInteractions" = None,
     ):
         self.command = command
         self.name = name
@@ -201,19 +207,21 @@ class Command:
 
                 self.options.append(option)
 
-    def make_context_and_run(self, *, discord, app, data):
+    def make_context_and_run(
+        self, *, discord: "DiscordInteractions", app: Flask, data: dict
+    ):
         """
         Creates the :class:`Context` object for an invocation of this
         command, then invokes itself.
 
         Parameters
         ----------
-        discord
+        discord: DiscordInteractions
             The :class:`DiscordInteractions` object used to receive this
             interaction.
-        app
+        app: Flask
             The Flask app used to receive this interaction.
-        data
+        data: dict
             The incoming interaction data.
 
         Returns
@@ -235,13 +243,13 @@ class Command:
         else:
             return Message.from_return_value(result)
 
-    def run(self, context, *args, **kwargs):
+    def run(self, context: Context, *args, **kwargs):
         """
         Invokes the function defining this command.
 
         Parameters
         ----------
-        context
+        context: Context
             The :class:`Context` object representing the current state.
         *args
             Any subcommands of the current command being called.
@@ -300,27 +308,27 @@ class SlashCommandSubgroup(Command):
 
     Attributes
     ----------
-    name
+    name: str
         The name of this subgroup, shown in the Discord client.
-    name_localizations
+    name_localizations: Dict[str, str]
         A dict of localized names for this subgroup.
-    description
+    description: str
         The description of this subgroup, shown in the Discord client.
-    description_localizations
+    description_localizations: Dict[str, str]
         A dict of localized descriptions for this subgroup.
-    is_async
+    is_async: bool
         Whether the subgroup should be considered async (if subcommands
         get an :class:`AsyncContext` instead of a :class:`Context`.)
     """
 
     def __init__(
         self,
-        name,
-        description,
+        name: str,
+        description: str,
         *,
-        name_localizations=None,
-        description_localizations=None,
-        is_async=False,
+        name_localizations: Dict[str, str] = None,
+        description_localizations: Dict[str, str] = None,
+        is_async: bool = False,
     ):
         self.name = name
         self.description = description
@@ -336,31 +344,31 @@ class SlashCommandSubgroup(Command):
 
     def command(
         self,
-        name=None,
-        description=None,
+        name: str = None,
+        description: str = None,
         *,
-        name_localizations=None,
-        description_localizations=None,
-        options=None,
-        annotations=None,
+        name_localizations: Dict[str, str] = None,
+        description_localizations: Dict[str, str] = None,
+        options: List[Option] = None,
+        annotations: Dict[str, str] = None,
     ):
         """
         Decorator to create a new Subcommand of this Subgroup.
 
         Parameters
         ----------
-        name
+        name: str
             The name of the command, as displayed in the Discord client.
-        name_localizations
+        name_localizations: Dict[str, str]
             A dict of localized names for the command.
-        description
+        description: str
             The description of the command.
-        description_localizations
+        description_localizations: Dict[str, str]
             A dict of localized descriptions for the command.
-        options
+        options: List[Option]
             A list of options for the command, overriding the function's
             keyword arguments.
-        annotations
+        annotations: Dict[str, str]
             If ``options`` is not provided, descriptions for each of the
             options defined in the function's keyword arguments.
         """
@@ -385,6 +393,11 @@ class SlashCommandSubgroup(Command):
         """
         Returns an array of options that can be passed to this command.
         Computed based on the options of each subcommand or subcommand group.
+
+        Returns
+        -------
+        List[Option]
+            The options for this command.
         """
         options = []
         for command in self.subcommands.values():
@@ -403,7 +416,7 @@ class SlashCommandSubgroup(Command):
 
         Parameters
         ----------
-        context
+        context: Context
             The :class:`Context` object representing the current state.
         *args
             List of subcommands of the current command group being invoked.
@@ -419,20 +432,20 @@ class SlashCommandGroup(SlashCommandSubgroup):
 
     Attributes
     ----------
-    name
+    name: str
         The name of this subgroup, shown in the Discord client.
-    name_localizations
+    name_localizations: Dict[str, str]
         A dict of localized names for this subgroup.
-    description
+    description: str
         The description of this subgroup, shown in the Discord client.
-    description_localizations
+    description_localizations: Dict[str, str]
         A dict of localized descriptions for this subgroup.
-    is_async
+    is_async: bool
         Whether the subgroup should be considered async (if subcommands
         get an :class:`AsyncContext` instead of a :class:`Context`.)
-    default_member_permissions:
+    default_member_permissions: int
         Permission integer setting permission defaults for a command
-    dm_permission
+    dm_permission: int
         Indicates whether the command can be used in DMs
     """
 
@@ -461,12 +474,12 @@ class SlashCommandGroup(SlashCommandSubgroup):
 
     def subgroup(
         self,
-        name,
-        description="No description",
+        name: str,
+        description: str = "No description",
         *,
-        name_localizations=None,
-        description_localizations=None,
-        is_async=False,
+        name_localizations: Dict[str, str] = None,
+        description_localizations: Dict[str, str] = None,
+        is_async: bool = False,
     ):
         """
         Create a new :class:`SlashCommandSubroup`
@@ -474,15 +487,15 @@ class SlashCommandGroup(SlashCommandSubgroup):
 
         Parameters
         ----------
-        name
+        name: str
             The name of the subgroup, as displayed in the Discord client.
-        name_localizations
+        name_localizations: Dict[str, str]
             A dict of localized names for the subgroup.
-        description
+        description: str
             The description of the subgroup. Defaults to "No description".
-        description_localizations
+        description_localizations: Dict[str, str]
             A dict of localized descriptions for the subgroup.
-        is_async
+        is_async: bool
             Whether the subgroup should be considered async (if subcommands
             get an :class:`AsyncContext` instead of a :class:`Context`.)
         """
