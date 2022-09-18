@@ -1,4 +1,5 @@
 import dataclasses
+from typing import Optional
 
 from flask_discord_interactions.models.utils import LoadableDataclass
 
@@ -28,13 +29,20 @@ class Role(LoadableDataclass):
         Whether the role can be mentioned by all users.
     tags
         Miscellaneous information about the role.
+    icon
+        Hash of the role's icon
+    unicode_emoji
+        Unicode emoji of the role (alternative to icons)
     """
 
-    id: str = None
-    name: str = None
-    color: str = None
-    hoist: bool = None
-    position: int = None
-    managed: bool = None
-    mentionable: bool = None
-    tags: dict = None
+    id: str
+    name: str
+    color: int
+    hoist: bool
+    position: int
+    permissions: str
+    managed: bool
+    mentionable: bool
+    tags: Optional[dict] = None
+    icon: Optional[str] = None
+    unicode_emoji: Optional[str] = None
