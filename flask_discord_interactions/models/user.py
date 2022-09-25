@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Optional
+from typing import Optional, List
 
 from flask_discord_interactions.models.utils import LoadableDataclass
 
@@ -111,7 +111,7 @@ class Member(User):
     joined_at: str = ""
     avatar: Optional[str] = None
     nick: Optional[str] = None
-    roles: Optional[list[str]] = None
+    roles: Optional[List[str]] = None
     premium_since: Optional[str] = None
     permissions: Optional[int] = None
     communication_disabled_until: Optional[str] = None
