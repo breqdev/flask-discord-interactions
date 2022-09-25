@@ -1,4 +1,5 @@
 import dataclasses
+from typing import Optional
 
 from flask_discord_interactions.models.utils import LoadableDataclass
 
@@ -17,35 +18,23 @@ class User(LoadableDataclass):
         The Discord username of the user.
     discriminator
         The code following the # after the username.
+    public_flags
+        Miscellaneous information about the user.
     avatar_hash
         The unique hash identifying the profile picture of the user.
     bot
         Whether the user is a bot account.
     system
         Whether the user is a Discord system account.
-    mfa_enabled
-        Whether the user has enabled Two-Factor Authentication.
-    locale
-        The locale of the user.
-    flags
-        Miscellaneous information about the user.
-    premium_type
-        The Nitro status of the user.
-    public_flags
-        Miscellaneous information about the user.
     """
 
-    id: str = None
-    username: str = None
-    discriminator: str = None
-    avatar_hash: str = None
-    bot: bool = None
-    system: bool = None
-    mfa_enabled: bool = None
-    locale: str = None
-    flags: int = None
-    premium_type: int = None
-    public_flags: int = None
+    id: str
+    username: str
+    discriminator: str
+    public_flags: int
+    avatar_hash: Optional[str] = None
+    bot: Optional[bool] = None
+    system: Optional[bool] = None
 
     @classmethod
     def from_dict(cls, data):
@@ -95,32 +84,38 @@ class Member(User):
 
     Attributes
     ----------
-    nick
-        The guild nickname of the user.
-    roles
-        An array of role IDs that the user has.
-    joined_at
-        The timestamp that the user joined the guild at.
-    premium_since
-        The timestamp that the user started Nitro boosting the guild at.
-    permissions
-        The permissions integer of the user.
     deaf
         Whether the user has been server deafened.
     mute
         Whether the user has been server muted.
+    joined_at
+        The timestamp that the user joined the guild at.
+    avatar
+        The member's guild avatar hash
+    nick
+        The guild nickname of the user.
+    roles
+        An array of role IDs that the user has.
+    premium_since
+        The timestamp that the user started Nitro boosting the guild at.
+    permissions
+        The permissions integer of the user.
+    communication_disabled_until
+        Timestamp when the member's timeout will expire (if existing)
     pending
         Whether the user has passed the membership requirements of a guild.
     """
 
-    nick: str = None
-    roles: list = None
-    joined_at: str = None
-    premium_since: str = None
-    permissions: int = None
-    deaf: bool = None
-    mute: bool = None
-    pending: bool = None
+    deaf: bool = False
+    mute: bool = False
+    joined_at: str = ""
+    avatar: Optional[str] = None
+    nick: Optional[str] = None
+    roles: Optional[list[str]] = None
+    premium_since: Optional[str] = None
+    permissions: Optional[int] = None
+    communication_disabled_until: Optional[str] = None
+    pending: Optional[bool] = None
 
     def __post_init__(self):
         if isinstance(self.permissions, str):
