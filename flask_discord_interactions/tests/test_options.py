@@ -1,6 +1,7 @@
 import enum
 
 from flask_discord_interactions import Member, Channel, Role
+from flask_discord_interactions.models.channel import ChannelType
 
 
 def test_str(discord, client):
@@ -92,7 +93,22 @@ def test_role(discord, client):
     def role_id(ctx, role: Role):
         return role.id
 
-    assert client.run("role_id", role=Role(id="1234")).content == "1234"
+    assert (
+        client.run(
+            "role_id",
+            role=Role(
+                id="1234",
+                name="Test Role",
+                color=0,
+                hoist=False,
+                position=3,
+                permissions="0",
+                managed=False,
+                mentionable=False,
+            ),
+        ).content
+        == "1234"
+    )
 
 
 def test_channel(discord, client):
@@ -101,7 +117,13 @@ def test_channel(discord, client):
         return channel.name
 
     assert (
-        client.run("channel_name", channel=Channel(name="general")).content == "general"
+        client.run(
+            "channel_name",
+            channel=Channel(
+                name="general", id="0", permissions="0", type=ChannelType.GUILD_TEXT
+            ),
+        ).content
+        == "general"
     )
 
 
@@ -110,14 +132,30 @@ def test_member(discord, client):
     def ship_them(ctx, other: Member):
         return f"{ctx.author.display_name} <3 {other.display_name}"
 
-    with client.context(author=Member(username="Romeo")):
+    with client.context(
+        author=Member(username="Romeo", discriminator="1234", public_flags=0, id="0")
+    ):
         assert (
-            client.run("ship_them", other=Member(username="Juliet")).content
+            client.run(
+                "ship_them",
+                other=Member(
+                    username="Juliet", discriminator="1234", public_flags=0, id="1"
+                ),
+            ).content
             == "Romeo <3 Juliet"
         )
 
         assert (
-            client.run("ship_them", other=Member(username="Juliet", nick="J")).content
+            client.run(
+                "ship_them",
+                other=Member(
+                    username="Juliet",
+                    nick="J",
+                    discriminator="1234",
+                    public_flags=0,
+                    id="1",
+                ),
+            ).content
             == "Romeo <3 J"
         )
 
@@ -130,10 +168,42 @@ def test_multiple(discord, client):
 
         return str(role.id in user.roles)
 
-    with client.context(author=Member(roles=["2", "4", "8", "16"])):
-        assert client.run("has_role", role=Role(id="2")).content == "True"
-        assert client.run("has_role", role=Role(id="7")).content == "False"
+    role_2 = Role(
+        id="2",
+        name="Test Role",
+        color=0,
+        hoist=False,
+        position=0,
+        permissions="0",
+        managed=False,
+        mentionable=True,
+    )
 
-        user = Member(roles=["7"])
-        assert client.run("has_role", user=user, role=Role(id="2")).content == "False"
-        assert client.run("has_role", user=user, role=Role(id="7")).content == "True"
+    role_7 = Role(
+        id="7",
+        name="Test Role",
+        color=0,
+        hoist=False,
+        position=0,
+        permissions="0",
+        managed=False,
+        mentionable=True,
+    )
+
+    with client.context(
+        author=Member(
+            roles=["2", "4", "8", "16"],
+            id="0",
+            username="Quartz",
+            discriminator="3440",
+            public_flags=0,
+        )
+    ):
+        assert client.run("has_role", role=role_2).content == "True"
+        assert client.run("has_role", role=role_7).content == "False"
+
+        user = Member(
+            roles=["7"], id="0", username="Brooke", discriminator="0033", public_flags=0
+        )
+        assert client.run("has_role", user=user, role=role_2).content == "False"
+        assert client.run("has_role", user=user, role=role_7).content == "True"

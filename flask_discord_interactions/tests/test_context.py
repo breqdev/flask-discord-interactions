@@ -60,10 +60,26 @@ def test_author(discord, client):
     def display_name(ctx):
         return ctx.author.display_name
 
-    with client.context(Context(author=Member(username="Bob"))):
+    with client.context(
+        Context(
+            author=Member(
+                username="Bob", id="1234", discriminator="1234", public_flags=0
+            )
+        )
+    ):
         assert client.run("display_name").content == "Bob"
 
-    with client.context(Context(author=Member(nick="Dale"))):
+    with client.context(
+        Context(
+            author=Member(
+                username="Bob",
+                id="1234",
+                discriminator="1234",
+                public_flags=0,
+                nick="Dale",
+            )
+        )
+    ):
         assert client.run("display_name").content == "Dale"
 
 
@@ -72,7 +88,11 @@ def test_ids(discord, client):
     def all_ids(ctx):
         return f"{ctx.author.id}/{ctx.channel_id}/{ctx.guild_id}"
 
-    context = Context(author=Member(id="01"), channel_id="02", guild_id="2003")
+    context = Context(
+        author=Member(id="01", username="Brooke", discriminator="1234", public_flags=0),
+        channel_id="02",
+        guild_id="2003",
+    )
 
     with client.context(context):
         assert client.run("all_ids").content == "01/02/2003"
@@ -83,12 +103,28 @@ def test_permissions(discord, client):
     def is_admin(ctx):
         return "Yes" if (ctx.author.permissions & 8) else "No"
 
-    context = Context(author=Member(permissions="0"))
+    context = Context(
+        author=Member(
+            permissions="0",
+            id="01",
+            username="Brooke",
+            discriminator="1234",
+            public_flags=0,
+        )
+    )
 
     with client.context(context):
         assert client.run("is_admin").content == "No"
 
-    context = Context(author=Member(permissions="8"))
+    context = Context(
+        author=Member(
+            permissions="8",
+            username="Bob",
+            id="1234",
+            discriminator="1234",
+            public_flags=0,
+        )
+    )
 
     with client.context(context):
         assert client.run("is_admin").content == "Yes"
@@ -251,7 +287,13 @@ def test_user_command_argument(discord, client):
     def greet(ctx, target):
         return f"Hello, {target.display_name}!"
 
-    with client.context(Context(target=Member(username="Test User"))):
+    with client.context(
+        Context(
+            target=Member(
+                username="Test User", id="1234", discriminator="1234", public_flags=0
+            )
+        )
+    ):
         assert client.run("greet").content == "Hello, Test User!"
 
 

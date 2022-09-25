@@ -94,7 +94,9 @@ def test_context_with_subcommand(discord, client):
     def subcommand(ctx):
         return ctx.author.display_name
 
-    context = Context(author=Member(username="Bob"))
+    context = Context(
+        author=Member(username="Bob", id="8", discriminator="1234", public_flags=0)
+    )
 
     with client.context(context):
         assert client.run("group", "subcommand").content == "Bob"

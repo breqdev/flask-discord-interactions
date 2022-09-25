@@ -37,7 +37,16 @@ def test_flask():
                     "name": "ping",
                     "options": [{"type": 1, "name": "Pong"}],
                 },
-                "member": {"id": 1, "nick": "", "user": {"id": 1, "username": "test"}},
+                "member": {
+                    "id": 1,
+                    "nick": "",
+                    "user": {
+                        "id": 1,
+                        "username": "test",
+                        "discriminator": "6666",
+                        "public_flags": 0,
+                    },
+                },
             },
         )
 
@@ -78,7 +87,16 @@ def test_app_factory():
                     "name": "ping",
                     "options": [{"type": 1, "name": "Pong"}],
                 },
-                "member": {"id": 1, "nick": "", "user": {"id": 1, "username": "test"}},
+                "member": {
+                    "id": 1,
+                    "nick": "",
+                    "user": {
+                        "id": 1,
+                        "username": "test",
+                        "discriminator": "6666",
+                        "public_flags": 0,
+                    },
+                },
             },
         )
 
@@ -123,6 +141,8 @@ def test_followup():
                 "data": {
                     "id": 1,
                     "name": "ping",
+                    "discriminator": "6666",
+                    "public_flags": 0,
                 },
             },
         )
