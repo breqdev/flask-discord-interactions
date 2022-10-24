@@ -31,7 +31,7 @@ class User(LoadableDataclass):
     id: str
     username: str
     discriminator: str
-    public_flags: int
+    public_flags: Optional[int] = None
     avatar_hash: Optional[str] = None
     bot: Optional[bool] = None
     system: Optional[bool] = None
