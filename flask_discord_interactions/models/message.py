@@ -241,6 +241,6 @@ class Message(LoadableDataclass):
                 fields=fields,
             )
 
-            return (multipart.to_string().decode(), multipart.content_type)
+            return (multipart, multipart.content_type)
         else:
             return (payload_json, "application/json")
