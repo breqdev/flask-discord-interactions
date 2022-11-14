@@ -206,8 +206,8 @@ class Message(LoadableDataclass):
 
         Returns
         -------
-        string
-            A string containing the message data (either JSON or multipart).
+        bytes
+            Bytes containing the message data (either JSON or multipart).
         string
             The mimetype of the message data.
         """
@@ -243,4 +243,4 @@ class Message(LoadableDataclass):
 
             return (multipart.to_string(), multipart.content_type)
         else:
-            return (payload_json, "application/json")
+            return (payload_json.encode("utf-8"), "application/json")
