@@ -38,7 +38,7 @@ Alternatively, you can create a Message object yourself:
         return Message("Return a Message object with the content")
 
 You can also pass more options to the Message object, such as making the
-response ephemeral:
+response ephemeral (this is useful for showing error messages, for example):
 
 .. code-block:: python
 
